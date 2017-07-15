@@ -125,4 +125,9 @@ class ApiResponseTest extends TestCase
         $this->assertEquals($testValue, $data->error->code);
         $this->assertEquals('error', $data->status);
     }
+
+    public function testAlwaysHasStatus() {
+        $data = $this->response->getData();
+        $this->assertEquals('ok', $data->status);
+    }
 }

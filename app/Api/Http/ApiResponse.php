@@ -45,7 +45,7 @@ class ApiResponse extends JsonResponse implements JsonSerializable
      */
     public function __construct($status = 200, $headers = [], $options = 0)
     {
-        parent::__construct(null, $status, $headers, $options);
+        parent::__construct($this->jsonSerialize(), $status, $headers, $options);
     }
 
     /**
