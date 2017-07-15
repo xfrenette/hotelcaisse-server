@@ -2,11 +2,14 @@
 
 namespace Tests\Unit\Api\Http;
 
-use Tests\TestCase;
 use App\Api\Http\ApiResponse;
+use Tests\TestCase;
 
 class ApiResponseTest extends TestCase
 {
+    /**
+     * @var ApiResponse
+     */
     protected $response;
 
     public function setUp()

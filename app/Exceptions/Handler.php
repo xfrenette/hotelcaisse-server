@@ -5,6 +5,9 @@ namespace App\Exceptions;
 use Exception;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use App\Api\Http\ApiResponse;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class Handler extends ExceptionHandler
 {
@@ -44,6 +47,17 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
+        /**
+         * API exceptions
+         */
+        if ($this->isApi($request)) {
+            return $this->renderAsApiResponse($request, $exception);
+        }
+
+        /**
+         * Web exceptions
+         */
+
         return parent::render($request, $exception);
     }
 
@@ -61,5 +75,74 @@ class Handler extends ExceptionHandler
         }
 
         return redirect()->guest(route('login'));
+    }
+
+    /**
+     * Render an exception as an API response object
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \Exception $exception
+     * @return \App\Api\Http\ApiResponse
+     */
+    protected function renderAsApiResponse($request, Exception $exception)
+    {
+        if ($exception instanceof Api\InvalidTokenException) {
+            return $this->apiResponseError(401, ApiResponse::ERROR_INVALID_TOKEN);
+        }
+
+        if ($exception instanceof Api\InvalidRequestException) {
+            return $this->apiResponseError(400, ApiResponse::ERROR_INVALID_REQUEST);
+        }
+
+        if ($exception instanceof NotFoundHttpException) {
+            return $this->apiResponseError(404, ApiResponse::ERROR_NOT_FOUND);
+        }
+
+        if ($exception instanceof HttpException) {
+            // For other 4xx HTTP exceptions, we return a client error with the correct HTTP error
+            // code
+            if ($exception->getStatusCode() >= 400 && $exception->getStatusCode() < 500) {
+                return $this->apiResponseError(
+                    $exception->getStatusCode(),
+                    ApiResponse::ERROR_CLIENT_ERROR
+                );
+            }
+
+            // For other HTTP exceptions, we return a server error with the correct HTTP error code
+            return $this->apiResponseError(
+                $exception->getStatusCode(),
+                ApiResponse::ERROR_NOT_FOUND
+            );
+        }
+
+        // All other exceptions
+        return $this->apiResponseError(500, ApiResponse::ERROR_SERVER_ERROR);
+    }
+
+    /**
+     * Returns true if the request was for an API route
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return boolean
+     */
+    protected function isApi($request)
+    {
+        return $request->is('api/*');
+    }
+
+    /**
+     * Returns an ApiResponse for an error response, with the HTTP status code, error code and
+     * error message.
+     *
+     * @param int $status
+     * @param string $code
+     * @param string $message
+     * @return \App\Api\Http\ApiResponse
+     */
+    protected function apiResponseError($status, $code, $message = null)
+    {
+        $apiResponse = new ApiResponse($status);
+        $apiResponse->setError($code, $message);
+        return $apiResponse;
     }
 }

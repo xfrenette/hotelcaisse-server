@@ -2,13 +2,16 @@
 
 namespace App\Api\Http;
 
-use JsonSerializable;
 use Illuminate\Http\JsonResponse;
+use JsonSerializable;
 
 class ApiResponse extends JsonResponse implements JsonSerializable
 {
-    const ERROR_CODES = [
-    ];
+    const ERROR_INVALID_TOKEN = 'auth:invalidToken';
+    const ERROR_INVALID_REQUEST = 'request:invalid';
+    const ERROR_NOT_FOUND = 'request:notFound';
+    const ERROR_CLIENT_ERROR = 'request:error';
+    const ERROR_SERVER_ERROR = 'server:error';
 
     /**
      * @var string
