@@ -14,6 +14,34 @@ class ApiAuth
     public $apiSession = null;
 
     /**
+     * If an ApiSession is loaded, returns it Business, else return null.
+     *
+     * @return Business|null
+     */
+    public function getBusiness()
+    {
+        if (is_null($this->apiSession)) {
+            return null;
+        }
+
+        return $this->apiSession->business;
+    }
+
+    /**
+     * If an ApiSession is loaded, returns it Device, else return null.
+     *
+     * @return \App\Device|null
+     */
+    public function getDevice()
+    {
+        if (is_null($this->apiSession)) {
+            return null;
+        }
+
+        return $this->apiSession->device;
+    }
+
+    /**
      * Tries to find a (not expired) ApiSession with the specified $token and associated to the $business (it could
      * work only with the token, but we require the Business for (small) security reason : both information must be
      * provided).

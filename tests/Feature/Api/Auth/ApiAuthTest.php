@@ -25,6 +25,11 @@ class ApiAuthTest extends TestCase
      */
     protected $apiSession;
 
+    protected function loadValidSession()
+    {
+        return $this->apiAuth->loadSession($this->apiSession->token, $this->business);
+    }
+
     protected function setUp()
     {
         parent::setUp();
@@ -78,8 +83,22 @@ class ApiAuthTest extends TestCase
         $this->assertFalse($this->apiAuth->check());
     }
 
-    protected function loadValidSession()
+    public function testGetBusiness()
     {
-        return $this->apiAuth->loadSession($this->apiSession->token, $this->business);
+        $this->loadValidSession();
+        $this->assertEquals($this->business->id, $this->apiAuth->getBusiness()->id);
+
+        $this->apiAuth->logout();
+        $this->assertNull($this->apiAuth->getBusiness());
+    }
+
+    public function testGetDevice()
+    {
+        $this->loadValidSession();
+        $device = $this->apiSession->device;
+        $this->assertEquals($device->id, $this->apiAuth->getDevice()->id);
+
+        $this->apiAuth->logout();
+        $this->assertNull($this->apiAuth->getDevice());
     }
 }
