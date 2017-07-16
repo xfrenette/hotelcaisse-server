@@ -15,6 +15,7 @@ class CreateApiSessionsTable extends Migration
     {
         Schema::create('api_sessions', function (Blueprint $table) {
             $table->increments('id');
+            $table->timestamps();
             $table->uuid('token')->unique();
             $table->dateTime('expires_at');
             $table->integer('business_id')->unsigned();

@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class ApiSession extends Model
@@ -31,5 +32,23 @@ class ApiSession extends Model
     public function device()
     {
         return $this->belongsTo('App\Device');
+    }
+
+    /**
+     * Returns boolean indicating if this ApiSession is expired.
+     *
+     * @return bool
+     */
+    public function expired()
+    {
+        return !$this->expires_at->isFuture();
+    }
+
+    /**
+     * Sets the expires_at attribute to a time in the past
+     */
+    public function expire()
+    {
+        $this->expires_at = Carbon::now()->subSecond(1);
     }
 }

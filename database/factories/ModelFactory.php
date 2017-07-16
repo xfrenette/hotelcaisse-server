@@ -17,3 +17,16 @@ $factory->define(App\Business::class, function (Faker\Generator $faker) {
         'slug' => $faker->slug,
     ];
 });
+
+$factory->define(App\Device::class, function (Faker\Generator $faker) {
+    return [
+        'uuid' => $faker->uuid,
+    ];
+});
+
+$factory->define(App\ApiSession::class, function (Faker\Generator $faker) {
+    return [
+        'token' => $faker->uuid,
+        'expires_at' => \Carbon\Carbon::tomorrow(),
+    ];
+});
