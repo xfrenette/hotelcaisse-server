@@ -5,8 +5,9 @@ namespace Tests\Unit\Http\Middleware\Api;
 use App\Exceptions\Api\InvalidRequestException;
 use App\Http\Middleware\Api\ValidateRequest;
 use Illuminate\Http\Request;
+use Tests\TestCase;
 
-class ValidateRequestTest extends \PHPUnit_Framework_TestCase
+class ValidateRequestTest extends TestCase
 {
     /**
      * @var ValidateRequest
@@ -24,7 +25,9 @@ class ValidateRequestTest extends \PHPUnit_Framework_TestCase
         $request = Request::create('test');
         $request->setJson(['a' => 'b']);
         $this->expectException(InvalidRequestException::class);
-        $this->middleware->handle($request, function (){});
+        $this->middleware->handle($request, function () {
+            //
+        });
     }
 
     public function testThrowsIfEmptyBody()
@@ -38,7 +41,9 @@ class ValidateRequestTest extends \PHPUnit_Framework_TestCase
             ['CONTENT_TYPE' => 'application/json']
         );
         $this->expectException(InvalidRequestException::class);
-        $this->middleware->handle($request, function (){});
+        $this->middleware->handle($request, function () {
+            //
+        });
     }
 
     public function testThrowsIfInvalidJSON()
@@ -50,9 +55,12 @@ class ValidateRequestTest extends \PHPUnit_Framework_TestCase
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
-            'invalid-json');
+            'invalid-json'
+        );
         $this->expectException(InvalidRequestException::class);
-        $this->middleware->handle($request, function (){});
+        $this->middleware->handle($request, function () {
+            //
+        });
     }
 
     public function testDoesNotThrowIfValidJson()
@@ -67,6 +75,8 @@ class ValidateRequestTest extends \PHPUnit_Framework_TestCase
             '{"test":"value"}'
         );
         // Should no throw any exception and thus the test should succeed
-        $this->middleware->handle($request, function () {});
+        $this->middleware->handle($request, function () {
+            //
+        });
     }
 }
