@@ -6,7 +6,6 @@ use App\Exceptions\Api\InvalidRequestException;
 use Closure;
 use Illuminate\Http\Request;
 
-
 class ValidateRequest
 {
     /**
@@ -14,6 +13,7 @@ class ValidateRequest
      *
      * @param Request $request
      * @param Closure $next
+     * @throws InvalidRequestException
      * @return mixed
      */
     public function handle(Request $request, Closure $next)
