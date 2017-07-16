@@ -4,6 +4,7 @@ namespace App\Exceptions;
 
 use Exception;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use App\Api\Http\ApiResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -94,7 +95,7 @@ class Handler extends ExceptionHandler
             return $this->apiResponseError(400, ApiResponse::ERROR_INVALID_REQUEST);
         }
 
-        if ($exception instanceof NotFoundHttpException) {
+        if ($exception instanceof NotFoundHttpException || $exception instanceof ModelNotFoundException) {
             return $this->apiResponseError(404, ApiResponse::ERROR_NOT_FOUND);
         }
 

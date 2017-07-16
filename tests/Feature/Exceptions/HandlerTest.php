@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Exceptions;
 
+use App\Business;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Route;
 use App\Exceptions\Api\InvalidTokenException;
@@ -9,9 +10,20 @@ use App\Exceptions\Api\InvalidRequestException;
 use Illuminate\Http\Request;
 use App\Api\Http\ApiResponse;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class ExceptionsTest extends TestCase
 {
+    use DatabaseTransactions;
+
+    protected $business;
+
+    protected function setUp()
+    {
+        parent::setUp();
+        $this->business = factory(Business::class)->create();
+    }
+
     public function testApiInvalidTokenException()
     {
         Route::get('/api/test', function () {
