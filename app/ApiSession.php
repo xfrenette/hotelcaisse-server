@@ -51,4 +51,15 @@ class ApiSession extends Model
     {
         $this->expires_at = Carbon::now()->subSecond(1);
     }
+
+    /**
+     * Scope a query to only include non-expired api sessions.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeValid($query)
+    {
+        return $query->whereDate('expires_at', '>', Carbon::now());
+    }
 }
