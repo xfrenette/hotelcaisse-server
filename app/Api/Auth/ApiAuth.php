@@ -4,6 +4,9 @@ namespace App\Api\Auth;
 
 use App\ApiSession;
 use App\Business;
+use App\Device;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Config;
 
 class ApiAuth
 {
@@ -39,6 +42,20 @@ class ApiAuth
         }
 
         return $this->apiSession->device;
+    }
+
+    /**
+     * If an ApiSession is loaded, returns it token, else return null.
+     *
+     * @return string|null
+     */
+    public function getToken()
+    {
+        if (is_null($this->apiSession)) {
+            return null;
+        }
+
+        return $this->apiSession->token;
     }
 
     /**
@@ -89,5 +106,63 @@ class ApiAuth
     public function logout()
     {
         $this->apiSession = null;
+    }
+
+    /**
+     * Logs out and deletes the ApiSession from the DB.
+     */
+    public function destroySession()
+    {
+        if (!$this->check()) {
+            return;
+        }
+
+        $apiSession = $this->apiSession;
+        $this->logout();
+        $apiSession->delete();
+    }
+
+    /**
+     * Invalidates the current token and regenerates a new one. Does nothing if not already logged in, else keep the
+     * user logged in, but with the new token.
+     */
+    public function regenerateToken()
+    {
+        if (!$this->check()) {
+            return;
+        }
+
+        $business = $this->getBusiness();
+        $device = $this->getDevice();
+
+        $this->destroySession();
+
+        $newApiSession = self::makeApiSession($business, $device);
+        $newApiSession->save();
+
+        $this->apiSession = $newApiSession;
+    }
+
+    /**
+     * Makes a new ApiSession for the specified $business and $device. The new ApiSession is returned, but not saved in
+     * the DB.
+     *
+     * @param \App\Business $business
+     * @param \App\Device $device
+     *
+     * @return \App\ApiSession
+     */
+    protected static function makeApiSession(Business $business, Device $device)
+    {
+        $newToken = str_random(Config::get('api.auth.token.bytesLength', 32));
+        $expires_at = Carbon::now()->addDays(Config::get('api.auth.token.daysValid', 30));
+
+        $apiSession = new ApiSession();
+        $apiSession->token = $newToken;
+        $apiSession->business()->associate($business);
+        $apiSession->device()->associate($device);
+        $apiSession->expires_at = $expires_at;
+
+        return $apiSession;
     }
 }

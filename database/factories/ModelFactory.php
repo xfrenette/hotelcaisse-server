@@ -31,9 +31,9 @@ $factory->define(App\ApiSession::class, function (Faker\Generator $faker) {
     ];
 });
 
-$factory->defineAs(App\ApiSession::class, 'withBusinessAndDevice', function (Faker\Generator $faker) {
+$factory->defineAs(App\ApiSession::class, 'withBusinessAndDevice', function () {
     return [
-        'token' => $faker->uuid,
+        'token' => str_random(32),
         'expires_at' => \Carbon\Carbon::tomorrow(),
         'business_id' => function () {
             return factory(\App\Business::class)->create()->id;

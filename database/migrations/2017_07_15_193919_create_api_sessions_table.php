@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreateApiSessionsTable extends Migration
 {
@@ -16,7 +16,7 @@ class CreateApiSessionsTable extends Migration
         Schema::create('api_sessions', function (Blueprint $table) {
             $table->increments('id');
             $table->timestamps();
-            $table->uuid('token')->unique();
+            $table->string('token', 64)->unique();
             $table->dateTime('expires_at');
             $table->integer('business_id')->unsigned();
             $table->integer('device_id')->unsigned();

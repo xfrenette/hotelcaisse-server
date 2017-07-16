@@ -101,4 +101,66 @@ class ApiAuthTest extends TestCase
         $this->apiAuth->logout();
         $this->assertNull($this->apiAuth->getDevice());
     }
+
+    public function testGetToken()
+    {
+        $this->loadValidSession();
+        $this->assertEquals($this->apiSession->token, $this->apiAuth->getToken());
+
+        $this->apiAuth->logout();
+        $this->assertNull($this->apiAuth->getToken());
+    }
+
+    public function testDestroySessionInvalidatesSession()
+    {
+        $this->loadValidSession();
+        $oldToken = $this->apiAuth->getToken();
+        $this->apiAuth->destroySession();
+        $this->assertFalse($this->apiAuth->loadSession($oldToken, $this->business));
+    }
+
+    public function testDestroySessionLogsOut()
+    {
+        $this->loadValidSession();
+        $this->apiAuth->destroySession();
+        $this->assertFalse($this->apiAuth->check());
+    }
+
+    public function testRegenerateTokenDoesNothingIfNotAlreadyAuthenticated()
+    {
+        $this->apiAuth->regenerateToken();
+        $this->assertFalse($this->apiAuth->check());
+    }
+
+    public function testRegenerateTokenStaysAuthenticated()
+    {
+        $this->loadValidSession();
+        $this->apiAuth->regenerateToken();
+        $this->assertTrue($this->apiAuth->check());
+    }
+
+    public function testRegenerateTokenIsValidToken()
+    {
+        $this->loadValidSession();
+        $this->apiAuth->regenerateToken();
+        $newToken = $this->apiAuth->getToken();
+        $this->apiAuth->logout();
+        $this->assertTrue($this->apiAuth->loadSession($newToken, $this->business));
+    }
+
+    public function testRegenerateTokenMakesNewToken()
+    {
+        $this->loadValidSession();
+        $oldToken = $this->apiAuth->getToken();
+        $this->apiAuth->regenerateToken();
+        $this->assertNotEquals($oldToken, $this->apiAuth->getToken());
+    }
+
+    public function testRegenerateTokenInvalidatesOldToken()
+    {
+        $this->loadValidSession();
+        $oldToken = $this->apiAuth->getToken();
+        $this->apiAuth->regenerateToken();
+        $this->assertFalse($this->apiAuth->loadSession($oldToken, $this->business));
+    }
 }
