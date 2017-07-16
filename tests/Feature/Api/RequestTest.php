@@ -3,10 +3,12 @@
 namespace Tests\Feature\Api;
 
 use App\Api\Http\ApiResponse;
+use App\ApiSession;
 use App\Business;
+use App\Support\Facades\ApiAuth;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class RequestTest extends TestCase
 {
@@ -32,6 +34,10 @@ class RequestTest extends TestCase
                 Route::post('/api/businesstest/{business}', function (Business $business) {
                     return new ApiResponse();
                 });
+
+                Route::post('/api/auth/{business}', function (Business $business) {
+                    return new ApiResponse();
+                })->middleware('apiauth');
             });
     }
 
@@ -73,5 +79,39 @@ class RequestTest extends TestCase
         $response->assertJson([
             'status' => 'ok',
         ]);
+    }
+
+    public function testAuthReturnsErrorWithInvalidToken()
+    {
+        $uri = '/api/auth/' . $this->business->slug;
+        $response = $this->json('POST', $uri, ['token' => 'invalid']);
+        $response->assertJson([
+            'status' => 'error',
+            'error' => [
+                'code' => ApiResponse::ERROR_INVALID_TOKEN,
+            ],
+        ]);
+    }
+
+    public function testAuthWorksWithValidToken()
+    {
+        $apiSession = factory(ApiSession::class, 'withBusinessAndDevice')->create();
+
+        $uri = '/api/auth/' . $apiSession->business->slug;
+        $response = $this->json('POST', $uri, ['token' => $apiSession->token]);
+        $response->assertJson([
+            'status' => 'ok',
+        ]);
+        $this->assertTrue(ApiAuth::check());
+    }
+
+    public function testAuthGeneratesNewToken()
+    {
+        $apiSession = factory(ApiSession::class, 'withBusinessAndDevice')->create();
+        $oldToken = $apiSession->token;
+
+        $uri = '/api/auth/' . $apiSession->business->slug;
+        $this->json('POST', $uri, ['token' => $oldToken]);
+        $this->assertNotEquals(ApiAuth::getToken(), $oldToken);
     }
 }
