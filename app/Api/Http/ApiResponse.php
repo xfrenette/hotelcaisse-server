@@ -70,6 +70,14 @@ class ApiResponse extends JsonResponse implements JsonSerializable
     }
 
     /**
+     * @return string
+     */
+    public function getToken()
+    {
+        return $this->token;
+    }
+
+    /**
      * Sets the dataVersion and updates the data
      *
      * @param string $dataVersion
