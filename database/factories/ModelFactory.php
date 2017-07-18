@@ -52,12 +52,15 @@ $factory->define(App\DeviceApproval::class, function () {
     ];
 });
 
-$factory->defineAs(App\DeviceApproval::class, 'withBusiness', function () {
+$factory->defineAs(App\DeviceApproval::class, 'withBusinessAndDevice', function () {
     return [
         'passcode' => Hash::make('1234'),
         'expires_at' => \Carbon\Carbon::tomorrow(),
         'business_id' => function () {
             return factory(\App\Business::class)->create()->id;
+        },
+        'device_id' => function () {
+            return factory(\App\Device::class)->create()->id;
         },
     ];
 });
