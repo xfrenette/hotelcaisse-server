@@ -15,4 +15,14 @@ class Business extends Model
     {
         return 'slug';
     }
+
+    /**
+     * Get the DeviceApproval for this Business
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function deviceApprovals()
+    {
+        return $this->hasMany(DeviceApproval::class);
+    }
 }

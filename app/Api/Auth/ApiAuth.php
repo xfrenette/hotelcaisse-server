@@ -6,6 +6,7 @@ use App\ApiSession;
 use App\Business;
 use App\Device;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 
 class ApiAuth
 {
@@ -197,5 +198,23 @@ class ApiAuth
         $apiSession->save();
 
         return $apiSession;
+    }
+
+    /**
+     * Finds in the DB the still valid DeviceApproval with the $passcode and $business. Returns it if found, else
+     * returns null.
+     *
+     * @param string $passcode
+     * @param \App\Business $business
+     * @return \App\DeviceApproval|null
+     */
+    public function findDeviceApproval($passcode, Business $business)
+    {
+        $candidates = $business->deviceApprovals()->valid()->get();
+
+        // Find the one with which the passcode matches
+        return $candidates->first(function ($deviceApproval) use ($passcode) {
+            return Hash::check($passcode, $deviceApproval->passcode);
+        });
     }
 }

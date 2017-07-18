@@ -6,6 +6,7 @@ use App\Api\Auth\ApiAuth;
 use App\ApiSession;
 use App\Business;
 use App\Device;
+use App\DeviceApproval;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
@@ -178,5 +179,44 @@ class ApiAuthTest extends TestCase
         $existingApiSession = factory(ApiSession::class, 'withBusinessAndDevice')->create();
         $this->apiAuth->createApiSession($existingApiSession->device, $existingApiSession->business);
         $this->assertNull(ApiSession::find($existingApiSession->id));
+    }
+
+    public function testFindDeviceApprovalReturnsNullWithWrongCredentials()
+    {
+        $passcode = '4567';
+        $deviceApproval = factory(DeviceApproval::class, 'withBusinessAndDevice')->make();
+        $business = $deviceApproval->business;
+        $otherBusiness = factory(Business::class)->create();
+        $deviceApproval->passcode = $passcode;
+        $deviceApproval->save();
+
+        $this->assertNull($this->apiAuth->findDeviceApproval($passcode . '0', $business));
+        $this->assertNull($this->apiAuth->findDeviceApproval($passcode, $otherBusiness));
+        $this->assertNull($this->apiAuth->findDeviceApproval($passcode . '0', $otherBusiness));
+    }
+
+    public function testFindDeviceApprovalReturnsNullWithExpiredDeviceApproval()
+    {
+        $passcode = '4567';
+        $deviceApproval = factory(DeviceApproval::class, 'withBusinessAndDevice')->make();
+        $business = $deviceApproval->business;
+        $deviceApproval->passcode = $passcode;
+        $deviceApproval->expire();
+        $deviceApproval->save();
+
+        $this->assertNull($this->apiAuth->findDeviceApproval($passcode, $business));
+    }
+
+    public function testFindDeviceApprovalReturnsDeviceApprovalWithGoodCredentials()
+    {
+        $passcode = '4567';
+        $deviceApproval = factory(DeviceApproval::class, 'withBusinessAndDevice')->make();
+        $business = $deviceApproval->business;
+        $deviceApproval->passcode = $passcode;
+        $deviceApproval->save();
+
+        $res = $this->apiAuth->findDeviceApproval($passcode, $business);
+        $this->assertInstanceOf(DeviceApproval::class, $res);
+        $this->assertEquals($deviceApproval->id, $res->id);
     }
 }
