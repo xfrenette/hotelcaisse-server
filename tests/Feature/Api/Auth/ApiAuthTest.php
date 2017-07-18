@@ -27,17 +27,29 @@ class ApiAuthTest extends TestCase
      */
     protected $apiSession;
 
-    protected function loadValidSession()
-    {
-        return $this->apiAuth->loadSession($this->apiSession->token, $this->business);
-    }
-
     protected function setUp()
     {
         parent::setUp();
         $this->apiAuth = new ApiAuth();
         $this->apiSession = factory(ApiSession::class, 'withBusinessAndDevice')->create();
         $this->business = $this->apiSession->business;
+    }
+
+    protected function loadValidSession()
+    {
+        return $this->apiAuth->loadSession($this->apiSession->token, $this->business);
+    }
+
+    protected function createDeviceApproval($passcode, $business = null)
+    {
+        $deviceApproval = factory(DeviceApproval::class, 'withBusinessAndDevice')->make();
+        if ($business) {
+            $deviceApproval->business = $business;
+        }
+        $deviceApproval->passcode = $passcode;
+        $deviceApproval->save();
+
+        return $deviceApproval;
     }
 
     public function testLoadSessionReturnsFalseIfInvalidToken()
@@ -184,11 +196,9 @@ class ApiAuthTest extends TestCase
     public function testFindDeviceApprovalReturnsNullWithWrongCredentials()
     {
         $passcode = '4567';
-        $deviceApproval = factory(DeviceApproval::class, 'withBusinessAndDevice')->make();
+        $deviceApproval = $this->createDeviceApproval($passcode);
         $business = $deviceApproval->business;
         $otherBusiness = factory(Business::class)->create();
-        $deviceApproval->passcode = $passcode;
-        $deviceApproval->save();
 
         $this->assertNull($this->apiAuth->findDeviceApproval($passcode . '0', $business));
         $this->assertNull($this->apiAuth->findDeviceApproval($passcode, $otherBusiness));
@@ -198,9 +208,8 @@ class ApiAuthTest extends TestCase
     public function testFindDeviceApprovalReturnsNullWithExpiredDeviceApproval()
     {
         $passcode = '4567';
-        $deviceApproval = factory(DeviceApproval::class, 'withBusinessAndDevice')->make();
+        $deviceApproval = $this->createDeviceApproval($passcode);
         $business = $deviceApproval->business;
-        $deviceApproval->passcode = $passcode;
         $deviceApproval->expire();
         $deviceApproval->save();
 
@@ -210,13 +219,47 @@ class ApiAuthTest extends TestCase
     public function testFindDeviceApprovalReturnsDeviceApprovalWithGoodCredentials()
     {
         $passcode = '4567';
-        $deviceApproval = factory(DeviceApproval::class, 'withBusinessAndDevice')->make();
+        $deviceApproval = $this->createDeviceApproval($passcode);
         $business = $deviceApproval->business;
-        $deviceApproval->passcode = $passcode;
-        $deviceApproval->save();
 
         $res = $this->apiAuth->findDeviceApproval($passcode, $business);
         $this->assertInstanceOf(DeviceApproval::class, $res);
         $this->assertEquals($deviceApproval->id, $res->id);
+    }
+
+    public function testAttemptRegisterReturnsFalseWithWrongCredentials()
+    {
+        $deviceApproval = $this->createDeviceApproval('4567');
+        $this->assertFalse($this->apiAuth->attemptRegister('8901', $deviceApproval->business));
+    }
+
+    public function testAttemptRegisterReturnsTrueWithValidCredentials()
+    {
+        $passcode = '4567';
+        $deviceApproval = $this->createDeviceApproval($passcode);
+        $this->assertTrue($this->apiAuth->attemptRegister($passcode, $deviceApproval->business));
+    }
+
+    public function testAttemptRegisterSetsApiSessionInApiAuth()
+    {
+        $passcode = '4567';
+        $deviceApproval = $this->createDeviceApproval($passcode);
+
+        $this->apiAuth->logout();
+        $this->apiAuth->attemptRegister($passcode, $deviceApproval->business);
+
+        $this->assertTrue($this->apiAuth->check());
+        $this->assertEquals($deviceApproval->device->id, $this->apiAuth->getDevice()->id);
+        $this->assertEquals($deviceApproval->business->id, $this->apiAuth->getBusiness()->id);
+    }
+
+    public function testAttemptRegisterDeletesDeviceApproval()
+    {
+        $passcode = '4567';
+        $deviceApproval = $this->createDeviceApproval($passcode);
+
+        $this->apiAuth->attemptRegister($passcode, $deviceApproval->business);
+
+        $this->assertNull($this->apiAuth->findDeviceApproval($passcode, $deviceApproval->business));
     }
 }

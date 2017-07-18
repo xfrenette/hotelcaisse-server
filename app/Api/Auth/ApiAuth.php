@@ -217,4 +217,29 @@ class ApiAuth
             return Hash::check($passcode, $deviceApproval->passcode);
         });
     }
+
+    /**
+     * If a DeviceApproval with the specified $passcode and $business exist, create an ApiSession from it and set it in
+     * ApiAuth. The DeviceApproval is destroyed. Returns true if the DeviceApproval exists, else return false (wrong
+     * $passcode and/or $business).
+     *
+     * @param $passcode
+     * @param \App\Business $business
+     * @return bool
+     */
+    public function attemptRegister($passcode, Business $business)
+    {
+        $deviceApproval = $this->findDeviceApproval($passcode, $business);
+
+        if (is_null($deviceApproval)) {
+            return false;
+        }
+
+        $apiSession = $this->createApiSession($deviceApproval->device, $deviceApproval->business);
+        $this->apiSession = $apiSession;
+
+        $deviceApproval->delete();
+
+        return true;
+    }
 }
