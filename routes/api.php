@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,7 +13,4 @@ use Illuminate\Http\Request;
 |
 */
 
-//Route::middleware('auth:api')->get('/user', function (Request $request) {
-Route::get('/user', function (Request $request) {
-    return 'user!'; // $request->user();
-});
+Route::post('device/register', 'DeviceController@register')->name('device.register');
