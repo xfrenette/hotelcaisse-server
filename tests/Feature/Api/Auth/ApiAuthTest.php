@@ -5,6 +5,7 @@ namespace Feature\Api\Auth;
 use App\Api\Auth\ApiAuth;
 use App\ApiSession;
 use App\Business;
+use App\Device;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
@@ -162,5 +163,20 @@ class ApiAuthTest extends TestCase
         $oldToken = $this->apiAuth->getToken();
         $this->apiAuth->regenerateToken();
         $this->assertFalse($this->apiAuth->loadSession($oldToken, $this->business));
+    }
+
+    public function testCreateApiSessionReturnsApiSession()
+    {
+        $business = factory(Business::class)->create();
+        $device = factory(Device::class)->create();
+        $apiSession = $this->apiAuth->createApiSession($device, $business);
+        $this->assertNotNull(ApiSession::find($apiSession->id));
+    }
+
+    public function testCreateApiSessionDeletesAnyConflictingApiSession()
+    {
+        $existingApiSession = factory(ApiSession::class, 'withBusinessAndDevice')->create();
+        $this->apiAuth->createApiSession($existingApiSession->device, $existingApiSession->business);
+        $this->assertNull(ApiSession::find($existingApiSession->id));
     }
 }

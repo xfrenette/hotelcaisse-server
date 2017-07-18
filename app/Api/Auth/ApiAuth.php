@@ -148,7 +148,7 @@ class ApiAuth
 
         $this->destroySession();
 
-        $newApiSession = $this->makeApiSession($business, $device);
+        $newApiSession = $this->makeApiSession($device, $business);
         $newApiSession->save();
 
         $this->apiSession = $newApiSession;
@@ -158,12 +158,12 @@ class ApiAuth
      * Makes a new ApiSession for the specified $business and $device. The new ApiSession is returned, but not saved in
      * the DB.
      *
-     * @param \App\Business $business
      * @param \App\Device $device
+     * @param \App\Business $business
      *
      * @return \App\ApiSession
      */
-    protected function makeApiSession(Business $business, Device $device)
+    public function makeApiSession(Device $device, Business $business)
     {
         $newToken = str_random(array_get($this->config, 'token.bytesLength', 32));
         $expires_at = Carbon::now()->addDays(array_get($this->config, 'token.daysValid', 30));
@@ -173,6 +173,28 @@ class ApiAuth
         $apiSession->business()->associate($business);
         $apiSession->device()->associate($device);
         $apiSession->expires_at = $expires_at;
+
+        return $apiSession;
+    }
+
+    /**
+     * Makes a new ApiSession for the $device (see makeApiSession) and then saves it in the DB. Also deletes any
+     * ApiSession that currently exist for the specified $device and $business. Note that it will not logout the
+     * current ApiSession if it was deleted, it is the job of the developer to ensure it does not happen.
+     *
+     * @param \App\Device $device
+     * @param \App\Business $business
+     * @return ApiSession
+     */
+    public function createApiSession(Device $device, Business $business)
+    {
+        $apiSession = $this->makeApiSession($device, $business);
+
+        // We delete any existing ApiSession with the same device and business
+        ApiSession::where(['device_id' => $device->id, 'business_id' => $business->id])
+            ->delete();
+
+        $apiSession->save();
 
         return $apiSession;
     }
