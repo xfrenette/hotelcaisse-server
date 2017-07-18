@@ -20,9 +20,8 @@ $factory->define(App\Business::class, function (Faker\Generator $faker) {
     ];
 });
 
-$factory->define(App\Device::class, function (Faker\Generator $faker) {
+$factory->define(App\Device::class, function () {
     return [
-        'uuid' => $faker->uuid,
     ];
 });
 
