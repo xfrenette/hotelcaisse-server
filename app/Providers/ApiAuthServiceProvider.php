@@ -14,8 +14,8 @@ class ApiAuthServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton('apiauth', function ($app) {
-            return new ApiAuth();
+        $this->app->singleton('apiauth', function () {
+            return new ApiAuth(config('api.auth'));
         });
     }
 }

@@ -6,10 +6,21 @@ use App\ApiSession;
 use App\Business;
 use App\Device;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Config;
 
 class ApiAuth
 {
+    protected $config;
+
+    /**
+     * ApiAuth constructor.
+     *
+     * @param array $config
+     */
+    public function __construct($config = [])
+    {
+        $this->config = $config;
+    }
+
     /**
      * Loaded ApiSession if successfully loaded, else null.
      * @var ApiSession
@@ -137,7 +148,7 @@ class ApiAuth
 
         $this->destroySession();
 
-        $newApiSession = self::makeApiSession($business, $device);
+        $newApiSession = $this->makeApiSession($business, $device);
         $newApiSession->save();
 
         $this->apiSession = $newApiSession;
@@ -152,10 +163,10 @@ class ApiAuth
      *
      * @return \App\ApiSession
      */
-    protected static function makeApiSession(Business $business, Device $device)
+    protected function makeApiSession(Business $business, Device $device)
     {
-        $newToken = str_random(Config::get('api.auth.token.bytesLength', 32));
-        $expires_at = Carbon::now()->addDays(Config::get('api.auth.token.daysValid', 30));
+        $newToken = str_random(array_get($this->config, 'token.bytesLength', 32));
+        $expires_at = Carbon::now()->addDays(array_get($this->config, 'token.daysValid', 30));
 
         $apiSession = new ApiSession();
         $apiSession->token = $newToken;
