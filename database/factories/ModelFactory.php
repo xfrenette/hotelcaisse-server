@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Facades\Hash;
+
 /*
 |--------------------------------------------------------------------------
 | Model Factories
@@ -40,6 +42,23 @@ $factory->defineAs(App\ApiSession::class, 'withBusinessAndDevice', function () {
         },
         'device_id' => function () {
             return factory(\App\Device::class)->create()->id;
+        },
+    ];
+});
+
+$factory->define(App\DeviceApproval::class, function () {
+    return [
+        'passcode' => Hash::make('1234'),
+        'expires_at' => \Carbon\Carbon::tomorrow(),
+    ];
+});
+
+$factory->defineAs(App\DeviceApproval::class, 'withBusiness', function () {
+    return [
+        'passcode' => Hash::make('1234'),
+        'expires_at' => \Carbon\Carbon::tomorrow(),
+        'business_id' => function () {
+            return factory(\App\Business::class)->create()->id;
         },
     ];
 });
