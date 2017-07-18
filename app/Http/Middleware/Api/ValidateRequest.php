@@ -22,12 +22,6 @@ class ValidateRequest
             throw new InvalidRequestException('Request does not contain JSON Content-Type');
         }
 
-        $json = $request->json();
-
-        if (!$json->count()) {
-            throw new InvalidRequestException('Empty object, array or invalid JSON supplied.');
-        }
-
         return $next($request);
     }
 }

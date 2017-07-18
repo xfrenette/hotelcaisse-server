@@ -48,9 +48,18 @@ class RequestTest extends TestCase
         $response->assertJson(['status' => 'ok']);
     }
 
+    public function testAcceptsEmptyBody()
+    {
+        $response = $this->json('POST', '/api/test');
+        $response->assertStatus(200);
+        $response->assertJSON([
+            'status' => 'ok',
+        ]);
+    }
+
     public function testReturnsErrorIfInvalidRequest()
     {
-        // We have an empty, non-json request, so it is invalid
+        // We have a non-json request, so it is invalid
         $response = $this->post('/api/test');
         $response->assertJson([
             'status' => 'error',
