@@ -4,6 +4,7 @@ namespace App;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * A DeviceApproval represents an approval for a Device to create a new ApiSession with the Business. It can reference
@@ -69,5 +70,13 @@ class DeviceApproval extends Model
     public function scopeValid($query)
     {
         return $query->whereDate('expires_at', '>', Carbon::now());
+    }
+
+    /**
+     * When setting the passcode, we hash it immediately. Note that this means the passcode can never be retrieved.
+     */
+    public function setPasscodeAttribute($value)
+    {
+        $this->attributes['passcode'] = Hash::make($value);
     }
 }

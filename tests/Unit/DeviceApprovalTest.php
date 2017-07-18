@@ -35,4 +35,10 @@ class DeviceApprovalTest extends TestCase
         $this->deviceApproval->expire();
         $this->assertTrue($this->deviceApproval->expired());
     }
+
+    public function testSetPasscodeHashesIt()
+    {
+        $this->deviceApproval->passcode = '1234';
+        $this->assertNotEquals('1234', $this->deviceApproval->passcode);
+    }
 }
