@@ -2,13 +2,13 @@
 
 namespace App\Exceptions;
 
+use App\Api\Http\ApiResponse;
 use Exception;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use App\Api\Http\ApiResponse;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Handler extends ExceptionHandler
 {
@@ -88,7 +88,7 @@ class Handler extends ExceptionHandler
     protected function renderAsApiResponse($request, Exception $exception)
     {
         if ($exception instanceof Api\InvalidTokenException) {
-            return $this->apiResponseError(401, ApiResponse::ERROR_INVALID_TOKEN);
+            return $this->apiResponseError(401, ApiResponse::ERROR_AUTH_FAILED);
         }
 
         if ($exception instanceof Api\InvalidRequestException) {

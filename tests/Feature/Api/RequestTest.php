@@ -88,7 +88,7 @@ class RequestTest extends TestCase
         $response->assertJson([
             'status' => 'error',
             'error' => [
-                'code' => ApiResponse::ERROR_INVALID_TOKEN,
+                'code' => ApiResponse::ERROR_AUTH_FAILED,
             ],
         ]);
     }

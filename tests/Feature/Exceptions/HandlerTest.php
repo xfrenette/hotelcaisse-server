@@ -2,15 +2,14 @@
 
 namespace Tests\Feature\Exceptions;
 
-use App\Business;
-use Tests\TestCase;
-use Illuminate\Support\Facades\Route;
-use App\Exceptions\Api\InvalidTokenException;
-use App\Exceptions\Api\InvalidRequestException;
-use Illuminate\Http\Request;
 use App\Api\Http\ApiResponse;
-use Symfony\Component\HttpKernel\Exception\HttpException;
+use App\Business;
+use App\Exceptions\Api\InvalidRequestException;
+use App\Exceptions\Api\InvalidTokenException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Tests\TestCase;
 
 class ExceptionsTest extends TestCase
 {
@@ -36,7 +35,7 @@ class ExceptionsTest extends TestCase
         $response->assertJson([
             'status' => 'error',
             'error' => [
-                'code' => ApiResponse::ERROR_INVALID_TOKEN,
+                'code' => ApiResponse::ERROR_AUTH_FAILED,
             ],
         ]);
     }
