@@ -30,7 +30,7 @@ class ValidateRequestTest extends TestCase
         });
     }
 
-    public function testThrowsIfEmptyBody()
+    public function testAcceptsEmptyBody()
     {
         $request = Request::create(
             '/test',
@@ -40,7 +40,7 @@ class ValidateRequestTest extends TestCase
             [],
             ['CONTENT_TYPE' => 'application/json']
         );
-        $this->expectException(InvalidRequestException::class);
+        // No exception should be thrown
         $this->middleware->handle($request, function () {
             //
         });
