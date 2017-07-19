@@ -44,6 +44,12 @@ class Business extends Model
             ->value('version');
     }
 
+    /**
+     * Bumps the version of the Business and saves the list of modifications for it.
+     *
+     * @param array $modifications Array of attributes name
+     * @return string
+     */
     public function bumpVersion($modifications = [])
     {
         $newVersion = $this->generateNextVersion();
@@ -56,6 +62,11 @@ class Business extends Model
         return $newVersion;
     }
 
+    /**
+     * Generates the next version based on the current one.
+     *
+     * @return string
+     */
     protected function generateNextVersion()
     {
         $currentVersion = $this->version;
