@@ -25,9 +25,9 @@ class CreateRegistersTable extends Migration
             $table->float('closing_cash')->nullable();
             $table->string('post_ref', 30)->nullable();
             $table->float('post_amount')->nullable();
-            $table->integer('business_id')->unsigned();
+            $table->integer('device_id')->unsigned();
 
-            $table->foreign('business_id')->references('id')->on('businesses');
+            $table->foreign('device_id')->references('id')->on('devices');
         });
     }
 

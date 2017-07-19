@@ -31,9 +31,9 @@ class Register extends Model
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function business()
+    public function device()
     {
-        return $this->belongsTo('App\Business');
+        return $this->belongsTo('App\Device');
     }
 
     /**
