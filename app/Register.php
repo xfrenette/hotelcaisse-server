@@ -29,6 +29,14 @@ class Register extends Model
     ];
 
     /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function business()
+    {
+        return $this->belongsTo('App\Business');
+    }
+
+    /**
      * Opens the register and sets the related attributes.
      *
      * @param string $employee
