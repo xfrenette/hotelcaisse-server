@@ -21,13 +21,18 @@ class Business extends Model
     }
 
     /**
-     * Get the DeviceApproval for this Business
+     * Returns a query builder that returns all the device approval for devices of this business.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return \Illuminate\Database\Query\Builder
      */
     public function deviceApprovals()
     {
-        return $this->hasMany(DeviceApproval::class);
+        $deviceApprovalsTN = with(new DeviceApproval())->getTable();
+        $devicesTN = with(new Device())->getTable();
+
+        return DeviceApproval::select("$deviceApprovalsTN.*")
+            ->join($devicesTN, "$deviceApprovalsTN.device_id", '=', "$devicesTN.id")
+            ->where("$devicesTN.business_id", $this->id);
     }
 
     /**

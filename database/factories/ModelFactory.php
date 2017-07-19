@@ -25,6 +25,14 @@ $factory->define(App\Device::class, function () {
     ];
 });
 
+$factory->defineAs(App\Device::class, 'withBusiness', function () {
+    return [
+        'business_id' => function () {
+            return factory(\App\Business::class)->create()->id;
+        },
+    ];
+});
+
 $factory->define(App\ApiSession::class, function (Faker\Generator $faker) {
     return [
         'token' => $faker->uuid,
@@ -32,15 +40,12 @@ $factory->define(App\ApiSession::class, function (Faker\Generator $faker) {
     ];
 });
 
-$factory->defineAs(App\ApiSession::class, 'withBusinessAndDevice', function () {
+$factory->defineAs(App\ApiSession::class, 'withDeviceAndBusiness', function () {
     return [
         'token' => str_random(32),
         'expires_at' => \Carbon\Carbon::tomorrow(),
-        'business_id' => function () {
-            return factory(\App\Business::class)->create()->id;
-        },
         'device_id' => function () {
-            return factory(\App\Device::class)->create()->id;
+            return factory(\App\Device::class, 'withBusiness')->create()->id;
         },
     ];
 });
@@ -52,15 +57,12 @@ $factory->define(App\DeviceApproval::class, function () {
     ];
 });
 
-$factory->defineAs(App\DeviceApproval::class, 'withBusinessAndDevice', function () {
+$factory->defineAs(App\DeviceApproval::class, 'withDeviceAndBusiness', function () {
     return [
         'passcode' => Hash::make('1234'),
         'expires_at' => \Carbon\Carbon::tomorrow(),
-        'business_id' => function () {
-            return factory(\App\Business::class)->create()->id;
-        },
         'device_id' => function () {
-            return factory(\App\Device::class)->create()->id;
+            return factory(\App\Device::class, 'withBusiness')->create()->id;
         },
     ];
 });

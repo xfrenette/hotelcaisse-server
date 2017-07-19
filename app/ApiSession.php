@@ -5,6 +5,10 @@ namespace App;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * An ApiSession is an access granted for a device to the API.
+ * @package App
+ */
 class ApiSession extends Model
 {
     /**
@@ -17,14 +21,6 @@ class ApiSession extends Model
         'updated_at',
         'expires_at',
     ];
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function business()
-    {
-        return $this->belongsTo('App\Business');
-    }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

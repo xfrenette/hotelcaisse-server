@@ -58,8 +58,9 @@ class DeviceControllerTest extends TestCase
     public function testRegisterReturnsExpectedResponseWithValidCredentials()
     {
         $passcode = '4321';
-        $deviceApproval = factory(DeviceApproval::class, 'withBusinessAndDevice')->make();
-        $deviceApproval->business()->associate($this->business);
+        $deviceApproval = factory(DeviceApproval::class, 'withDeviceAndBusiness')->make();
+        $deviceApproval->device->business()->associate($this->business);
+        $deviceApproval->device->save();
         $deviceApproval->passcode = $passcode;
         $deviceApproval->save();
 
@@ -78,8 +79,9 @@ class DeviceControllerTest extends TestCase
     public function testRegisterHasValidTokenWithValidCredentials()
     {
         $passcode = '4321';
-        $deviceApproval = factory(DeviceApproval::class, 'withBusinessAndDevice')->make();
-        $deviceApproval->business()->associate($this->business);
+        $deviceApproval = factory(DeviceApproval::class, 'withDeviceAndBusiness')->make();
+        $deviceApproval->device->business()->associate($this->business);
+        $deviceApproval->device->save();
         $deviceApproval->passcode = $passcode;
         $deviceApproval->save();
 

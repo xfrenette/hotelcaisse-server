@@ -16,6 +16,9 @@ class CreateDevicesTable extends Migration
         Schema::create('devices', function (Blueprint $table) {
             $table->increments('id');
             $table->timestamps();
+            $table->integer('business_id')->unsigned();
+
+            $table->foreign('business_id')->references('id')->on('businesses');
         });
     }
 

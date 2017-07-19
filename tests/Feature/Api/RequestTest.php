@@ -104,9 +104,9 @@ class RequestTest extends TestCase
 
     public function testAuthWorksWithValidToken()
     {
-        $apiSession = factory(ApiSession::class, 'withBusinessAndDevice')->create();
+        $apiSession = factory(ApiSession::class, 'withDeviceAndBusiness')->create();
 
-        $uri = '/api/auth/' . $apiSession->business->slug;
+        $uri = '/api/auth/' . $apiSession->device->business->slug;
         $response = $this->json('POST', $uri, ['token' => $apiSession->token]);
         $response->assertJson([
             'status' => 'ok',
@@ -116,18 +116,18 @@ class RequestTest extends TestCase
 
     public function testAuthGeneratesNewToken()
     {
-        $apiSession = factory(ApiSession::class, 'withBusinessAndDevice')->create();
+        $apiSession = factory(ApiSession::class, 'withDeviceAndBusiness')->create();
         $oldToken = $apiSession->token;
 
-        $uri = '/api/auth/' . $apiSession->business->slug;
+        $uri = '/api/auth/' . $apiSession->device->business->slug;
         $this->json('POST', $uri, ['token' => $oldToken]);
         $this->assertNotEquals(ApiAuth::getToken(), $oldToken);
     }
 
     public function testAddsTokenToResponse()
     {
-        $apiSession = factory(ApiSession::class, 'withBusinessAndDevice')->create();
-        $uri = '/api/auth/' . $apiSession->business->slug;
+        $apiSession = factory(ApiSession::class, 'withDeviceAndBusiness')->create();
+        $uri = '/api/auth/' . $apiSession->device->business->slug;
         $response = $this->json('POST', $uri, ['token' => $apiSession->token]);
         $response->assertJson([
             'token' => ApiAuth::getToken(),

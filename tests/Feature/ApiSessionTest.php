@@ -19,19 +19,22 @@ class ApiSessionTest extends TestCase
     protected function setUp()
     {
         parent::setUp();
-        $this->apiSession = factory(ApiSession::class, 'withBusinessAndDevice')->create();
+        $this->apiSession = factory(ApiSession::class, 'withDeviceAndBusiness')->create();
     }
 
     public function testScopeValid()
     {
-        $this->apiSession->expires_at = Carbon::tomorrow();
-        $this->apiSession->save();
-        $results = ApiSession::valid()->get();
-        $this->assertEquals(1, $results->count());
+        $query = ApiSession::valid();
+        $prevCount = $query->count();
 
-        $this->apiSession->expires_at = Carbon::yesterday();
-        $this->apiSession->save();
-        $results = ApiSession::valid()->get();
-        $this->assertEquals(0, $results->count());
+        $apiSession = factory(ApiSession::class, 'withDeviceAndBusiness')->make();
+        $apiSession->expires_at = Carbon::tomorrow();
+        $apiSession->save();
+
+        $this->assertEquals($prevCount + 1, $query->count());
+
+        $apiSession->expires_at = Carbon::yesterday();
+        $apiSession->save();
+        $this->assertEquals($prevCount, $query->count());
     }
 }

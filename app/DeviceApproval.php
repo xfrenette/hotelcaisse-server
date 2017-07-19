@@ -7,10 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
 
 /**
- * A DeviceApproval represents an approval for a Device to create a new ApiSession with the Business. It can reference
- * an existing Device, which will be approved to recreate an ApiSession with the Business, or a null device, which means
- * any existing or new Device will be able to create an ApiSession with this Business. The DeviceApproval contains a
- * passcode that must be provided to validate the approval.
+ * A DeviceApproval represents an approval for a Device to create a new ApiSession. Note that the Device is already
+ * created, and assigned to a Business. The DeviceApproval contains a passcode that must be provided to validate the
+ * approval.
  *
  * @package App
  */
@@ -26,14 +25,6 @@ class DeviceApproval extends Model
         'updated_at',
         'expires_at',
     ];
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function business()
-    {
-        return $this->belongsTo('App\Business');
-    }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -69,7 +60,8 @@ class DeviceApproval extends Model
      */
     public function scopeValid($query)
     {
-        return $query->whereDate('expires_at', '>', Carbon::now());
+        $tn = $this->getTable();
+        return $query->whereDate("$tn.expires_at", '>', Carbon::now());
     }
 
     /**

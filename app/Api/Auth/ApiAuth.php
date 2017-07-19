@@ -39,7 +39,7 @@ class ApiAuth
             return null;
         }
 
-        return $this->apiSession->business;
+        return $this->apiSession->device->business;
     }
 
     /**
@@ -89,9 +89,14 @@ class ApiAuth
     {
         $this->logout();
 
+        $apiSessionsTN = with(new ApiSession())->getTable();
+        $devicesTN = with(new Device())->getTable();
+
         $apiSession = ApiSession::valid()
-            ->where('business_id', $business->id)
-            ->where('token', $token)
+            ->select("$apiSessionsTN.*")
+            ->join($devicesTN, "$apiSessionsTN.device_id", '=', "$devicesTN.id")
+            ->where("$devicesTN.business_id", $business->id)
+            ->where("$apiSessionsTN.token", $token)
             ->first();
 
         if (!is_null($apiSession)) {
@@ -144,34 +149,30 @@ class ApiAuth
             return;
         }
 
-        $business = $this->getBusiness();
         $device = $this->getDevice();
 
         $this->destroySession();
 
-        $newApiSession = $this->makeApiSession($device, $business);
+        $newApiSession = $this->makeApiSession($device);
         $newApiSession->save();
 
         $this->apiSession = $newApiSession;
     }
 
     /**
-     * Makes a new ApiSession for the specified $business and $device. The new ApiSession is returned, but not saved in
-     * the DB.
+     * Makes a new ApiSession for the specified $device. The new ApiSession is returned, but not saved in the DB.
      *
      * @param \App\Device $device
-     * @param \App\Business $business
      *
      * @return \App\ApiSession
      */
-    public function makeApiSession(Device $device, Business $business)
+    public function makeApiSession(Device $device)
     {
         $newToken = str_random(array_get($this->config, 'token.bytesLength', 32));
         $expires_at = Carbon::now()->addDays(array_get($this->config, 'token.daysValid', 30));
 
         $apiSession = new ApiSession();
         $apiSession->token = $newToken;
-        $apiSession->business()->associate($business);
         $apiSession->device()->associate($device);
         $apiSession->expires_at = $expires_at;
 
@@ -180,19 +181,18 @@ class ApiAuth
 
     /**
      * Makes a new ApiSession for the $device (see makeApiSession) and then saves it in the DB. Also deletes any
-     * ApiSession that currently exist for the specified $device and $business. Note that it will not logout the
-     * current ApiSession if it was deleted, it is the job of the developer to ensure it does not happen.
+     * ApiSession that currently exist for the specified $device. Note that it will not logout the current ApiSession if
+     * it was deleted, it is the job of the developer to ensure it does not happen.
      *
      * @param \App\Device $device
-     * @param \App\Business $business
      * @return ApiSession
      */
-    public function createApiSession(Device $device, Business $business)
+    public function createApiSession(Device $device)
     {
-        $apiSession = $this->makeApiSession($device, $business);
+        $apiSession = $this->makeApiSession($device);
 
-        // We delete any existing ApiSession with the same device and business
-        ApiSession::where(['device_id' => $device->id, 'business_id' => $business->id])
+        // We delete any existing ApiSession with the same device
+        ApiSession::where(['device_id' => $device->id])
             ->delete();
 
         $apiSession->save();
@@ -235,7 +235,7 @@ class ApiAuth
             return false;
         }
 
-        $apiSession = $this->createApiSession($deviceApproval->device, $deviceApproval->business);
+        $apiSession = $this->createApiSession($deviceApproval->device);
         $this->apiSession = $apiSession;
 
         $deviceApproval->delete();

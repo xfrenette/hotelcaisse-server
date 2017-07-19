@@ -18,10 +18,8 @@ class CreateDeviceApprovalsTable extends Migration
             $table->string('passcode', 255);
             $table->timestamps();
             $table->dateTime('expires_at');
-            $table->integer('business_id')->unsigned();
             $table->integer('device_id')->unsigned();
 
-            $table->foreign('business_id')->references('id')->on('businesses');
             $table->foreign('device_id')->references('id')->on('devices');
         });
     }

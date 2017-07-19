@@ -18,10 +18,8 @@ class CreateApiSessionsTable extends Migration
             $table->timestamps();
             $table->string('token', 64)->unique();
             $table->dateTime('expires_at');
-            $table->integer('business_id')->unsigned();
             $table->integer('device_id')->unsigned();
 
-            $table->foreign('business_id')->references('id')->on('businesses');
             $table->foreign('device_id')->references('id')->on('devices');
         });
     }
