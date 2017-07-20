@@ -15,6 +15,12 @@ trait InteractsWithAPI
      */
     protected $business;
 
+    /**
+     * @param $routeName
+     * @param array $data
+     *
+     * @return \Illuminate\Foundation\Testing\TestResponse
+     */
     protected function queryAPI($routeName, $data = [])
     {
         $uri = route($routeName, ['business' => $this->business->slug]);
@@ -62,7 +68,7 @@ trait InteractsWithAPI
         return $stub;
     }
 
-    protected function assertValidatesData($routeName, $baseData, $attribute, $values, $testNotPresent = true)
+    protected function assertValidatesData($routeName, $baseData, $attributeToValidate, $values, $testNotPresent = true)
     {
         $notPresentTested = false;
 
@@ -70,10 +76,10 @@ trait InteractsWithAPI
             $data = $baseData;
 
             if ($testNotPresent && !$notPresentTested) {
-                unset($data['data'][$attribute]);
+                unset($data['data'][$attributeToValidate]);
                 $notPresentTested = true;
             } else {
-                $data['data'][$attribute] = $value;
+                $data['data'][$attributeToValidate] = $value;
             }
 
             $response = $this->queryAPI($routeName, $data);

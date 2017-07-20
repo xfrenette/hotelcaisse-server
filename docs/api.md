@@ -102,3 +102,16 @@ assigned, else an error will be returned and the call will be ignored.
 
 ### Response `data`
 None returned
+
+`POST /cashMovements/add`
+---
+
+Creates a new CashMovement and assigns it to the current Register of the Device. The Register must be opened, else an
+error will be returned and the call will be ignored.
+
+### Request `data`
+* `amount`: (float, != 0) Non-zero (can be negative) amount of the CashMovement
+* `note`: (string) Description of the CashMovement
+
+### Response `data`
+None returned
