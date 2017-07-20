@@ -7,6 +7,7 @@ use Exception;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -97,6 +98,10 @@ class Handler extends ExceptionHandler
 
         if ($exception instanceof NotFoundHttpException || $exception instanceof ModelNotFoundException) {
             return $this->apiResponseError(404, ApiResponse::ERROR_NOT_FOUND);
+        }
+
+        if ($exception instanceof ValidationException) {
+            return $this->apiResponseError(422, ApiResponse::ERROR_CLIENT_ERROR);
         }
 
         if ($exception instanceof HttpException) {

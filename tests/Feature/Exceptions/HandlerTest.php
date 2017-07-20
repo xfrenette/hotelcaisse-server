@@ -8,6 +8,7 @@ use App\Exceptions\Api\InvalidRequestException;
 use App\Exceptions\Api\InvalidTokenException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
@@ -36,6 +37,26 @@ class ExceptionsTest extends TestCase
             'status' => 'error',
             'error' => [
                 'code' => ApiResponse::ERROR_AUTH_FAILED,
+            ],
+        ]);
+    }
+
+    public function testValidationException()
+    {
+        Route::get('/api/test', function () {
+            // Will throw a ValidationException
+            Validator::make([], [
+                'test' => 'required',
+            ])->validate();
+        });
+
+        $response = $this->json('GET', '/api/test');
+
+        $response->assertStatus(422);
+        $response->assertJson([
+            'status' => 'error',
+            'error' => [
+                'code' => ApiResponse::ERROR_CLIENT_ERROR,
             ],
         ]);
     }
