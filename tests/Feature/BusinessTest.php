@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Business;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -23,16 +22,6 @@ class BusinessTest extends TestCase
         $this->business = factory(Business::class)->create();
     }
 
-    protected function insertBusinessVersion($number, Business $business)
-    {
-        DB::table('business_versions')->insert([
-            'created_at' => Carbon::now()->format('Y-m-d H:m:s'),
-            'business_id' => $business->id,
-            'version' => (string) $number,
-            'modifications' => 'register',
-        ]);
-    }
-
     public function testVersionReturnsNullIfNoVersion()
     {
         $this->assertNull($this->business->version);
@@ -42,16 +31,16 @@ class BusinessTest extends TestCase
     {
         $expected = 8;
         $otherBusiness = factory(Business::class)->create();
-        $this->insertBusinessVersion($expected - 1, $this->business);
-        $this->insertBusinessVersion($expected, $this->business);
+        $this->business->insertVersion($expected - 1);
+        $this->business->insertVersion($expected);
         // The next line is for another Business
-        $this->insertBusinessVersion($expected + 1, $otherBusiness);
+        $otherBusiness->insertVersion($expected + 1);
         $this->assertEquals((string) $expected, $this->business->version);
     }
 
     public function testVersionReturnsString()
     {
-        $this->insertBusinessVersion(100, $this->business);
+        $this->business->insertVersion(100);
         $this->assertTrue(is_string($this->business->version));
     }
 
@@ -66,7 +55,7 @@ class BusinessTest extends TestCase
     public function testBumpVersionUpdatesVersion()
     {
         $oldVersion = 4;
-        $this->insertBusinessVersion($oldVersion, $this->business);
+        $this->business->insertVersion($oldVersion);
         $newVersion = $this->business->bumpVersion();
         $this->assertNotEquals($oldVersion, $newVersion);
         // Ensure the new version is the one returned by `$business->version`
@@ -87,5 +76,33 @@ class BusinessTest extends TestCase
     {
         $newVersion = $this->business->bumpVersion();
         $this->assertEquals($newVersion, $this->business->version);
+    }
+
+    public function testGetVersionModificationsReturnsNullIfNotAVersion()
+    {
+        $version = '4';
+        // We insert the version number for *another* business
+        $otherBusiness = factory(Business::class)->create();
+        $otherBusiness->insertVersion($version);
+        $this->assertNull($this->business->getVersionModifications($version));
+    }
+
+    public function testGetVersionModificationsReturnsEmptyArrayIfNoModifications()
+    {
+        $version = '4';
+        $this->business->insertVersion($version);
+        $res = $this->business->getVersionModifications($version);
+        $this->assertTrue(is_array($res));
+        $this->assertCount(0, $res);
+    }
+
+    public function testGetVersionModificationsReturnsArrayOfModifications()
+    {
+        $version = '4';
+        $modifications = ['c', 'a'];
+        $this->business->insertVersion($version, $modifications);
+        $res = $this->business->getVersionModifications($version);
+        $this->assertTrue(is_array($res));
+        $this->assertEquals($modifications, $res);
     }
 }

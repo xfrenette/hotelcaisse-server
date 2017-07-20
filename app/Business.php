@@ -50,6 +50,33 @@ class Business extends Model
     }
 
     /**
+     * Returns the list of modifications for a single version (array of string). If the version has no modifications, an
+     * empty array is returned. If the version doesn't exist for the business, returns null.
+     *
+     * @param $version
+     *
+     * @return array|null
+     */
+    public function getVersionModifications($version)
+    {
+        $res = DB::table($this->versionTable)
+            ->where('business_id', $this->id)
+            ->where('version', $version)
+            ->value('modifications');
+
+        if (is_null($res)) {
+            return null;
+        }
+
+        // If empty string, return empty array (explode() would have a return an array with an empty string)
+        if (empty($res)) {
+            return [];
+        }
+
+        return explode(',', $res);
+    }
+
+    /**
      * Bumps the version of the Business and saves the list of modifications for it.
      *
      * @param array $modifications Array of attributes name
@@ -58,13 +85,24 @@ class Business extends Model
     public function bumpVersion($modifications = [])
     {
         $newVersion = $this->generateNextVersion();
+        $this->insertVersion($newVersion, $modifications);
+        return $newVersion;
+    }
+
+    /**
+     * Inserts in the DB the version $number with the $modifications list.
+     *
+     * @param string $number
+     * @param array $modifications
+     */
+    public function insertVersion($number, $modifications = [])
+    {
         DB::table($this->versionTable)->insert([
             'created_at' => Carbon::now()->format('Y-m-d H:m:s'),
             'business_id' => $this->id,
-            'version' => $newVersion,
+            'version' => $number,
             'modifications' => implode(',', $modifications),
         ]);
-        return $newVersion;
     }
 
     /**
