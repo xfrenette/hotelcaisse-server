@@ -16,6 +16,7 @@ class CreateCashMovementsTable extends Migration
         Schema::create('cash_movements', function (Blueprint $table) {
             $table->increments('id');
             $table->timestamps();
+            $table->uuid('uuid')->unique();
             $table->float('amount');
             $table->string('note', 255);
             $table->integer('register_id')->unsigned()->nullable();

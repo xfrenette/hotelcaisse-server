@@ -10,9 +10,17 @@ use Illuminate\Http\Request;
 
 class CashMovementsController extends ApiController
 {
+    /**
+     * Controller method for /cashMovements/add (see docs/api.md)
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \App\Api\Http\ApiResponse
+     */
     public function add(Request $request)
     {
         $this->validate($request, [
+            'uuid' => 'bail|required|string|unique:cash_movements',
             'note' => 'bail|required|string',
             'amount' => 'bail|required|numeric|not_in:0',
         ]);
@@ -32,6 +40,7 @@ class CashMovementsController extends ApiController
 
         // Create a CashMovement and add it to the register
         $cashMovement = new CashMovement();
+        $cashMovement->uuid = $request->json('data.uuid');
         $cashMovement->note = $request->json('data.note');
         $cashMovement->amount = $request->json('data.amount');
         $cashMovement->register()->associate($device->currentRegister);
