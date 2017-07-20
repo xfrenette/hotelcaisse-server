@@ -17,4 +17,13 @@ class Device extends Model
     {
         return $this->belongsTo('App\Business');
     }
+
+    /**
+     * Get the register currently assigned to this device
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function currentRegister()
+    {
+        return $this->belongsTo('App\Register', 'register_id');
+    }
 }
