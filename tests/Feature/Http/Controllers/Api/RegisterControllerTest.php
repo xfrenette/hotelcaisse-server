@@ -29,6 +29,14 @@ class RegisterControllerTest extends TestCase
         ],
     ];
 
+    const CLOSE_DATA = [
+        'data' => [
+            'cashAmount' => 12.34,
+            'POSTRef' => 'Test POST ref',
+            'POSTAmount' => 45.67,
+        ],
+    ];
+
     protected function setUp()
     {
         parent::setUp();
@@ -69,6 +77,15 @@ class RegisterControllerTest extends TestCase
 
         $device->currentRegister()->associate($register);
         $device->save();
+
+        return $device;
+    }
+
+    protected function createDeviceWithOpenedRegister()
+    {
+        $device = $this->createDeviceWithRegister();
+        $device->currentRegister->open('test', 12.34);
+        $device->currentRegister->save();
 
         return $device;
     }
@@ -125,9 +142,7 @@ class RegisterControllerTest extends TestCase
 
     public function testOpenReturnsErrorIfRegisterAlreadyOpened()
     {
-        $device = $this->createDeviceWithRegister();
-        $device->currentRegister->open('test employee', 12.34);
-        $device->currentRegister->save();
+        $device = $this->createDeviceWithOpenedRegister();
         $this->mockApiAuth($device);
 
         $response = $this->queryRoute('api.register.open', self::OPEN_DATA);
@@ -163,6 +178,7 @@ class RegisterControllerTest extends TestCase
         $oldRegisterId = $device->currentRegister->id;
 
         $this->queryRoute('api.register.open', self::OPEN_DATA);
+        $device->currentRegister->refresh();
         $this->assertTrue($device->currentRegister->opened);
         $this->assertNotEquals($oldRegisterId, $device->currentRegister->id);
     }
@@ -176,5 +192,137 @@ class RegisterControllerTest extends TestCase
         $response->assertJson([
             'status' => 'ok',
         ]);
+    }
+
+    // ---------------------
+
+    public function testCloseReturnsErrorIfInvalidCashAmount()
+    {
+        $values = [null, '', -5];
+
+        foreach ($values as $value) {
+            $data = self::CLOSE_DATA;
+
+            if (is_null($value)) {
+                unset($data['data']['cashAmount']);
+            } else {
+                $data['data']['cashAmount'] = $value;
+            }
+
+            $response = $this->queryRoute('api.register.close', $data);
+            $response->assertJson([
+                'status' => 'error',
+                'error' => [
+                    'code' => ApiResponse::ERROR_CLIENT_ERROR,
+                ],
+            ]);
+        }
+    }
+
+    public function testCloseReturnsErrorIfInvalidPOSTAmount()
+    {
+        $values = [null, '', -5];
+
+        foreach ($values as $value) {
+            $data = self::CLOSE_DATA;
+
+            if (is_null($value)) {
+                unset($data['data']['POSTAmount']);
+            } else {
+                $data['data']['POSTAmount'] = $value;
+            }
+
+            $response = $this->queryRoute('api.register.close', $data);
+            $response->assertJson([
+                'status' => 'error',
+                'error' => [
+                    'code' => ApiResponse::ERROR_CLIENT_ERROR,
+                ],
+            ]);
+        }
+    }
+
+    public function testCloseReturnsErrorIfInvalidPOSTRef()
+    {
+        $values = [null, '', '  ', 5];
+
+        foreach ($values as $value) {
+            $data = self::CLOSE_DATA;
+
+            if (is_null($value)) {
+                unset($data['data']['POSTRef']);
+            } else {
+                $data['data']['POSTRef'] = $value;
+            }
+
+            $response = $this->queryRoute('api.register.close', $data);
+            $response->assertJson([
+                'status' => 'error',
+                'error' => [
+                    'code' => ApiResponse::ERROR_CLIENT_ERROR,
+                ],
+            ]);
+        }
+    }
+
+    public function testCloseReturnsErrorIfNoRegister()
+    {
+        $device = $this->createDevice(); // No register assigned
+        $this->mockApiAuth($device);
+
+        $response = $this->queryRoute('api.register.close', self::CLOSE_DATA);
+        $response->assertJson([
+            'status' => 'error',
+            'error' => ['code' => ApiResponse::ERROR_CLIENT_ERROR],
+        ]);
+    }
+
+    public function testCloseReturnsErrorIfNoOpenedRegister()
+    {
+        $device = $this->createDeviceWithRegister(); // With a closed register
+        $this->mockApiAuth($device);
+
+        $response = $this->queryRoute('api.register.close', self::CLOSE_DATA);
+        $response->assertJson([
+            'status' => 'error',
+            'error' => ['code' => ApiResponse::ERROR_CLIENT_ERROR],
+        ]);
+    }
+
+    public function testCloseWorksWithValidData()
+    {
+        $device = $this->createDeviceWithOpenedRegister();
+        $this->mockApiAuth($device);
+
+        $response = $this->queryRoute('api.register.close', self::CLOSE_DATA);
+        $response->assertJson([
+            'status' => 'ok',
+        ]);
+    }
+
+    public function testCloseClosesTheCurrentRegister()
+    {
+        $device = $this->createDeviceWithOpenedRegister();
+        $this->mockApiAuth($device);
+
+        $this->queryRoute('api.register.close', self::CLOSE_DATA);
+        $device->currentRegister->refresh();
+        $this->assertFalse($device->currentRegister->opened);
+    }
+
+    public function testCloseBumpsBusinessVersionWithModifications()
+    {
+        $device = $this->createDeviceWithOpenedRegister();
+        $this->mockApiAuth($device);
+
+        $oldVersion = $this->business->version;
+
+        $this->queryRoute('api.register.close', self::CLOSE_DATA);
+        $newVersion = $this->business->version;
+        $this->assertNotEquals($oldVersion, $newVersion);
+        $this->assertEquals(
+            [Business::MODIFICATION_REGISTER],
+            $this->business->getVersionModifications($newVersion)
+        );
     }
 }

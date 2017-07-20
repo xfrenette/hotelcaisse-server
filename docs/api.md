@@ -79,12 +79,26 @@ If the passcode is not valid, will return a `auth:failed` error code.
 `POST /register/open`
 ---
 
-Opens a new Register and assigns it as the currentRegister on the authenticated Device. Note that the device must not
+Opens a new Register and assigns it as the currentRegister on the authenticated Device. Note that the Device must not
 have a current register that is already opened, else an error will be returned and the call will be ignored.
 
 ### Request `data`
 * `employee`: (string) Name of the employee opening the register
 * `cashAmount`: (float, >= 0) Amount of cash in the register at opening
+
+### Response `data`
+None returned
+
+`POST /register/close`
+---
+
+Closes the Register currently assigned to the authenticated Device. Note that the Device must have an opened Register
+assigned, else an error will be returned and the call will be ignored.
+
+### Request `data`
+* `cashAmount`: (float, >= 0) Amount of cash in the register at opening
+* `POSTRef`: (string) Reference number of the Point Of Sale Terminal (POST) batch
+* `POSTAmount`: (float, >= 0) Amount of the POST batch
 
 ### Response `data`
 None returned
