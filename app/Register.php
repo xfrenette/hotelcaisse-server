@@ -46,8 +46,8 @@ class Register extends Model
     {
         $this->state = self::STATE_OPENED;
         $this->employee = $employee;
-        $this->openingCash = $cashAmount;
-        $this->openedAt = Carbon::now();
+        $this->opening_cash = $cashAmount;
+        $this->opened_at = Carbon::now();
     }
 
     /**
@@ -60,10 +60,10 @@ class Register extends Model
     public function close($cashAmount, $POSTRef, $POSTAmount)
     {
         $this->state = self::STATE_CLOSED;
-        $this->closingCash = $cashAmount;
-        $this->POSTRef = $POSTRef;
-        $this->POSTAmount = $POSTAmount;
-        $this->closedAt = Carbon::now();
+        $this->closing_cash = $cashAmount;
+        $this->post_ref = $POSTRef;
+        $this->post_amount = $POSTAmount;
+        $this->closed_at = Carbon::now();
     }
 
     /**

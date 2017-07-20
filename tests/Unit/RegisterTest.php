@@ -23,14 +23,14 @@ class RegisterTest extends TestCase
     {
         $employee = 'test-employee';
         $cashAmount = 123.45;
-        $this->register->openedAt = Carbon::yesterday();
+        $this->register->opened_at = Carbon::yesterday();
 
         $this->register->open($employee, $cashAmount);
 
         $this->assertTrue($this->register->opened);
         $this->assertEquals($employee, $this->register->employee);
-        $this->assertEquals($cashAmount, $this->register->openingCash);
-        $this->assertTrue(abs(Carbon::now()->diffInSeconds($this->register->openedAt)) <= 1);
+        $this->assertEquals($cashAmount, $this->register->opening_cash);
+        $this->assertTrue(abs(Carbon::now()->diffInSeconds($this->register->opened_at)) <= 1);
     }
 
     public function testCloseSetsAttributes()
@@ -38,14 +38,14 @@ class RegisterTest extends TestCase
         $POSTRef = 'post-ref';
         $POSTAmount = 789.12;
         $cashAmount = 123.45;
-        $this->register->closedAt = Carbon::yesterday();
+        $this->register->closed_at = Carbon::yesterday();
 
         $this->register->close($cashAmount, $POSTRef, $POSTAmount);
 
         $this->assertFalse($this->register->opened);
-        $this->assertEquals($POSTRef, $this->register->POSTRef);
-        $this->assertEquals($POSTAmount, $this->register->POSTAmount);
-        $this->assertEquals($cashAmount, $this->register->closingCash);
-        $this->assertTrue(abs(Carbon::now()->diffInSeconds($this->register->closedAt)) <= 1);
+        $this->assertEquals($POSTRef, $this->register->post_ref);
+        $this->assertEquals($POSTAmount, $this->register->post_amount);
+        $this->assertEquals($cashAmount, $this->register->closing_cash);
+        $this->assertTrue(abs(Carbon::now()->diffInSeconds($this->register->closed_at)) <= 1);
     }
 }
