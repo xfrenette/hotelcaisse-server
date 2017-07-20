@@ -82,4 +82,10 @@ class BusinessTest extends TestCase
             ->value('modifications');
         $this->assertSame($modifications, explode(',', $savedModifications));
     }
+
+    public function testBumpVersionUpdatesTheDB()
+    {
+        $newVersion = $this->business->bumpVersion();
+        $this->assertEquals($newVersion, $this->business->version);
+    }
 }

@@ -13,4 +13,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// This route is not auth protected since it is equivalent to a 'login' method
 Route::post('device/register', 'DeviceController@register')->name('device.register');
+
+// The following routes are auth protected
+Route::middleware('apiauth')
+    ->group(function () {
+        Route::post('register/open', 'RegisterController@open')->name('register.open');
+    });

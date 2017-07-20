@@ -67,8 +67,7 @@ $factory->defineAs(App\DeviceApproval::class, 'withDeviceAndBusiness', function 
     ];
 });
 
-$factory->define(App\Register::class, function (Faker\Generator $faker) {
+$factory->define(App\Register::class, function () {
     return [
-        'uuid' => $faker->uuid,
     ];
 });
