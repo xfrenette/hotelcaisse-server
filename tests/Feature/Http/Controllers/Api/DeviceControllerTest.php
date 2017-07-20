@@ -7,16 +7,13 @@ use App\Business;
 use App\DeviceApproval;
 use App\Support\Facades\ApiAuth;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Tests\InteractsWithAPI;
 use Tests\TestCase;
 
 class DeviceControllerTest extends TestCase
 {
     use DatabaseTransactions;
-
-    /**
-     * @var Business
-     */
-    protected $business;
+    use InteractsWithAPI;
 
     protected function setUp()
     {
@@ -24,14 +21,9 @@ class DeviceControllerTest extends TestCase
         $this->business = factory(Business::class)->create();
     }
 
-    protected function getUri($routeName)
-    {
-        return route($routeName, ['business' => $this->business]);
-    }
-
     public function testRegisterReturnsErrorWithMissingCredentials()
     {
-        $response = $this->json('POST', $this->getUri('api.device.register'));
+        $response = $this->queryAPI('api.device.register');
         $response->assertJson([
             'error' => [
                 'code' => ApiResponse::ERROR_INVALID_REQUEST,
@@ -46,7 +38,7 @@ class DeviceControllerTest extends TestCase
                 'passcode' => 'invalid',
             ],
         ];
-        $response = $this->json('POST', $this->getUri('api.device.register'), $data);
+        $response = $this->queryAPI('api.device.register', $data);
         $response->assertJson([
             'error' => [
                 'code' => ApiResponse::ERROR_AUTH_FAILED,
@@ -70,7 +62,7 @@ class DeviceControllerTest extends TestCase
             ],
         ];
 
-        $response = $this->json('POST', $this->getUri('api.device.register'), $data);
+        $response = $this->queryAPI('api.device.register', $data);
         $response->assertJson([
             'status' => 'ok',
         ]);
@@ -91,7 +83,7 @@ class DeviceControllerTest extends TestCase
             ],
         ];
 
-        $response = $this->json('POST', $this->getUri('api.device.register'), $data);
+        $response = $this->queryAPI('api.device.register', $data);
         $token = $response->json()['token'];
         ApiAuth::loadSession($token, $this->business);
         $this->assertTrue(ApiAuth::check());
