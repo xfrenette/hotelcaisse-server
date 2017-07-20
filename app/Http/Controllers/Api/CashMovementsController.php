@@ -39,10 +39,11 @@ class CashMovementsController extends ApiController
         }
 
         // Create a CashMovement and add it to the register
-        $cashMovement = new CashMovement();
-        $cashMovement->uuid = $request->json('data.uuid');
-        $cashMovement->note = $request->json('data.note');
-        $cashMovement->amount = $request->json('data.amount');
+        $cashMovement = new CashMovement([
+            'uuid' => $request->json('data.uuid'),
+            'note' => $request->json('data.note'),
+            'amount' => $request->json('data.amount'),
+        ]);
         $cashMovement->register()->associate($device->currentRegister);
         $cashMovement->save();
 
@@ -50,5 +51,52 @@ class CashMovementsController extends ApiController
         $device->business->bumpVersion([Business::MODIFICATION_REGISTER]);
 
         return new ApiResponse();
+    }
+    /**
+     * Controller method for /cashMovements/delete (see docs/api.md)
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \App\Api\Http\ApiResponse
+     */
+    public function delete(Request $request)
+    {
+        $this->validate($request, [
+            'uuid' => 'bail|required|string',
+        ]);
+
+        $apiResponse = new ApiResponse();
+        $device = ApiAuth::getDevice();
+
+        if (!$device->currentRegister || !$device->currentRegister->opened) {
+            $apiResponse->setError(
+                ApiResponse::ERROR_CLIENT_ERROR,
+                'The device doesn\'t have an opened register'
+            );
+            return $apiResponse;
+        }
+
+        // Try to find the CashMovement in the current Register
+        $cashMovements = ApiAuth::getDevice()
+            ->currentRegister
+            ->cashMovements()
+            ->where('uuid', $request->json('data.uuid'));
+
+        // If no CashMovement found, return an error
+        if ($cashMovements->count() === 0) {
+            $apiResponse->setError(
+                ApiResponse::ERROR_CLIENT_ERROR,
+                'The CashMovement with this UUID doesn\'t exist.'
+            );
+            return $apiResponse;
+        }
+
+        // Delete the cash movement
+        $cashMovements->delete();
+
+        // Bump the business version
+        $device->business->bumpVersion([Business::MODIFICATION_REGISTER]);
+
+        return $apiResponse;
     }
 }
