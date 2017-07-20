@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Api\Http\ApiResponse;
+use App\Business;
 use App\Register;
 use App\Support\Facades\ApiAuth;
 use Illuminate\Http\Request;
@@ -38,7 +39,7 @@ class RegisterController extends ApiController
         $device->currentRegister()->associate($register);
         $device->save();
 
-        $device->business->bumpVersion();
+        $device->business->bumpVersion([Business::MODIFICATION_REGISTER]);
 
         return $apiResponse;
     }

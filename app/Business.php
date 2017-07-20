@@ -8,6 +8,12 @@ use Illuminate\Support\Facades\DB;
 
 class Business extends Model
 {
+    const MODIFICATION_REGISTER = 'register';
+
+    /**
+     * Name of the versions table
+     * @var string
+     */
     protected $versionTable = 'business_versions';
 
     /**

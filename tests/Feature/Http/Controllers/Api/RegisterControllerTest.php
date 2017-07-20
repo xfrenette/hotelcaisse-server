@@ -139,7 +139,7 @@ class RegisterControllerTest extends TestCase
         ]);
     }
 
-    public function testOpenBumpsBusinessVersion()
+    public function testOpenBumpsBusinessVersionWithModifications()
     {
         $device = $this->createDeviceWithRegister();
         $this->mockApiAuth($device);
@@ -147,7 +147,12 @@ class RegisterControllerTest extends TestCase
         $oldVersion = $this->business->version;
 
         $this->queryRoute('api.register.open', self::OPEN_DATA);
-        $this->assertNotEquals($oldVersion, $this->business->version);
+        $newVersion = $this->business->version;
+        $this->assertNotEquals($oldVersion, $newVersion);
+        $this->assertEquals(
+            [Business::MODIFICATION_REGISTER],
+            $this->business->getVersionModifications($newVersion)
+        );
     }
 
     public function testOpenAssignsNewOpenedRegisterToDevice()
