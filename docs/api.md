@@ -59,14 +59,14 @@ be in the response, if it is the only change that happened, since the device alr
 API methods
 ===
 
-`GET /device/register`
+`POST /device/register`
 ---
 
 Registers the device to use the API for this business by sending the passcode generated in the admin. If correctly
 authenticated, the response will contain the token to use for the next request.
 
 ### Request `data`
-* `passcode`: pass code generated in the admin for a new or existing device.
+* `passcode`: (string) pass code generated in the admin for a new or existing device.
 
 Note that this method doesn't use a `token` (it is not protected by authentication).
 
@@ -75,3 +75,16 @@ None returned.
 
 ### Other errors that can be returned
 If the passcode is not valid, will return a `auth:failed` error code.
+
+`POST /register/open`
+---
+
+Opens a new Register and assigns it as the currentRegister on the authenticated Device. Note that the device must not
+have a current register that is already opened, else an error will be returned and the call will be ignored.
+
+### Request `data`
+* `employee`: (string) Name of the employee opening the register
+* `cashAmount`: (float, >= 0) Amount of cash in the register at opening
+
+### Response `data`
+None returned
