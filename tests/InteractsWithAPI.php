@@ -3,6 +3,7 @@
 namespace Tests;
 
 use App\Api\Auth\ApiAuth;
+use App\Api\Http\ApiResponse;
 use App\Device;
 use App\Register;
 use Illuminate\Support\Facades\App;
@@ -59,5 +60,29 @@ trait InteractsWithAPI
             ->will($this->returnValue($device));
         App::instance('apiauth', $stub);
         return $stub;
+    }
+
+    protected function assertValidatesData($routeName, $baseData, $attribute, $values, $testNotPresent = true)
+    {
+        $notPresentTested = false;
+
+        foreach ($values as $value) {
+            $data = $baseData;
+
+            if ($testNotPresent && !$notPresentTested) {
+                unset($data['data'][$attribute]);
+                $notPresentTested = true;
+            } else {
+                $data['data'][$attribute] = $value;
+            }
+
+            $response = $this->queryAPI($routeName, $data);
+            $response->assertJson([
+                'status' => 'error',
+                'error' => [
+                    'code' => ApiResponse::ERROR_CLIENT_ERROR,
+                ],
+            ]);
+        }
     }
 }

@@ -39,51 +39,13 @@ class RegisterControllerTest extends TestCase
     public function testOpenReturnsErrorIfInvalidEmployee()
     {
         $values = [null, '', ' ', 12];
-
-        foreach ($values as $value) {
-            $data = [
-                'data' => [
-                    'cashAmount' => 12.34,
-                ],
-            ];
-
-            if (!is_null($value)) {
-                $data['data']['employee'] = $value;
-            }
-
-            $response = $this->queryAPI('api.register.open', $data);
-            $response->assertJson([
-                'status' => 'error',
-                'error' => [
-                    'code' => ApiResponse::ERROR_CLIENT_ERROR,
-                ],
-            ]);
-        }
+        $this->assertValidatesData('api.register.open', self::OPEN_DATA, 'employee', $values);
     }
 
     public function testOpenReturnsErrorIfInvalidCashAmount()
     {
         $values = [null, '', -5];
-
-        foreach ($values as $value) {
-            $data = [
-                'data' => [
-                    'employee' => 'Test Employee',
-                ],
-            ];
-
-            if (!is_null($value)) {
-                $data['data']['cashAmount'] = $value;
-            }
-
-            $response = $this->queryAPI('api.register.open', $data);
-            $response->assertJson([
-                'status' => 'error',
-                'error' => [
-                    'code' => ApiResponse::ERROR_CLIENT_ERROR,
-                ],
-            ]);
-        }
+        $this->assertValidatesData('api.register.open', self::OPEN_DATA, 'cashAmount', $values);
     }
 
     public function testOpenReturnsErrorIfRegisterAlreadyOpened()
