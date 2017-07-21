@@ -45,4 +45,12 @@ class Order extends Model
     {
         return $this->hasMany('App\Transaction');
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function roomSelections()
+    {
+        return $this->hasMany('App\RoomSelection');
+    }
 }
