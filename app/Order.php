@@ -29,4 +29,12 @@ class Order extends Model
     {
         return $this->hasMany('App\Credit');
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function items()
+    {
+        return $this->hasMany('App\Item');
+    }
 }
