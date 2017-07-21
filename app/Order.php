@@ -21,4 +21,12 @@ class Order extends Model
     {
         return $this->belongsTo('App\Customer');
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function credits()
+    {
+        return $this->hasMany('App\Credit');
+    }
 }
