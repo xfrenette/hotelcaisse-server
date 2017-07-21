@@ -29,4 +29,12 @@ class ProductCategory extends Model
     {
         return $this->hasMany('App\ProductCategory', 'parent_id');
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function products()
+    {
+        return $this->belongsToMany('App\Product');
+    }
 }
