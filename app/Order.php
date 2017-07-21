@@ -37,4 +37,12 @@ class Order extends Model
     {
         return $this->hasMany('App\Item');
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function transactions()
+    {
+        return $this->hasMany('App\Transaction');
+    }
 }

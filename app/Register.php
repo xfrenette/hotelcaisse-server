@@ -45,6 +45,14 @@ class Register extends Model
     }
 
     /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function transactions()
+    {
+        return $this->hasMany('App\Transaction');
+    }
+
+    /**
      * Opens the register and sets the related attributes.
      *
      * @param string $employee
