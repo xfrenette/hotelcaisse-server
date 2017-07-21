@@ -27,6 +27,14 @@ class Business extends Model
     }
 
     /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function rooms()
+    {
+        return $this->hasMany('App\Room');
+    }
+
+    /**
      * Returns a query builder that returns all the device approval for devices of this business.
      *
      * @return \Illuminate\Database\Query\Builder
