@@ -18,7 +18,7 @@ class CreateCustomersTable extends Migration
             $table->timestamps();
             $table->integer('business_id')->unsigned();
 
-            $table->foreign('business_id')->references('id')->on('business');
+            $table->foreign('business_id')->references('id')->on('businesses');
         });
     }
 

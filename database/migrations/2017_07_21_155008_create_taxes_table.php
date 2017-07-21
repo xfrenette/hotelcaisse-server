@@ -22,7 +22,7 @@ class CreateTaxesTable extends Migration
             $table->boolean('applies_to_all')->default(true);
             $table->integer('business_id')->unsigned();
 
-            $table->foreign('business_id')->references('id')->on('business');
+            $table->foreign('business_id')->references('id')->on('businesses');
         });
     }
 

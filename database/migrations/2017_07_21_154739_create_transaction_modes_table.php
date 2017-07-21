@@ -19,7 +19,7 @@ class CreateTransactionModesTable extends Migration
             $table->string('name', 100);
             $table->integer('business_id')->unsigned();
 
-            $table->foreign('business_id')->references('id')->on('business');
+            $table->foreign('business_id')->references('id')->on('businesses');
         });
     }
 
