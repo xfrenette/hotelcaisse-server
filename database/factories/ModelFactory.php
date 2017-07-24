@@ -80,3 +80,10 @@ $factory->define(App\Field::class, function (\Faker\Generator $faker) {
         'required' => $faker->boolean(),
     ];
 });
+
+$factory->define(App\ProductCategory::class, function (\Faker\Generator $faker) {
+    return [
+        'name' => $faker->word,
+    ];
+});
+

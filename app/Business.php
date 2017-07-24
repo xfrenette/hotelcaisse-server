@@ -71,6 +71,20 @@ class Business extends Model
     }
 
     /**
+     * Returns the root ProductCategory, or null if none. We find it by looking for a ProductCategory assigned to this
+     * business that doesn't have a parent.
+     *
+     * @return \App\ProductCategory|null
+     */
+    public function getRootProductCategoryAttribute()
+    {
+        return ProductCategory::where([
+            'business_id' => $this->id,
+            'parent_id' => null,
+        ])->first();
+    }
+
+    /**
      * Returns a query builder that returns all the device approval for devices of this business.
      *
      * @return \Illuminate\Database\Query\Builder

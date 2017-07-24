@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Business;
 use App\Field;
+use App\ProductCategory;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -128,20 +129,42 @@ class BusinessTest extends TestCase
 
     public function testRoomSelectionFieldsReturnsFields()
     {
-        $business = factory(Business::class)->create();
         $field1 = factory(Field::class)->create();
         $field2 = factory(Field::class)->create();
         $field3 = factory(Field::class)->create();
 
         DB::table('business_fields')->insert([
-            ['type' => 'roomSelection', 'business_id' => $business->id, 'field_id' => $field1->id],
-            ['type' => 'roomSelection', 'business_id' => $business->id, 'field_id' => $field2->id],
-            ['type' => 'customer', 'business_id' => $business->id, 'field_id' => $field3->id],
+            ['type' => 'roomSelection', 'business_id' => $this->business->id, 'field_id' => $field1->id],
+            ['type' => 'roomSelection', 'business_id' => $this->business->id, 'field_id' => $field2->id],
+            ['type' => 'customer', 'business_id' => $this->business->id, 'field_id' => $field3->id],
         ]);
 
-        $fields = $business->roomSelectionFields;
+        $fields = $this->business->roomSelectionFields;
         $this->assertEquals(2, $fields->count());
         $this->assertEquals($field1->id, $fields[0]->id);
         $this->assertEquals($field2->id, $fields[1]->id);
+    }
+
+    public function testRootProductCategoryReturnsCorrectCategory()
+    {
+        $otherBusiness = factory(Business::class)->create();
+
+        $rootCategory = factory(ProductCategory::class)->make();
+        $rootCategory->business()->associate($this->business);
+        $rootCategory->save();
+
+        $category1 = factory(ProductCategory::class)->make();
+        $category1->business()->associate($this->business);
+        $category1->parent()->associate($rootCategory);
+        $category1->save();
+
+        $category2 = factory(ProductCategory::class)->make();
+        $category2->business()->associate($otherBusiness);
+        $category2->save();
+
+        $res = $this->business->rootProductCategory;
+
+        $this->assertInstanceOf(ProductCategory::class, $res);
+        $this->assertEquals($rootCategory->id, $res->id);
     }
 }
