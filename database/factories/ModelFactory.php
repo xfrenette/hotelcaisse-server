@@ -71,3 +71,12 @@ $factory->define(App\Register::class, function () {
     return [
     ];
 });
+
+$factory->define(App\Field::class, function (\Faker\Generator $faker) {
+    return [
+        'type' => $faker->randomElement(['NumberField', 'EmailField', 'TextField']),
+        'label' => $faker->word(),
+        'role' => $faker->randomElement(['customer.name', null]),
+        'required' => $faker->boolean(),
+    ];
+});

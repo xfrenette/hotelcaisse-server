@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Business;
+use App\Field;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -104,5 +105,43 @@ class BusinessTest extends TestCase
         $res = $this->business->getVersionModifications($version);
         $this->assertTrue(is_array($res));
         $this->assertEquals($modifications, $res);
+    }
+
+    public function testCustomerFieldsReturnsFields()
+    {
+        $business = factory(Business::class)->create();
+        $field1 = factory(Field::class)->create();
+        $field2 = factory(Field::class)->create();
+        $field3 = factory(Field::class)->create();
+
+        DB::table('business_fields')->insert([
+            ['type' => 'customer', 'business_id' => $business->id, 'field_id' => $field1->id],
+            ['type' => 'customer', 'business_id' => $business->id, 'field_id' => $field2->id],
+            ['type' => 'roomSelection', 'business_id' => $business->id, 'field_id' => $field3->id],
+        ]);
+
+        $fields = $business->customerFields;
+        $this->assertEquals(2, $fields->count());
+        $this->assertEquals($field1->id, $fields[0]->id);
+        $this->assertEquals($field2->id, $fields[1]->id);
+    }
+
+    public function testRoomSelectionFieldsReturnsFields()
+    {
+        $business = factory(Business::class)->create();
+        $field1 = factory(Field::class)->create();
+        $field2 = factory(Field::class)->create();
+        $field3 = factory(Field::class)->create();
+
+        DB::table('business_fields')->insert([
+            ['type' => 'roomSelection', 'business_id' => $business->id, 'field_id' => $field1->id],
+            ['type' => 'roomSelection', 'business_id' => $business->id, 'field_id' => $field2->id],
+            ['type' => 'customer', 'business_id' => $business->id, 'field_id' => $field3->id],
+        ]);
+
+        $fields = $business->roomSelectionFields;
+        $this->assertEquals(2, $fields->count());
+        $this->assertEquals($field1->id, $fields[0]->id);
+        $this->assertEquals($field2->id, $fields[1]->id);
     }
 }

@@ -51,6 +51,26 @@ class Business extends Model
     }
 
     /**
+     * All the customer Fields
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function customerFields()
+    {
+        return $this->belongsToMany('App\Field', 'business_fields', 'business_id', 'field_id')
+            ->wherePivot('type', 'customer');
+    }
+
+    /**
+     * All the roomSelection Fields
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function roomSelectionFields()
+    {
+        return $this->belongsToMany('App\Field', 'business_fields', 'business_id', 'field_id')
+            ->wherePivot('type', 'roomSelection');
+    }
+
+    /**
      * Returns a query builder that returns all the device approval for devices of this business.
      *
      * @return \Illuminate\Database\Query\Builder
