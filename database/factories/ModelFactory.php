@@ -107,3 +107,11 @@ $factory->define(App\Tax::class, function (\Faker\Generator $faker) {
         'applies_to_all' => $faker->boolean(),
     ];
 });
+
+$factory->defineAs(App\Customer::class, 'withBusiness', function () {
+    return [
+        'business_id' => function () {
+            return factory(\App\Business::class)->create()->id;
+        },
+    ];
+});
