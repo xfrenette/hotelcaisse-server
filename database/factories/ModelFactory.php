@@ -87,3 +87,23 @@ $factory->define(App\ProductCategory::class, function (\Faker\Generator $faker) 
     ];
 });
 
+$factory->defineAs(App\Product::class, 'withBusiness', function (\Faker\Generator $faker) {
+    return [
+        'name' => $faker->word,
+        'description' => $faker->words(4, true),
+        'price' => $faker->randomFloat(2, 0, 100),
+        'is_custom' => $faker->boolean(10),
+        'business_id' => function () {
+            return factory(\App\Business::class)->create()->id;
+        },
+    ];
+});
+
+$factory->define(App\Tax::class, function (\Faker\Generator $faker) {
+    return [
+        'name' => $faker->word,
+        'amount' => $faker->randomFloat(2, 0, 10),
+        'type' => $faker->randomElement(['percentage', 'absolute']),
+        'applies_to_all' => $faker->boolean(),
+    ];
+});
