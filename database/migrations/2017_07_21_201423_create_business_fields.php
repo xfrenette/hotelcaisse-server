@@ -15,7 +15,6 @@ class CreateBusinessFields extends Migration
     {
         Schema::create('business_fields', function (Blueprint $table) {
             $table->increments('id');
-            $table->timestamps();
             $table->enum('type', ['customer', 'roomSelection']);
             $table->integer('business_id')->unsigned();
             $table->integer('field_id')->unsigned();

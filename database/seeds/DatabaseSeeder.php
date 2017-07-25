@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\App;
 
 class DatabaseSeeder extends Seeder
 {
@@ -11,6 +12,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // $this->call(UsersTableSeeder::class);
+        if (App::environment() !== 'testing') {
+            throw new Exception('Seeding is available only for "testing" environment. Add --env=testing.');
+        }
+
+        $this->call(BusinessesTableSeeder::class);
+        $this->call(RoomsTableSeeder::class);
+        $this->call(TransactionModesTableSeeder::class);
+        $this->call(ProductsTableSeeder::class);
+        $this->call(BusinessCustomerFieldsSeeder::class);
+        $this->call(BusinessRoomSelectionFieldsSeeder::class);
     }
 }
