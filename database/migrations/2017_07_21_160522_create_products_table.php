@@ -16,6 +16,8 @@ class CreateProductsTable extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->increments('id');
             $table->timestamps();
+            // For custom products created by the client. Null if created by the admin
+            $table->uuid('uuid')->nullable();
             $table->string('name', 100);
             $table->string('description', 255);
             $table->float('price');
