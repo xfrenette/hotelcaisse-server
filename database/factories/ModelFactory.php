@@ -115,3 +115,12 @@ $factory->defineAs(App\Customer::class, 'withBusiness', function () {
         },
     ];
 });
+
+$factory->defineAs(App\Order::class, 'withCustomer', function (\Faker\Generator $faker) {
+    return [
+        'uuid' => $faker->uuid(),
+        'customer_id' => function () {
+            return factory(\App\Customer::class, 'withBusiness')->create()->id;
+        },
+    ];
+});

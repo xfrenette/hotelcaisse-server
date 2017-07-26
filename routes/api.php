@@ -23,4 +23,5 @@ Route::middleware('apiauth')
         Route::post('register/close', 'RegisterController@close')->name('register.close');
         Route::post('cashMovements/add', 'CashMovementsController@add')->name('cashMovements.add');
         Route::post('cashMovements/delete', 'CashMovementsController@delete')->name('cashMovements.delete');
+        Route::post('orders/new', 'OrdersController@new')->name('orders.new');
     });
