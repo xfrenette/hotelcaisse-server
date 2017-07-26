@@ -26,4 +26,19 @@ class Device extends Model
     {
         return $this->belongsTo('App\Register', 'register_id');
     }
+
+    /**
+     * Simple utility function that returns true if this Device has a currentRegister that is opened. In all other
+     * cases, returns false (ex: no currentRegister).
+     *
+     * @return bool
+     */
+    public function getIsCurrentRegisterOpenedAttribute()
+    {
+        if (is_null($this->currentRegister)) {
+            return false;
+        }
+
+        return $this->currentRegister->state === Register::STATE_OPENED;
+    }
 }
