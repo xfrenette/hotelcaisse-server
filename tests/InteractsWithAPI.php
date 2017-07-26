@@ -68,19 +68,28 @@ trait InteractsWithAPI
         return $stub;
     }
 
-    protected function assertValidatesData($routeName, $baseData, $attributeToValidate, $values, $testNotPresent = true)
+    protected function assertValidatesData($routeName, $baseData, $attributeToValidate, $values, $testPresence = true)
     {
-        $notPresentTested = false;
+        if ($testPresence) {
+            $data = $baseData;
+            array_forget($data, "data.$attributeToValidate");
+
+            $response = $this->queryAPI($routeName, $data);
+            $response->assertJson([
+                'status' => 'error',
+                'error' => [
+                    'code' => ApiResponse::ERROR_CLIENT_ERROR,
+                ],
+            ]);
+        }
+
+        if (!$values) {
+            return;
+        }
 
         foreach ($values as $value) {
             $data = $baseData;
-
-            if ($testNotPresent && !$notPresentTested) {
-                unset($data['data'][$attributeToValidate]);
-                $notPresentTested = true;
-            } else {
-                $data['data'][$attributeToValidate] = $value;
-            }
+            array_set($data, "data.$attributeToValidate", $value);
 
             $response = $this->queryAPI($routeName, $data);
             $response->assertJson([
