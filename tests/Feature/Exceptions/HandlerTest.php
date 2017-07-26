@@ -73,7 +73,7 @@ class ExceptionsTest extends TestCase
         $response->assertJson([
             'status' => 'error',
             'error' => [
-                'code' => ApiResponse::ERROR_INVALID_REQUEST,
+                'code' => ApiResponse::ERROR_CLIENT_ERROR,
             ],
         ]);
     }

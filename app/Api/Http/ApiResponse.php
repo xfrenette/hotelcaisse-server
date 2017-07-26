@@ -8,7 +8,6 @@ use JsonSerializable;
 class ApiResponse extends JsonResponse implements JsonSerializable
 {
     const ERROR_AUTH_FAILED = 'auth:failed';
-    const ERROR_INVALID_REQUEST = 'request:invalid';
     const ERROR_NOT_FOUND = 'request:notFound';
     const ERROR_CLIENT_ERROR = 'request:error';
     const ERROR_SERVER_ERROR = 'server:error';

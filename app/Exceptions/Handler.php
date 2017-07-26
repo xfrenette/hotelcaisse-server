@@ -93,7 +93,7 @@ class Handler extends ExceptionHandler
         }
 
         if ($exception instanceof Api\InvalidRequestException) {
-            return $this->apiResponseError(400, ApiResponse::ERROR_INVALID_REQUEST, $exception->getMessage());
+            return $this->apiResponseError(400, ApiResponse::ERROR_CLIENT_ERROR, $exception->getMessage());
         }
 
         if ($exception instanceof NotFoundHttpException || $exception instanceof ModelNotFoundException) {

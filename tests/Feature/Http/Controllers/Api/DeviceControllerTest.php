@@ -26,7 +26,7 @@ class DeviceControllerTest extends TestCase
         $response = $this->queryAPI('api.device.register');
         $response->assertJson([
             'error' => [
-                'code' => ApiResponse::ERROR_INVALID_REQUEST,
+                'code' => ApiResponse::ERROR_CLIENT_ERROR,
             ],
         ]);
     }

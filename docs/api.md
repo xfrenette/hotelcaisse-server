@@ -37,10 +37,9 @@ General error codes
 The following error codes can be returned by (almost) all API methods (in the `error.code` JSON attribute):
 
 * `auth:failed`: For all API methods that require a valid token.
-* `request:invalid`: when trying to make an invalid request to the API. Either wrong JSON structure or because passed
-    data is missing required attributes or their value is invalid.
 * `request:notFound`: when requesting a non-existing API method
-* `request:error`: generic client error in making the call.
+* `request:error`: returned anytime the request contains an error (a client error). It can be bad JSON, missing
+    parameters, invalid register state, ...
 * `server:error`: generic server error
 
 businessVersion
