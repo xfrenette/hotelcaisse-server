@@ -101,7 +101,10 @@ class Handler extends ExceptionHandler
         }
 
         if ($exception instanceof ValidationException) {
-            return $this->apiResponseError(422, ApiResponse::ERROR_CLIENT_ERROR);
+            $message = 'Validation error(s): ';
+            $errors = $exception->validator->errors();
+            $message .= implode('; ', $errors->all());
+            return $this->apiResponseError(422, ApiResponse::ERROR_CLIENT_ERROR, $message);
         }
 
         if ($exception instanceof HttpException) {
