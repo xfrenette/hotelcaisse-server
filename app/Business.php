@@ -51,6 +51,14 @@ class Business extends Model
     }
 
     /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function products()
+    {
+        return $this->hasMany('App\Product');
+    }
+
+    /**
      * All the customer Fields
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
