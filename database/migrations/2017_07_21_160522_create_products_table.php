@@ -19,7 +19,7 @@ class CreateProductsTable extends Migration
             // For custom products created by the client. Null if created by the admin
             $table->uuid('uuid')->nullable();
             $table->string('name', 100);
-            $table->string('description', 255);
+            $table->string('description', 255)->nullable();
             $table->float('price');
             $table->boolean('is_custom')->default(false);
             $table->integer('parent_id')->unsigned()->nullable();
