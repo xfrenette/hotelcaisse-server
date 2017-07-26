@@ -24,7 +24,8 @@ trait HasFields
     /**
      * Set the values of Fields for this instance. If the Field already has a value, it is updated, else it is inserted.
      * If we do not want to update existing Fields (ex: we already removed them or the instance is new), we can pass
-     * false as a second parameter to skip a request.
+     * false as a second parameter to skip a request. For each field, the $values array contains a array with 'field'
+     * key (a Field instance or an id) and a 'value' key for the value.
      *
      * @param array $values
      * @param boolean $checkUpdates
@@ -83,6 +84,14 @@ trait HasFields
                     ->update(['value' => $value]);
             }
         }
+    }
+
+    /**
+     * @todo
+     */
+    public function getFieldValuesAttribute()
+    {
+        return $this->getFieldsQuery()->get();
     }
 
     /**

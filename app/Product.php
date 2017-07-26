@@ -10,6 +10,13 @@ class Product extends Model
     protected $productTaxTable = 'product_tax';
 
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = ['uuid', 'name', 'price'];
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function business()

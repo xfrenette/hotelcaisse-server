@@ -7,6 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class Transaction extends Model
 {
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = ['uuid', 'amount'];
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function order()

@@ -5,6 +5,7 @@ namespace Tests\Feature\Http\Controllers\Api;
 use App\Api\Http\ApiResponse;
 use App\Business;
 use App\Credit;
+use App\Http\Controllers\Api\OrdersController;
 use App\Item;
 use App\Order;
 use App\Product;
@@ -28,11 +29,16 @@ class OrdersControllerTest extends TestCase
      * @var \Faker\Generator
      */
     protected static $faker;
+    /**
+     * @var OrdersController
+     */
+    protected $controller;
 
     protected function setUp()
     {
         parent::setUp();
         $this->business = Business::first();
+        $this->controller = new OrdersController();
 
         if (!self::$faker) {
             self::$faker = Factory::create();
@@ -157,7 +163,27 @@ class OrdersControllerTest extends TestCase
 
     public function testNewWorksWithValidData()
     {
+        $device = $this->createDeviceWithOpenedRegister();
+        $this->mockApiAuthDevice($device);
+
         $data = $this->generateNewData();
+        $response = $this->queryAPI('api.orders.new', $data);
+        $response->assertJson([
+            'status' => 'ok'
+        ]);
+    }
+
+    public function testNewWorksWithMissingOptionalAttributes()
+    {
+        $device = $this->createDeviceWithOpenedRegister();
+        $this->mockApiAuthDevice($device);
+
+        $data = $this->generateNewData();
+        array_forget($data, 'data.credits');
+        array_forget($data, 'data.items');
+        array_forget($data, 'data.roomSelections');
+        array_forget($data, 'data.transactions');
+
         $response = $this->queryAPI('api.orders.new', $data);
         $response->assertJson([
             'status' => 'ok'
@@ -406,5 +432,133 @@ class OrdersControllerTest extends TestCase
         $data = $this->generateNewData();
         $values = [null, false, 2];
         $this->assertValidatesData('api.orders.new', $data, "roomSelections.1.fieldValues.0.value", $values);
+    }
+
+    // --------------------
+
+    public function testNewFailsIfTransactionsWithClosedRegister()
+    {
+        $data = $this->generateNewData();
+        $device = $this->createDevice();
+        $this->mockApiAuthDevice($device);
+        $response = $this->queryAPI('api.orders.new', $data);
+
+        $response->assertJson([
+            'status' => 'error',
+            'error' => [
+                'code' => ApiResponse::ERROR_CLIENT_ERROR,
+            ],
+        ]);
+    }
+
+    // ---------------------
+
+    public function testCreateOrderCreatesOrder()
+    {
+        $data = $this->generateNewData();
+        $device = $this->createDeviceWithOpenedRegister();
+        $business = $device->business;
+        $this->mockApiAuthDevice($device);
+        $order = $this->controller->createOrder($data['data'], $business, $device->currentRegister);
+
+        $uuid = array_get($data, 'data.uuid');
+        $note = array_get($data, 'data.note');
+        $this->assertEquals($uuid, $order->uuid);
+        $this->assertEquals($note, $order->note);
+        $this->assertEquals($business->id, $order->business->id);
+    }
+
+    public function testCreateOrderCreatesCustomer()
+    {
+        $data = $this->generateNewData();
+        $device = $this->createDeviceWithOpenedRegister();
+        $business = $device->business;
+        $this->mockApiAuthDevice($device);
+        $order = $this->controller->createOrder($data['data'], $business, $device->currentRegister);
+
+        $expected = count(array_get($data, 'data.customer.fieldValues'));
+        $this->assertEquals($expected, $order->customer->fieldValues->count());
+    }
+
+    public function testCreateOrderCreatesCredits()
+    {
+        $data = $this->generateNewData();
+        $device = $this->createDeviceWithOpenedRegister();
+        $business = $device->business;
+        $this->mockApiAuthDevice($device);
+        $order = $this->controller->createOrder($data['data'], $business, $device->currentRegister);
+
+        $count = count(array_get($data, 'data.credits'));
+        $this->assertEquals($count, $order->credits->count());
+        $credit = $order->credits[1];
+        $this->assertEquals(array_get($data, 'data.credits.1.uuid'), $credit->uuid);
+        $this->assertEquals(array_get($data, 'data.credits.1.note'), $credit->note);
+        $this->assertEquals(array_get($data, 'data.credits.1.amount'), $credit->amount);
+    }
+
+    public function testCreateOrderCreatesItems()
+    {
+        $data = $this->generateNewData();
+        $device = $this->createDeviceWithOpenedRegister();
+        $business = $device->business;
+        $this->mockApiAuthDevice($device);
+        $order = $this->controller->createOrder($data['data'], $business, $device->currentRegister);
+
+        $count = count(array_get($data, 'data.items'));
+        $this->assertEquals($count, $order->items->count());
+        $item = $order->items[1];
+        $this->assertEquals(array_get($data, 'data.items.1.uuid'), $item->uuid);
+        $this->assertEquals(array_get($data, 'data.items.1.quantity'), $item->quantity);
+        $this->assertEquals(array_get($data, 'data.items.1.product'), $item->product->id);
+
+        // Check that a custom product has been created for the last item
+        $product = $order->items[2]->product;
+        $this->assertEquals(array_get($data, 'data.items.2.product.uuid'), $product->uuid);
+        $this->assertEquals(array_get($data, 'data.items.2.product.name'), $product->name);
+        $this->assertEquals(array_get($data, 'data.items.2.product.price'), $product->price);
+    }
+
+    public function testCreateOrderCreatesRoomSelections()
+    {
+        $data = $this->generateNewData();
+        $device = $this->createDeviceWithOpenedRegister();
+        $business = $device->business;
+        $this->mockApiAuthDevice($device);
+        $order = $this->controller->createOrder($data['data'], $business, $device->currentRegister);
+
+        $count = count(array_get($data, 'data.roomSelections'));
+        $this->assertEquals($count, $order->roomSelections->count());
+        $roomSelection = $order->roomSelections[1];
+        $this->assertEquals(array_get($data, 'data.roomSelections.1.uuid'), $roomSelection->uuid);
+        $this->assertEquals(
+            array_get($data, 'data.roomSelections.1.startDate'),
+            $roomSelection->start_date->getTimestamp()
+        );
+        $this->assertEquals(
+            array_get($data, 'data.roomSelections.1.endDate'),
+            $roomSelection->end_date->getTimestamp()
+        );
+        $this->assertEquals(array_get($data, 'data.roomSelections.1.room'), $roomSelection->room->id);
+
+        // Field values
+        $count = count(array_get($data, 'data.roomSelections.1.fieldValues'));
+        $this->assertEquals($count, $roomSelection->fieldValues->count());
+    }
+
+    public function testCreateOrderCreatesTransactions()
+    {
+        $data = $this->generateNewData();
+        $device = $this->createDeviceWithOpenedRegister();
+        $business = $device->business;
+        $this->mockApiAuthDevice($device);
+        $order = $this->controller->createOrder($data['data'], $business, $device->currentRegister);
+
+        $count = count(array_get($data, 'data.transactions'));
+        $this->assertEquals($count, $order->transactions->count());
+        $transaction = $order->transactions[1];
+        $this->assertEquals(array_get($data, 'data.transactions.1.uuid'), $transaction->uuid);
+        $this->assertEquals(array_get($data, 'data.transactions.1.amount'), $transaction->amount);
+        $this->assertEquals(array_get($data, 'data.transactions.1.transactionMode'), $transaction->transactionMode->id);
+        $this->assertEquals($device->currentRegister->id, $transaction->register->id);
     }
 }
