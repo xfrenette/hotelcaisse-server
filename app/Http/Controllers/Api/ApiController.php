@@ -22,16 +22,45 @@ class ApiController extends BaseController
      */
     public function validate(Request $request, array $rules, array $messages = [], array $customAttributes = [])
     {
-        $data = $request->json('data');
-
-        if (is_null($data)) {
-            return;
-        }
+        $data = $this->getRequestData($request);
 
         $validator = $this->getValidationFactory()->make($data, $rules, $messages, $customAttributes);
 
         if ($validator->fails()) {
             $this->throwValidationException($request, $validator);
         }
+    }
+
+    /**
+     * Makes a Validator that can be used for manual validation or to add conditional rules.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param $rules
+     *
+     * @return \Illuminate\Contracts\Validation\Validator
+     */
+    public function makeValidator(Request $request, $rules)
+    {
+        $data = $this->getRequestData($request);
+
+        return $this->getValidationFactory()->make($data, $rules);
+    }
+
+    /**
+     * Returns the data object in the request. Returns an empty array if no data.
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return array|mixed
+     */
+    public function getRequestData(Request $request)
+    {
+        $data = $request->json('data');
+
+        if (is_null($data)) {
+            $data = [];
+        }
+
+        return $data;
     }
 }
