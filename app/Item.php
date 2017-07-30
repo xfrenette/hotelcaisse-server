@@ -21,10 +21,10 @@ class Item extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
     public function product()
     {
-        return $this->belongsTo('App\Product');
+        return $this->hasOne('App\ItemProduct');
     }
 }

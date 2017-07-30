@@ -18,10 +18,8 @@ class CreateItemsTable extends Migration
             $table->timestamps();
             $table->uuid('uuid');
             $table->float('quantity');
-            $table->integer('product_id')->unsigned();
             $table->integer('order_id')->unsigned();
 
-            $table->foreign('product_id')->references('id')->on('products');
             $table->foreign('order_id')->references('id')->on('orders');
         });
     }
