@@ -117,10 +117,31 @@ $factory->defineAs(App\Customer::class, 'withBusiness', function () {
 });
 
 $factory->defineAs(App\Order::class, 'withCustomer', function (\Faker\Generator $faker) {
+    $customer = factory(\App\Customer::class, 'withBusiness')->create();
     return [
         'uuid' => $faker->uuid(),
-        'customer_id' => function () {
-            return factory(\App\Customer::class, 'withBusiness')->create()->id;
+        'customer_id' => $customer->id,
+        'business_id' => $customer->business_id,
+    ];
+});
+
+$factory->defineAs(App\Item::class, 'withOrder', function (\Faker\Generator $faker) {
+    return [
+        'uuid' => $faker->uuid(),
+        'quantity' => $faker->randomFloat(1, 0, 1000),
+        'order_id' => function () {
+            return factory(\App\Order::class, 'withCustomer')->create()->id;
+        },
+    ];
+});
+
+$factory->defineAs(App\ItemProduct::class, 'withItem', function (\Faker\Generator $faker) {
+    return [
+        'name' => $faker->word(),
+        'price' => $faker->randomFloat(2, 0, 100),
+        'product_id' => null,
+        'item_id' => function () {
+            return factory(\App\Item::class, 'withOrder')->create()->id;
         },
     ];
 });

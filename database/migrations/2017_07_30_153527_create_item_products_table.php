@@ -15,6 +15,7 @@ class CreateItemProductsTable extends Migration
     {
         Schema::create('item_products', function (Blueprint $table) {
             $table->increments('id');
+            $table->timestamps();
             $table->string('name', 200);
             $table->float('price');
             // Reference to the original product. If null, it means it is a custom product

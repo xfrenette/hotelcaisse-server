@@ -12,6 +12,7 @@ class Item extends Model
      * @var array
      */
     protected $fillable = ['uuid', 'quantity'];
+
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
