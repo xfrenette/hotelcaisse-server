@@ -82,7 +82,7 @@ class OrdersController extends ApiController
             'credits' => 'sometimes|array',
             'credits.*.uuid' => 'bail|required|string|unique:credits',
             'credits.*.note' => 'bail|required|string',
-            'credits.*.amount' => 'bail|required|numeric|not_in:0',
+            'credits.*.amount' => 'bail|required|numeric|min:0|not_in:0',
             'transactions' => 'sometimes|array',
             'transactions.*.uuid' => 'bail|required|string|unique:transactions',
             'transactions.*.amount' => 'bail|required|numeric|not_in:0',

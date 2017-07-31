@@ -81,7 +81,7 @@ class OrdersControllerTest extends TestCase
 
         // credits
         for ($i = 0; $i < 2; $i++) {
-            $amount = $faker->randomFloat(2, -10, 10);
+            $amount = $faker->randomFloat(2, 0, 10);
 
             $data['credits'][] = [
                 'uuid' => $faker->uuid(),
@@ -272,7 +272,7 @@ class OrdersControllerTest extends TestCase
     public function testNewReturnsErrorWithInvalidCreditsDataAmount()
     {
         $data = $this->generateNewData();
-        $values = [null, 0, 'test'];
+        $values = [null, 0, 'test', -5];
         $this->assertValidatesData('api.orders.new', $data, 'credits.1.amount', $values);
     }
 
