@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 class Business extends Model
 {
     const MODIFICATION_REGISTER = 'register';
+    const MODIFICATION_ORDERS = 'orders';
 
     /**
      * Name of the versions table

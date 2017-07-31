@@ -38,6 +38,9 @@ class OrdersController extends ApiController
         $device = ApiAuth::getDevice();
         $this->createOrder($data, $device->business, $device->currentRegister);
 
+        // Bump the version of Business
+        $device->business->bumpVersion([Business::MODIFICATION_ORDERS]);
+
         return new ApiResponse();
     }
 

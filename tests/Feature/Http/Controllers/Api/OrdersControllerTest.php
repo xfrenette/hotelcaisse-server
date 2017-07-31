@@ -608,4 +608,24 @@ class OrdersControllerTest extends TestCase
         $this->assertEquals(array_get($data, 'data.transactions.1.transactionMode'), $transaction->transactionMode->id);
         $this->assertEquals($device->currentRegister->id, $transaction->register->id);
     }
+
+    // -------------------------
+
+    public function testNewBumpsBusinessVersionWithModifications()
+    {
+        $device = $this->createDeviceWithOpenedRegister();
+        $this->mockApiAuthDevice($device);
+        $data = $this->generateNewData();
+
+        $oldVersion = $this->business->version;
+
+        $this->queryAPI('api.orders.new', $data);
+
+        $newVersion = $this->business->version;
+        $this->assertNotEquals($oldVersion, $newVersion);
+        $this->assertEquals(
+            [Business::MODIFICATION_ORDERS],
+            $this->business->getVersionModifications($newVersion)
+        );
+    }
 }
