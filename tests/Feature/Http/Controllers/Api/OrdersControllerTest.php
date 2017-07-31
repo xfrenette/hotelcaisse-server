@@ -8,7 +8,6 @@ use App\Credit;
 use App\Http\Controllers\Api\OrdersController;
 use App\Item;
 use App\Order;
-use App\Product;
 use App\Room;
 use App\RoomSelection;
 use Carbon\Carbon;
@@ -96,21 +95,31 @@ class OrdersControllerTest extends TestCase
         for ($i = 0; $i < 3; $i++) {
             $isCustom = $i === 2;
 
-            $productData = [
+            $itemData = [
                 'uuid' => $faker->uuid(),
                 'quantity' => $isCustom ? -2 : 2,
-                'product' => $products->random()->id,
+                'product' => [
+                    'name' => $faker->words(2, true),
+                    'price' => $faker->randomFloat(2, 0.1, 10),
+                    'product_id' => $isCustom ? null : $products->random()->id,
+                ],
             ];
 
-            if ($isCustom) {
-                $productData['product'] = [
-                    'uuid' => $faker->uuid,
-                    'name' => $faker->word,
-                    'price' => $faker->randomFloat(2, 0.1, 10),
-                ];
+            if (!$isCustom) {
+                $taxes = $this->business->taxes()
+                    ->inRandomOrder()
+                    ->take(2)
+                    ->get()
+                    ->map(function ($tax) use ($faker) {
+                        return [
+                            'tax_id' => $tax->id,
+                            'amount' => $faker->randomFloat(4, 0, 20),
+                        ];
+                    })->toArray();
+                $itemData['product']['taxes'] = $taxes;
             }
 
-            $data['items'][] = $productData;
+            $data['items'][] = $itemData;
         }
 
         // roomSelections
@@ -318,7 +327,6 @@ class OrdersControllerTest extends TestCase
         $existingItem = new Item();
         $existingItem->uuid = self::$faker->uuid();
         $existingItem->order()->associate($existingOrder);
-        $existingItem->product()->associate(Product::first());
         $existingItem->quantity = 1;
         $existingItem->save();
 
@@ -326,31 +334,53 @@ class OrdersControllerTest extends TestCase
         $this->assertValidatesData('api.orders.new', $data, 'items.1.uuid', $values);
     }
 
-    public function testNewReturnsErrorWithInvalidItemsDataProductId()
+    public function testNewReturnsErrorWithInvalidItemsDataProduct()
     {
         $data = $this->generateNewData();
         $values = [null, 0, 'test'];
         $this->assertValidatesData('api.orders.new', $data, 'items.1.product', $values);
     }
 
-    public function testNewReturnsErrorWithInvalidItemsDataProductObject()
+    public function testNewReturnsErrorWithInvalidItemsDataProductName()
     {
-        $existingUUID = Product::whereNotNull('uuid')->first()->uuid;
-
-        // uuid
         $data = $this->generateNewData();
-        $values = [null, 0, $existingUUID];
-        $this->assertValidatesData('api.orders.new', $data, 'items.2.product.uuid', $values);
+        $values = [null, 0];
+        $this->assertValidatesData('api.orders.new', $data, 'items.1.product.name', $values);
+    }
 
-        // name
+    public function testNewReturnsErrorWithInvalidItemsDataProductPrice()
+    {
         $data = $this->generateNewData();
-        $values = [null, 2, '', ' '];
-        $this->assertValidatesData('api.orders.new', $data, 'items.2.product.name', $values);
+        $values = [null, -5, 'test'];
+        $this->assertValidatesData('api.orders.new', $data, 'items.1.product.price', $values);
+    }
 
-        // price
+    public function testNewReturnsErrorWithInvalidItemsDataProductID()
+    {
         $data = $this->generateNewData();
-        $values = [null, 0, 'x', -1];
-        $this->assertValidatesData('api.orders.new', $data, 'items.2.product.price', $values);
+        $values = [-1, 'test'];
+        $this->assertValidatesData('api.orders.new', $data, 'items.1.product.product_id', $values, false);
+    }
+
+    public function testNewReturnsErrorWithInvalidItemsDataTaxes()
+    {
+        $data = $this->generateNewData();
+        $values = [1, 'test'];
+        $this->assertValidatesData('api.orders.new', $data, 'items.1.product.taxes', $values, false);
+    }
+
+    public function testNewReturnsErrorWithInvalidItemsDataTaxesId()
+    {
+        $data = $this->generateNewData();
+        $values = [null, -1, 'test'];
+        $this->assertValidatesData('api.orders.new', $data, 'items.1.product.taxes.1.tax_id', $values);
+    }
+
+    public function testNewReturnsErrorWithInvalidItemsDataTaxesAmount()
+    {
+        $data = $this->generateNewData();
+        $values = [null, -1, 0, 'test'];
+        $this->assertValidatesData('api.orders.new', $data, 'items.1.product.taxes.1.amount', $values);
     }
 
     public function testNewReturnsErrorWithInvalidRoomSelections()
@@ -509,13 +539,30 @@ class OrdersControllerTest extends TestCase
         $item = $order->items[1];
         $this->assertEquals(array_get($data, 'data.items.1.uuid'), $item->uuid);
         $this->assertEquals(array_get($data, 'data.items.1.quantity'), $item->quantity);
-        $this->assertEquals(array_get($data, 'data.items.1.product'), $item->product->id);
 
-        // Check that a custom product has been created for the last item
-        $product = $order->items[2]->product;
-        $this->assertEquals(array_get($data, 'data.items.2.product.uuid'), $product->uuid);
-        $this->assertEquals(array_get($data, 'data.items.2.product.name'), $product->name);
-        $this->assertEquals(array_get($data, 'data.items.2.product.price'), $product->price);
+        // Check that an ItemProduct has been created
+        $product = $item->product;
+        $this->assertEquals(array_get($data, 'data.items.1.product.name'), $product->name);
+        $this->assertEquals(array_get($data, 'data.items.1.product.price'), $product->price);
+        $this->assertEquals(array_get($data, 'data.items.1.product.product_id'), $product->product_id);
+
+        // Check product_id null for last item (custom item)
+        $this->assertNull($order->items[2]->product->product_id);
+    }
+
+    public function testCreateOrderCreatesItemsProductTaxes()
+    {
+        $data = $this->generateNewData();
+        $device = $this->createDeviceWithOpenedRegister();
+        $business = $device->business;
+        $this->mockApiAuthDevice($device);
+        $order = $this->controller->createOrder($data['data'], $business, $device->currentRegister);
+
+        $product = $order->items[1]->product;
+        $taxes = $product->taxes;
+        $this->assertEquals(count(array_get($data, 'data.items.1.product.taxes')), $taxes->count());
+        $this->assertEquals(array_get($data, 'data.items.1.product.taxes.1.tax_id'), $taxes[1]->tax_id);
+        $this->assertEquals(array_get($data, 'data.items.1.product.taxes.1.amount'), $taxes[1]->amount);
     }
 
     public function testCreateOrderCreatesRoomSelections()

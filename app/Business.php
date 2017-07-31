@@ -37,6 +37,14 @@ class Business extends Model
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
+    public function taxes()
+    {
+        return $this->hasMany('App\Tax');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function transactionModes()
     {
         return $this->hasMany('App\TransactionMode');

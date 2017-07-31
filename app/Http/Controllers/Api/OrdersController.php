@@ -8,8 +8,8 @@ use App\Credit;
 use App\Customer;
 use App\Exceptions\Api\InvalidRequestException;
 use App\Item;
+use App\ItemProduct;
 use App\Order;
-use App\Product;
 use App\Register;
 use App\RoomSelection;
 use App\Support\Facades\ApiAuth;
@@ -87,7 +87,13 @@ class OrdersController extends ApiController
             'items' => 'sometimes|array',
             'items.*.uuid' => 'bail|required|string|unique:items',
             'items.*.quantity' => 'bail|required|numeric|not_in:0',
-            // 'items.*.product' => // see special validation below
+            'items.*.product' => 'bail|required|array',
+            'items.*.product.name' => 'bail|required|string',
+            'items.*.product.price' => 'bail|required|numeric|min:0',
+            'items.*.product.product_id' => 'sometimes|nullable|exists:products,id',
+            'items.*.product.taxes' => 'sometimes|array',
+            'items.*.product.taxes.*.tax_id' => 'bail|required|exists:taxes,id',
+            'items.*.product.taxes.*.amount' => 'bail|required|numeric|min:0|not_in:0',
             'roomSelections' => 'sometimes|array',
             'roomSelections.*.uuid' => 'bail|required|string|unique:room_selections',
             'roomSelections.*.startDate' => 'bail|required|integer|min:0',
@@ -97,26 +103,6 @@ class OrdersController extends ApiController
             'roomSelections.*.fieldValues.*.field' => 'bail|required|exists:fields,id',
             'roomSelections.*.fieldValues.*.value' => 'bail|required|string',
         ];
-
-        // Conditional validation for items.*.product if it is an id or an array
-        $items = array_get($data, 'items', []);
-
-        if (is_array($items)) {
-            foreach ($items as $index => $roomSelection) {
-                $product = array_key_exists('product', $roomSelection) ? $roomSelection['product'] : null;
-
-                if (!is_array($product)) {
-                    // If it is an id
-                    $rules["items.$index.product"] = 'bail|required|exists:products,id';
-                } else {
-                    // If it is an object, we add sub validations
-                    $rules["items.$index.product"] = 'bail|required|array';
-                    $rules["items.$index.product.uuid"] = 'bail|required|string|unique:products,uuid';
-                    $rules["items.$index.product.name"] = 'bail|required|string';
-                    $rules["items.$index.product.price"] = 'bail|required|numeric|min:0|not_in:0';
-                }
-            }
-        }
 
         // Conditional validation for roomSelections.*.endDate to be 1 day after startDate
         $roomSelections = array_get($data, 'roomSelections', []);
@@ -216,36 +202,19 @@ class OrdersController extends ApiController
         foreach ($items as $itemData) {
             $item = new Item($itemData);
             $item->order()->associate($order);
-
-            $product = array_get($itemData, 'product');
-
-            if (!is_array($product)) {
-                $item->product_id = $product;
-            } else {
-                $newProduct = $this->createCustomProduct($product, $order->business);
-                $item->product()->associate($newProduct);
-            }
-
             $item->save();
+
+            $productData = array_get($itemData, 'product');
+            $itemProduct = new ItemProduct($productData);
+            $itemProduct->item()->associate($item);
+            $itemProduct->save();
+
+            $taxes = array_get($productData, 'taxes', []);
+
+            if (count($taxes)) {
+                $itemProduct->setTaxes($taxes);
+            }
         }
-    }
-
-    /**
-     * Creates a custom Product from the $data and returns it.
-     *
-     * @param array $data
-     * @param \App\Business $business
-     *
-     * @return Product
-     */
-    protected function createCustomProduct($data, Business $business)
-    {
-        $product = new Product($data);
-        $product->is_custom = true;
-        $product->business()->associate($business);
-        $product->save();
-
-        return $product;
     }
 
     /**

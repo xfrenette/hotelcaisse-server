@@ -12,6 +12,16 @@ use Illuminate\Support\Facades\DB;
  */
 class ItemProduct extends Model
 {
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = ['name', 'price', 'product_id'];
+    /**
+     * Table name for applied_taxes
+     * @var string
+     */
     protected $appliedTaxesTable = 'applied_taxes';
 
     /**

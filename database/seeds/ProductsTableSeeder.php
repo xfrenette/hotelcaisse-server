@@ -37,10 +37,6 @@ class ProductsTableSeeder extends Seeder
                 $product->parent()->associate($parentProduct);
             }
 
-            if ($i === 9) {
-                $product->uuid = $faker->uuid;
-            }
-
             $product->save();
         }
     }
