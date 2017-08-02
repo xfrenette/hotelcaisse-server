@@ -15,7 +15,6 @@ class TaxesTableSeeder extends Seeder
             return;
         }
 
-
         $faker = \Faker\Factory::create();
         $business = \App\Business::first();
 
