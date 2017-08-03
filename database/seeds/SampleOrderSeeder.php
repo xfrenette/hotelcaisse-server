@@ -19,6 +19,15 @@ class SampleOrderSeeder extends Seeder
         $business = \App\Business::first();
 
         $customer = new \App\Customer();
+
+        $customerFields = $business->customerFields;
+        $customerFields->each(function ($field) use (&$data, $faker) {
+            $data['customer']['fieldValues'][] = [
+                'field' => $field->id,
+                'value' => $faker->word(),
+            ];
+        });
+
         $customer->business()->associate($business);
         $customer->save();
 
@@ -30,7 +39,7 @@ class SampleOrderSeeder extends Seeder
         $order->save();
 
         // credits
-        for ($i = 0; $i < 2; $i++) {
+        for ($i = 0; $i < 4; $i++) {
             $amount = $faker->randomFloat(2, 0, 10);
 
             $credit = new \App\Credit([
@@ -45,7 +54,7 @@ class SampleOrderSeeder extends Seeder
 
         // items
         $products = $business->products;
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 0; $i < 4; $i++) {
             $isCustom = $i === 2;
 
             $item = new \App\Item([
@@ -81,7 +90,7 @@ class SampleOrderSeeder extends Seeder
         // room selections
         $rooms = $business->rooms;
         $roomSelectionFields = $business->roomSelectionFields;
-        for ($i = 0; $i < 2; $i++) {
+        for ($i = 0; $i < 4; $i++) {
             $endDate = $faker->dateTimeThisMonth();
             $startDate = clone $endDate;
             $startDate->sub(new \DateInterval('PT' . $faker->numberBetween(25, 200) . 'H'));
@@ -109,7 +118,7 @@ class SampleOrderSeeder extends Seeder
         // transactions
         $transactionModes = $business->transactionModes;
         $register = \App\Register::first();
-        for ($i = 0; $i < 2; $i++) {
+        for ($i = 0; $i < 4; $i++) {
             $amount = $faker->randomFloat(2, -10, 10);
 
             $transaction = new \App\Transaction([

@@ -39,6 +39,10 @@ class OrdersControllerTest extends TestCase
         $this->business = Business::first();
         $this->controller = new OrdersController();
 
+        if (is_null($this->business)) {
+            throw new \Exception('This test class requires test data. Run the seeder.');
+        }
+
         if (!self::$faker) {
             self::$faker = Factory::create();
         }
@@ -159,6 +163,20 @@ class OrdersControllerTest extends TestCase
         }
 
         return ['data' => $data];
+    }
+
+    protected function generateEditData()
+    {
+        $data = $this->generateNewData();
+        $order = Order::first();
+
+        if (is_null($order)) {
+            throw new \Exception('This test requires test data. Run the seeder.');
+        }
+
+        array_set($data, 'data.uuid', $order->uuid);
+
+        return $data;
     }
 
     protected function createOtherOrder()
@@ -627,5 +645,540 @@ class OrdersControllerTest extends TestCase
             [Business::MODIFICATION_ORDERS],
             $this->business->getVersionModifications($newVersion)
         );
+    }
+
+    ////////////////////////////////////////
+    // ====================================
+    ////////////////////////////////////////
+
+    public function testEditWorksWithValidData()
+    {
+        $device = $this->createDeviceWithOpenedRegister();
+        $this->mockApiAuthDevice($device);
+
+        $data = $this->generateEditData();
+        $response = $this->queryAPI('api.orders.edit', $data);
+        $response->assertJson([
+            'status' => 'ok'
+        ]);
+    }
+
+    public function testEditWorksWithMissingOptionalAttributes()
+    {
+        $device = $this->createDeviceWithOpenedRegister();
+        $this->mockApiAuthDevice($device);
+
+        $data = $this->generateEditData();
+
+        array_forget($data, 'data.customer');
+        array_forget($data, 'data.note');
+        array_forget($data, 'data.credits');
+        array_forget($data, 'data.items');
+        array_forget($data, 'data.roomSelections');
+        array_forget($data, 'data.transactions');
+
+        $response = $this->queryAPI('api.orders.edit', $data);
+        $response->assertJson([
+            'status' => 'ok'
+        ]);
+    }
+
+    public function testEditReturnsErrorWithInvalidUUID()
+    {
+        $device = $this->createDeviceWithOpenedRegister();
+        $this->mockApiAuthDevice($device);
+
+        $data = $this->generateEditData();
+        $data['data']['uuid'] = 'non-existent';
+        $response = $this->queryAPI('api.orders.edit', $data);
+        $response->assertJson([
+            'status' => 'error',
+            'error' => [
+                'code' => ApiResponse::ERROR_CLIENT_ERROR,
+            ],
+        ]);
+    }
+
+    public function testEditReturnsErrorWithInvalidNote()
+    {
+        $data = $this->generateEditData();
+        $values = [123];
+        $this->assertValidatesData('api.orders.edit', $data, 'note', $values, false);
+    }
+
+    public function testEditReturnsErrorWithInvalidCustomer()
+    {
+        $data = $this->generateEditData();
+        $values = [null, false, 'test'];
+        $this->assertValidatesData('api.orders.edit', $data, 'customer', $values, false);
+    }
+
+    public function testEditReturnsErrorWithInvalidCustomerFields()
+    {
+        // test customer.fieldValues
+        $data = $this->generateEditData();
+        $values = [null, 1, []];
+        $this->assertValidatesData('api.orders.edit', $data, 'customer.fieldValues', $values);
+
+        // test customer.fieldValues.*.field
+        $data = $this->generateEditData();
+        $values = [null, false, 0];
+        $this->assertValidatesData('api.orders.edit', $data, "customer.fieldValues.0.field", $values);
+
+        // test customer.fieldValues.*.value
+        $data = $this->generateEditData();
+        $values = [null, false, 2];
+        $this->assertValidatesData('api.orders.edit', $data, "customer.fieldValues.0.value", $values);
+    }
+
+    public function testEditReturnsErrorWithInvalidCredits()
+    {
+        $data = $this->generateEditData();
+        $values = [null, 1];
+        $this->assertValidatesData('api.orders.edit', $data, 'credits', $values, false);
+    }
+
+    public function testEditReturnsErrorWithInvalidCreditsDataUUID()
+    {
+        $data = $this->generateEditData();
+        $values = [null, 1];
+        $this->assertValidatesData('api.orders.edit', $data, 'credits.1.uuid', $values);
+    }
+
+    public function testEditReturnsErrorWithInvalidCreditsDataNote()
+    {
+        $data = $this->generateEditData();
+        $values = [null, 1, '', ' '];
+        $this->assertValidatesData('api.orders.edit', $data, 'credits.1.note', $values);
+    }
+
+    public function testEditReturnsErrorWithInvalidCreditsDataAmount()
+    {
+        $data = $this->generateEditData();
+        $values = [null, 0, 'test', -5];
+        $this->assertValidatesData('api.orders.edit', $data, 'credits.1.amount', $values);
+    }
+
+    public function testEditReturnsErrorWithInvalidTransactions()
+    {
+        $data = $this->generateEditData();
+        $values = [null, 1];
+        $this->assertValidatesData('api.orders.edit', $data, 'transactions', $values, false);
+    }
+
+    public function testEditReturnsErrorWithInvalidTransactionsDataUUID()
+    {
+        // TODO: test for existing id
+        $data = $this->generateEditData();
+        $values = [null, 1];
+        $this->assertValidatesData('api.orders.edit', $data, 'transactions.1.uuid', $values);
+    }
+
+    public function testEditReturnsErrorWithInvalidTransactionsDataAmount()
+    {
+        $data = $this->generateEditData();
+        $values = [null, 0, 'test'];
+        $this->assertValidatesData('api.orders.edit', $data, 'transactions.1.amount', $values);
+    }
+
+    public function testEditReturnsErrorWithInvalidTransactionsDataTransactionMode()
+    {
+        $data = $this->generateEditData();
+        $values = [null, 0, 'test'];
+        $this->assertValidatesData('api.orders.edit', $data, 'transactions.1.transactionMode', $values);
+    }
+
+    public function testEditReturnsErrorWithInvalidItems()
+    {
+        $data = $this->generateEditData();
+        $values = [null, 1];
+        $this->assertValidatesData('api.orders.edit', $data, 'items', $values, false);
+    }
+
+    public function testEditReturnsErrorWithInvalidItemsDataQuantity()
+    {
+        $data = $this->generateEditData();
+        $values = [null, 0, 'test'];
+        $this->assertValidatesData('api.orders.edit', $data, 'items.1.quantity', $values);
+    }
+
+    public function testEditReturnsErrorWithInvalidItemsDataUUID()
+    {
+        $data = $this->generateEditData();
+
+        $existingOrder = $this->createOtherOrder();
+        $existingItem = new Item();
+        $existingItem->uuid = self::$faker->uuid();
+        $existingItem->order()->associate($existingOrder);
+        $existingItem->quantity = 1;
+        $existingItem->save();
+
+        $values = [null, 1, $existingItem->uuid];
+        $this->assertValidatesData('api.orders.edit', $data, 'items.1.uuid', $values);
+    }
+
+    public function testEditReturnsErrorWithInvalidItemsDataProduct()
+    {
+        $data = $this->generateEditData();
+        $values = [null, 0, 'test'];
+        $this->assertValidatesData('api.orders.edit', $data, 'items.1.product', $values);
+    }
+
+    public function testEditReturnsErrorWithInvalidItemsDataProductName()
+    {
+        $data = $this->generateEditData();
+        $values = [null, 0];
+        $this->assertValidatesData('api.orders.edit', $data, 'items.1.product.name', $values);
+    }
+
+    public function testEditReturnsErrorWithInvalidItemsDataProductPrice()
+    {
+        $data = $this->generateEditData();
+        $values = [null, -5, 'test'];
+        $this->assertValidatesData('api.orders.edit', $data, 'items.1.product.price', $values);
+    }
+
+    public function testEditReturnsErrorWithInvalidItemsDataProductID()
+    {
+        $data = $this->generateEditData();
+        $values = [-1, 'test'];
+        $this->assertValidatesData('api.orders.edit', $data, 'items.1.product.product_id', $values, false);
+    }
+
+    public function testEditReturnsErrorWithInvalidItemsDataTaxes()
+    {
+        $data = $this->generateEditData();
+        $values = [1, 'test'];
+        $this->assertValidatesData('api.orders.edit', $data, 'items.1.product.taxes', $values, false);
+    }
+
+    public function testEditReturnsErrorWithInvalidItemsDataTaxesId()
+    {
+        $data = $this->generateEditData();
+        $values = [null, -1, 'test'];
+        $this->assertValidatesData('api.orders.edit', $data, 'items.1.product.taxes.1.tax_id', $values);
+    }
+
+    public function testEditReturnsErrorWithInvalidItemsDataTaxesAmount()
+    {
+        $data = $this->generateEditData();
+        $values = [null, -1, 0, 'test'];
+        $this->assertValidatesData('api.orders.edit', $data, 'items.1.product.taxes.1.amount', $values);
+    }
+
+    public function testEditReturnsErrorWithInvalidRoomSelections()
+    {
+        $data = $this->generateEditData();
+        $values = [null, 1];
+        $this->assertValidatesData('api.orders.edit', $data, 'roomSelections', $values, false);
+    }
+
+    public function testEditReturnsErrorWithInvalidRoomSelectionsDataUUID()
+    {
+        $data = $this->generateEditData();
+
+        $values = [null, 1];
+        $this->assertValidatesData('api.orders.edit', $data, 'roomSelections.1.uuid', $values);
+    }
+
+    public function testEditReturnsErrorWithInvalidRoomSelectionsDataStartDate()
+    {
+        $data = $this->generateEditData();
+        $values = [null, 'test', -1];
+        $this->assertValidatesData('api.orders.edit', $data, 'roomSelections.1.startDate', $values);
+    }
+
+    public function testEditReturnsErrorWithInvalidRoomSelectionsDataEndDate()
+    {
+        $data = $this->generateEditData();
+        $values = [null, 'test', -2];
+        $this->assertValidatesData('api.orders.edit', $data, 'roomSelections.1.endDate', $values);
+    }
+
+    public function testEditReturnsErrorWithInvalidRoomSelectionsDataStartDateBeforeEnd()
+    {
+        $data = $this->generateEditData();
+        $start = array_get($data, 'data.roomSelections.1.startDate');
+        $end = array_get($data, 'data.roomSelections.1.endDate');
+
+        array_set($data, 'data.roomSelections.1.endDate', $start);
+        array_set($data, 'data.roomSelections.1.startDate', $end);
+
+        $response = $this->queryAPI('api.orders.edit', $data);
+        $response->assertJson([
+            'status' => 'error',
+            'error' => [
+                'code' => ApiResponse::ERROR_CLIENT_ERROR,
+            ],
+        ]);
+    }
+
+    public function testEditReturnsErrorWithInvalidRoomSelectionsDataRoom()
+    {
+        $data = $this->generateEditData();
+        $values = [null, 'test', 0];
+        $this->assertValidatesData('api.orders.edit', $data, 'roomSelections.1.room', $values);
+    }
+
+    public function testEditReturnsErrorWithInvalidRoomSelectionFields()
+    {
+        // test roomSelections.*.fieldValues
+        $data = $this->generateEditData();
+        $values = [null, 1, []];
+        $this->assertValidatesData('api.orders.edit', $data, 'roomSelections.1.fieldValues', $values);
+
+        // test roomSelections.*.fieldValues.*.field
+        $data = $this->generateEditData();
+        $values = [null, false, 0];
+        $this->assertValidatesData('api.orders.edit', $data, "roomSelections.1.fieldValues.0.field", $values);
+
+        // test customer.fieldValues.*.value
+        $data = $this->generateEditData();
+        $values = [null, false, 2];
+        $this->assertValidatesData('api.orders.edit', $data, "roomSelections.1.fieldValues.0.value", $values);
+    }
+
+    // --------------------
+
+    public function testEditFailsIfTransactionsWithClosedRegister()
+    {
+        $baseData = $this->generateEditData();
+        $device = $this->createDevice();
+        $this->mockApiAuthDevice($device);
+        $data = [
+            'data' => array_only($baseData['data'], ['uuid', 'transactions']),
+        ];
+
+        $response = $this->queryAPI('api.orders.edit', $data);
+        $response->assertJson([
+            'status' => 'error',
+            'error' => [
+                'code' => ApiResponse::ERROR_CLIENT_ERROR,
+            ],
+        ]);
+    }
+
+    public function testEditIgnoresOpenedRegisterIfNoTransactions()
+    {
+        $baseData = $this->generateEditData();
+        $device = $this->createDevice();
+        $this->mockApiAuthDevice($device);
+        $data = [
+            'data' => array_only($baseData['data'], ['uuid', 'items']),
+        ];
+        $response = $this->queryAPI('api.orders.edit', $data);
+
+        $response->assertJson([
+            'status' => 'ok',
+        ]);
+    }
+
+    // -------------------------
+
+    public function testUpdateOrderUpdatesNote()
+    {
+        $order = Order::first();
+        $oldNote = $order->note;
+        $device = $this->createDeviceWithOpenedRegister();
+
+        // Test not changed if attribute not there
+        $this->controller->updateOrder($order, [], $device->currentRegister);
+        $order->refresh();
+        $this->assertEquals($oldNote, $order->note);
+
+        // Test new value is saved
+        $values = [$oldNote . 'new', null];
+        foreach ($values as $value) {
+            $this->controller->updateOrder($order, ['note' => $value], $device->currentRegister);
+            $order->refresh();
+            $this->assertEquals($value, $order->note);
+        }
+    }
+
+    public function testUpdateOrderUpdatesCustomerFields()
+    {
+        $device = $this->createDeviceWithOpenedRegister();
+        $order = Order::first();
+        $old = $order->customer->fieldValues;
+
+        // Test not changed if attribute not there
+        $this->controller->updateOrder($order, ['note' => 'test'], $device->currentRegister);
+        $order->refresh();
+        $this->assertEquals($old, $order->customer->fieldValues);
+
+        $new = $old->slice(1, 2)->values();
+        $new[0]->value = 'new' . $new[0]->value;
+        $data = [
+            'customer' => [
+                'fieldValues' => $new->map(function ($field) {
+                    return [
+                        'field' => $field->field_id,
+                        'value' => $field->value,
+                    ];
+                })->toArray(),
+            ],
+        ];
+        $this->controller->updateOrder($order, $data, $device->currentRegister);
+        $this->assertEquals($new->toArray(), $order->customer->fieldValues->toArray());
+    }
+
+    public function testUpdateOrderUpdatesCredits()
+    {
+        $device = $this->createDeviceWithOpenedRegister();
+        $order = Order::first();
+        $old = $order->credits;
+
+        // Does nothing if not present
+        $data = ['note' => 'test'];
+        $this->controller->updateOrder($order, $data, $device->currentRegister);
+        $order->refresh();
+        $this->assertEquals($old->count(), $order->credits->count());
+
+        // Remove one
+        $new = $old->slice(1)->values()->map(function ($credit, $index) {
+            $data = [
+                'uuid' => $credit->uuid,
+                'note' => $credit->note,
+                'amount' => $credit->amount,
+            ];
+
+            // Modify one
+            if ($index === 1) {
+                $data['note'] = 'new' . $data['note'];
+            }
+
+            return $data;
+        });
+
+        // Add one
+        $new->prepend([
+            'uuid' => 'test-uuid',
+            'note' => 'test',
+            'amount' => 3
+        ]);
+
+        $this->controller->updateOrder($order, ['credits' => $new->toArray()], $device->currentRegister);
+        $order->refresh();
+        $this->assertEquals($new->count(), $order->credits->count());
+
+        $new->each(function ($newData) use ($order) {
+            $credit = $order->credits->first(function ($credit) use ($newData) {
+                return $credit->uuid === $newData['uuid'];
+            });
+            $this->assertEquals($newData['note'], $credit->note);
+        });
+    }
+
+    public function testUpdateOrderAddsTransactions()
+    {
+        $device = $this->createDeviceWithOpenedRegister();
+        $order = Order::first();
+        $old = $order->transactions;
+
+        // Does nothing if not present
+        $data = ['note' => 'test'];
+        $this->controller->updateOrder($order, $data, $device->currentRegister);
+        $order->refresh();
+        $this->assertEquals($old->count(), $order->transactions->count());
+
+        $baseData = $this->generateEditData();
+        $new = $baseData['data']['transactions'];
+
+        $this->controller->updateOrder($order, ['transactions' => $new], $device->currentRegister);
+        $order->refresh();
+        $this->assertEquals(count($new) + $old->count(), $order->transactions->count());
+
+        $UUIDs = $order->transactions->pluck('uuid');
+        $newUUIDs = array_pluck($new, 'uuid');
+        // Test all elements are present by removing new UUIDs
+        $this->assertEquals($old->count(), $UUIDs->diff($newUUIDs)->count());
+        // Test all elements are present by removing old UUIDs
+        $this->assertEquals(count($newUUIDs), $UUIDs->diff($old->pluck('uuid'))->count());
+    }
+
+    public function testUpdateOrderAddsItems()
+    {
+        $device = $this->createDeviceWithOpenedRegister();
+        $order = Order::first();
+        $old = $order->items;
+
+        // Does nothing if not present
+        $data = ['note' => 'test'];
+        $this->controller->updateOrder($order, $data, $device->currentRegister);
+        $order->refresh();
+        $this->assertEquals($old->count(), $order->items->count());
+
+        $baseData = $this->generateEditData();
+        $new = $baseData['data']['items'];
+
+        $this->controller->updateOrder($order, ['items' => $new], $device->currentRegister);
+        $order->refresh();
+        $this->assertEquals(count($new) + $old->count(), $order->items->count());
+
+        $UUIDs = $order->items->pluck('uuid');
+        $newUUIDs = array_pluck($new, 'uuid');
+        // Test all elements are present by removing new UUIDs
+        $this->assertEquals($old->count(), $UUIDs->diff($newUUIDs)->count());
+        // Test all elements are present by removing old UUIDs
+        $this->assertEquals(count($newUUIDs), $UUIDs->diff($old->pluck('uuid'))->count());
+    }
+
+    public function testUpdateOrderUpdatesRoomSelections()
+    {
+        $device = $this->createDeviceWithOpenedRegister();
+        $order = Order::first();
+        $old = $order->roomSelections;
+
+        // Does nothing if not present
+        $data = ['note' => 'test'];
+        $this->controller->updateOrder($order, $data, $device->currentRegister);
+        $order->refresh();
+        $this->assertEquals($old->count(), $order->roomSelections->count());
+
+        // Remove one
+        $new = $old->slice(1)->values()->map(function ($roomSelection, $index) {
+            $fieldValues = $roomSelection->fieldValues->map(function ($fieldValue) {
+                return [
+                    'field' => $fieldValue->field_id,
+                    'value' => $fieldValue->value,
+                ];
+            })->toArray();
+
+            $data = [
+                'uuid' => $roomSelection->uuid,
+                'startDate' => $roomSelection->start_date->getTimestamp(),
+                'endDate' => $roomSelection->end_date->getTimestamp(),
+                'room' => $roomSelection->room_id,
+                'fieldValues' => $fieldValues,
+            ];
+
+            // Modify one
+            if ($index === 1) {
+                $data['startDate'] = 4;
+            }
+
+            return $data;
+        });
+
+        // Add one
+        $new->prepend([
+            'uuid' => 'test-uuid',
+            'startDate' => $new[0]['startDate'] - 1000,
+            'endDate' => $new[0]['endDate'] - 1000,
+            'room' => $new[0]['room'],
+            'fieldValues' => $new[0]['fieldValues'], // just a simple copy if the first
+        ]);
+
+        $this->controller->updateOrder($order, ['roomSelections' => $new->toArray()], $device->currentRegister);
+        $order->refresh();
+        $this->assertEquals($new->count(), $order->items->count());
+
+        $new->each(function ($newData) use ($order) {
+            $roomSelection = $order->roomSelections->first(function ($instance) use ($newData) {
+                return $instance->uuid === $newData['uuid'];
+            });
+
+            $this->assertEquals($newData['startDate'], $roomSelection->start_date->getTimestamp());
+        });
     }
 }

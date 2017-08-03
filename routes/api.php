@@ -24,4 +24,5 @@ Route::middleware('apiauth')
         Route::post('cashMovements/add', 'CashMovementsController@add')->name('cashMovements.add');
         Route::post('cashMovements/delete', 'CashMovementsController@delete')->name('cashMovements.delete');
         Route::post('orders/new', 'OrdersController@new')->name('orders.new');
+        Route::post('orders/edit', 'OrdersController@edit')->name('orders.edit');
     });

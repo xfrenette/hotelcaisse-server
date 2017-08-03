@@ -92,7 +92,6 @@ $factory->defineAs(App\Product::class, 'withBusiness', function (\Faker\Generato
         'name' => $faker->word,
         'description' => $faker->words(4, true),
         'price' => $faker->randomFloat(2, 0, 100),
-        'is_custom' => $faker->boolean(10),
         'business_id' => function () {
             return factory(\App\Business::class)->create()->id;
         },

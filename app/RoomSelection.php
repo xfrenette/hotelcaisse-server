@@ -10,6 +10,13 @@ class RoomSelection extends Model
     use HasFields;
 
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = ['uuid', 'start_date', 'end_date'];
+
+    /**
      * The attributes that should be mutated to dates.
      *
      * @var array
