@@ -1007,15 +1007,12 @@ class OrdersControllerTest extends TestCase
         $this->assertEquals($old, $order->customer->fieldValues);
 
         $new = $old->slice(1, 2)->values();
-        $new[0]->value = 'new' . $new[0]->value;
+        $editedElement = $new[0];
+        $editedElement['value'] = 'new' . $editedElement['value'];
+        $new[0] = $editedElement;
         $data = [
             'customer' => [
-                'fieldValues' => $new->map(function ($field) {
-                    return [
-                        'field' => $field->field_id,
-                        'value' => $field->value,
-                    ];
-                })->toArray(),
+                'fieldValues' => $new->toArray(),
             ],
         ];
         $this->controller->updateOrder($order, $data, $device->currentRegister);
@@ -1137,12 +1134,7 @@ class OrdersControllerTest extends TestCase
 
         // Remove one
         $new = $old->slice(1)->values()->map(function ($roomSelection, $index) {
-            $fieldValues = $roomSelection->fieldValues->map(function ($fieldValue) {
-                return [
-                    'field' => $fieldValue->field_id,
-                    'value' => $fieldValue->value,
-                ];
-            })->toArray();
+            $fieldValues = $roomSelection->fieldValues->toArray();
 
             $data = [
                 'uuid' => $roomSelection->uuid,

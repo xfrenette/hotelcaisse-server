@@ -87,15 +87,19 @@ trait HasFields
     }
 
     /**
-     * Return a Collection of all the field values where each entry has a `field_id` key and a `value` key
+     * Return a Collection of all the field values where each entry is an array with a `field` key (Field id) and a
+     * `value` key
      *
      * @return \Illuminate\Support\Collection
      */
     public function getFieldValuesAttribute()
     {
         return $this->getFieldsQuery()
-            ->select(['field_id', 'value'])
-            ->get();
+            ->select(['field_id as field', 'value'])
+            ->get()
+            ->map(function ($item) {
+                return get_object_vars($item);
+            });
     }
 
     /**
