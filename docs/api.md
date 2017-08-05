@@ -147,7 +147,7 @@ case or if any validation error occurs, an error is returned and the request is 
 * `credits.*.amount`: (float, > 0) Amount for this credit
 * `transactions`: (array, optional) Transactions of the Order (see next lines)
 * `transactions.*.uuid`: (string) Generated UUID for this transaction
-* `transactions.*.amount`: (float, != 0) Amount of this transaction (positive means paiement, negative means refund)
+* `transactions.*.amount`: (float, != 0) Amount of this transaction (positive means payment, negative means refund)
 * `transactions.*.transactionMode`: (numeric) Id of the TransactionMode used
 * `items`: (array, optional) Items of this Order (see next lines)
 * `items.*.uuid`: (string) Generated UUID for this Item
@@ -161,6 +161,56 @@ case or if any validation error occurs, an error is returned and the request is 
 * `items.*.product.taxes.*.amount`: (float, > 0) Applied amount (absolute, no percentage) for a single unit
 * `roomSelections`: (array, optional) List of RoomSelections (see next lines)
 * `roomSelections.*.uuid`: (string) Generated UUID for this RoomSelections
+* `roomSelections.*.startDate`: (numeric) Timestamp (seconds) for the start date
+* `roomSelections.*.endDate`: (numeric) Timestamp (seconds) for the end date (must be at least 24 hours after startDate)
+* `roomSelections.*.room`: (numeric) Id of the Room
+* `roomSelections.*.fieldValues`: (array) Field values for the RoomSelection (see below)
+* `roomSelections.*.fieldValues.*.field`: (numeric) Id of the Field
+* `roomSelections.*.fieldValues.*.value`: (string) Value for the Field
+
+### Response `data`
+None returned
+
+`POST /orders/edit`
+---
+
+Updates an existing Order from the data. The register must be opened if the data contains transactions. If it is
+not the case or if any validation error occurs, an error is returned and the request is ignored. First level attributes
+are all optional (except uuid), but their children are required if the parent is present.
+
+Some attributes are "editable lists", others are "add-only lists".
+* "editable list": existing items can be edited (just include the new data) and deleted (do not include the item in the
+    list), and new items can be added. This requires that non-edited items be also in the list.
+* "add-only list": existing items cannot be modified or deleted (ex: for accounting reasons). All items in the list
+    will be considered a new item and will be created.
+
+### Request `data`
+* `uuid`: (string) UUID of the Order to edit
+* `note`: (string, optional) Note for the Order 
+* `customer`: (array, optional) Data for Customer (see next lines)
+* `customer.fieldValues`: ("editable list", array) Field values (see next lines)
+* `customer.fieldValues.*.field`: (number) Id of the Field
+* `customer.fieldValues.*.value`: (string) Value for the Field
+* `credits`: ("editable list", array, optional) Credits of the Order (see next lines)
+* `credits.*.uuid`: (string) UUID of this credit (a new one if creating, an existing one if editing)
+* `credits.*.note`: (string) Note for this credit
+* `credits.*.amount`: (float, > 0) Amount for this credit
+* `transactions`: ("add-only list", array, optional) Transactions of the Order (see next lines)
+* `transactions.*.uuid`: (string) Generated UUID for this transaction
+* `transactions.*.amount`: (float, != 0) Amount of this transaction (positive means payment, negative means refund)
+* `transactions.*.transactionMode`: (numeric) Id of the TransactionMode used
+* `items`: ("add-only list", array, optional) Items of this Order (see next lines)
+* `items.*.uuid`: (string) Generated UUID for this Item
+* `items.*.quantity`: (float, != 0) Quantity of the product for this Item (negative is for refunded item)
+* `items.*.product`: (array) Information about the product (see next lines)
+* `items.*.product.name`: (string) Name of the product (must be a full name if a variant, including the parent's name)
+* `items.*.product.price`: (float, >= 0) Unit price (before taxes) this product was sold (positive, even if it is a refunded item)
+* `items.*.product.product_id`: (numeric, optional) Unless this is a custom product, id of the original Business' Product
+* `items.*.product.taxes`: (array, optional) Taxes applied for a unit of the product
+* `items.*.product.taxes.*.tax_id`: (numeric) Id of the Tax
+* `items.*.product.taxes.*.amount`: (float, > 0) Applied amount (absolute, no percentage) for a single unit
+* `roomSelections`: ("editable list", array, optional) List of RoomSelections (see next lines)
+* `roomSelections.*.uuid`: (string) UUID for this RoomSelections (a new one if creating, an existing one if editing)
 * `roomSelections.*.startDate`: (numeric) Timestamp (seconds) for the start date
 * `roomSelections.*.endDate`: (numeric) Timestamp (seconds) for the end date (must be at least 24 hours after startDate)
 * `roomSelections.*.room`: (numeric) Id of the Room
