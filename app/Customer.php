@@ -10,6 +10,20 @@ class Customer extends Model
     use HasFields;
 
     /**
+     * The attributes that should be visible in serialization.
+     *
+     * @var array
+     */
+    protected $visible = ['fieldValues'];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['fieldValues'];
+
+    /**
      * @see HasFields#getFieldsClass
      * @return string
      */
