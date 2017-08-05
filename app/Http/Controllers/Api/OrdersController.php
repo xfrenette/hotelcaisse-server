@@ -182,7 +182,16 @@ class OrdersController extends ApiController
         return $order;
     }
 
-    // $register must accept null
+    /**
+     * Updates the Order with the supplied $data array. $register is required only if the $data contains transactions,
+     * else it can be null.
+     *
+     * @param \App\Order $order
+     * @param $data
+     * @param \App\Register|null $register
+     *
+     * @return \App\Order
+     */
     public function updateOrder(Order $order, $data, Register $register = null)
     {
         $order->refresh();
@@ -308,6 +317,12 @@ class OrdersController extends ApiController
         }
     }
 
+    /**
+     * Updates the note of the Order (only if $data has `note` attribute).
+     *
+     * @param \App\Order $order
+     * @param $data
+     */
     protected function updateOrderNote(Order &$order, $data)
     {
         if (array_has($data, 'note')) {
@@ -315,6 +330,14 @@ class OrdersController extends ApiController
         }
     }
 
+    /**
+     * Updates the fieldValues of a Customer (only if $data has `customer.fieldValues` attribute). We can add a new
+     * value, modify or delete a value. For this reason, all fieldValues must be present, even if the ones that are not
+     * modified, else they will be deleted.
+     *
+     * @param \App\Order $order
+     * @param $data
+     */
     protected function updateOrderCustomer(Order $order, $data)
     {
         if (array_has($data, 'customer.fieldValues')) {
@@ -322,6 +345,14 @@ class OrdersController extends ApiController
         }
     }
 
+    /**
+     * Updates the Credit list of the Order (only if $data has `credits` attribute). Credits can be created, modified or
+     * deleted. For this reason, all Credit must be present in the `credits` attribute of $data, else the missing ones
+     * will be deleted.
+     *
+     * @param \App\Order $order
+     * @param $data
+     */
     protected function updateOrderCredits(Order $order, $data)
     {
         if (!array_has($data, 'credits')) {
@@ -361,6 +392,13 @@ class OrdersController extends ApiController
         }
     }
 
+    /**
+     * Updates the list of Items (only if $data has `items` attribute). Items can only be added. It is not possible to
+     * modify or delete existing items (for accounting reasons).
+     *
+     * @param \App\Order $order
+     * @param $data
+     */
     protected function updateOrderItems(Order $order, $data)
     {
         if (!array_has($data, 'items')) {
@@ -370,6 +408,15 @@ class OrdersController extends ApiController
         $this->addOrderItems($order, $data);
     }
 
+    /**
+     * Updates the RoomSelections of the Order (only if $data has `roomSelections` attribute). It is possible to create
+     * new, modify or delete RoomSelection. For this reason, the roomSelections attribute must contain all the
+     * RoomSelection, even the ones that are not modified (if a RoomSelection is not there, we assume it must be
+     * deleted).
+     *
+     * @param \App\Order $order
+     * @param $data
+     */
     protected function updateOrderRoomSelections(Order $order, $data)
     {
         if (!array_has($data, 'roomSelections')) {
@@ -411,6 +458,14 @@ class OrdersController extends ApiController
         }
     }
 
+    /**
+     * Updates the Transactions of the Order (only if $data has `transactions` attribute). We can only add new
+     * transactions, previously created transactions cannot be modified or deleted (for accounting reasons).
+     *
+     * @param \App\Order $order
+     * @param array $data
+     * @param \App\Register $register
+     */
     protected function updateOrderTransactions(Order $order, $data, Register $register)
     {
         if (!array_has($data, 'transactions')) {
