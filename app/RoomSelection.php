@@ -17,6 +17,20 @@ class RoomSelection extends Model
     protected $fillable = ['uuid', 'start_date', 'end_date'];
 
     /**
+     * The attributes that should be visible in serialization.
+     *
+     * @var array
+     */
+    protected $visible = ['uuid', 'fieldValues'];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['fieldValues'];
+
+    /**
      * The attributes that should be mutated to dates.
      *
      * @var array
@@ -51,5 +65,19 @@ class RoomSelection extends Model
     public function room()
     {
         return $this->belongsTo('App\Room');
+    }
+
+    /**
+     * Redefined the toArray to add startDate and endDate timestamps, and room (Room id) attribute.
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        return array_merge(parent::toArray(), [
+            'startDate' => $this->start_date->getTimestamp(),
+            'endDate' => $this->end_date->getTimestamp(),
+            'room' => $this->room_id,
+        ]);
     }
 }
