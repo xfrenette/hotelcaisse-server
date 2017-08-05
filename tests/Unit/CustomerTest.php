@@ -27,5 +27,4 @@ class CustomerTest extends TestCase
 
         $this->assertEquals($expected, $customer->toArray());
     }
-
 }

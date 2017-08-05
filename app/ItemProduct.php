@@ -18,11 +18,26 @@ class ItemProduct extends Model
      * @var array
      */
     protected $fillable = ['name', 'price', 'product_id'];
+
     /**
      * Table name for applied_taxes
      * @var string
      */
     protected $appliedTaxesTable = 'applied_taxes';
+
+    /**
+     * The attributes that should be visible in serialization.
+     *
+     * @var array
+     */
+    protected $visible = ['name', 'price', 'taxes'];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['taxes'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -33,7 +48,17 @@ class ItemProduct extends Model
     }
 
     /**
-     * @todo
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function product()
+    {
+        return $this->belongsTo('App\Product');
+    }
+
+    /**
+     * Returns a Collection of array with `tax_id` and `amount` keys
+     *
+     * @return \Illuminate\Support\Collection
      */
     public function getTaxesAttribute()
     {
@@ -42,7 +67,10 @@ class ItemProduct extends Model
             ->where([
                 'type' => 'ItemProduct',
                 'instance_id' => $this->id,
-            ])->get();
+            ])->get()
+            ->map(function ($row) {
+                return get_object_vars($row);
+            });
     }
 
     /**
