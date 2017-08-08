@@ -12,6 +12,28 @@ class Business extends Model
     const MODIFICATION_ORDERS = 'orders';
 
     /**
+     * The attributes that should be visible in serialization.
+     *
+     * @var array
+     */
+    protected $visible = [
+        'rooms',
+        'taxes',
+        'transactionModes',
+        'products',
+        'customerFields',
+        'roomSelectionFields',
+        'rootProductCategory',
+    ];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['rootProductCategory'];
+
+    /**
      * Name of the versions table
      * @var string
      */
@@ -201,5 +223,23 @@ class Business extends Model
         }
 
         return $newVersion;
+    }
+
+    /**
+     * Redefines the toArray to camelCase the `customer_fields`, `room_selection_fields` and 'transaction_modes'.
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        $array = parent::toArray();
+        $toCamelCase = ['customer_fields', 'room_selection_fields', 'transaction_modes'];
+
+        foreach ($toCamelCase as $attributeName) {
+            $array[camel_case($attributeName)] = $array[$attributeName];
+            unset($array[$attributeName]);
+        }
+
+        return $array;
     }
 }
