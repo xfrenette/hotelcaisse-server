@@ -126,10 +126,10 @@ class BusinessTest extends TestCase
 
         $business->setRelation('rooms', $rooms);
         $business->setRelation('taxes', $taxes);
-        $business->setRelation('transactionModes', $transactionModes);
+        $business->setRelation('transaction_modes', $transactionModes);
         $business->setRelation('products', $products);
-        $business->setRelation('customerFields', $customerFields);
-        $business->setRelation('roomSelectionFields', $roomSelectionFields);
+        $business->setRelation('customer_fields', $customerFields);
+        $business->setRelation('room_selection_fields', $roomSelectionFields);
 
         $this->assertEquals($expected, $business->toArray());
     }

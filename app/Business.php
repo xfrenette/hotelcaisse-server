@@ -19,11 +19,11 @@ class Business extends Model
     protected $visible = [
         'rooms',
         'taxes',
-        'transactionModes',
+        'transaction_modes',
         'products',
-        'customerFields',
-        'roomSelectionFields',
-        'rootProductCategory',
+        'customer_fields',
+        'room_selection_fields',
+        'root_product_category',
     ];
 
     /**
@@ -31,7 +31,7 @@ class Business extends Model
      *
      * @var array
      */
-    protected $appends = ['rootProductCategory'];
+    protected $appends = ['root_product_category'];
 
     /**
      * Name of the versions table
@@ -233,7 +233,7 @@ class Business extends Model
     public function toArray()
     {
         $array = parent::toArray();
-        $toCamelCase = ['customer_fields', 'room_selection_fields', 'transaction_modes'];
+        $toCamelCase = ['customer_fields', 'room_selection_fields', 'transaction_modes', 'root_product_category'];
 
         foreach ($toCamelCase as $attributeName) {
             $array[camel_case($attributeName)] = $array[$attributeName];
