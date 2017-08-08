@@ -17,6 +17,13 @@ class Register extends Model
     const STATE_OPENED = 1;
 
     /**
+     * The attributes that should be visible in serialization.
+     *
+     * @var array
+     */
+    protected $visible = ['cashMovements'];
+
+    /**
      * The attributes that should be mutated to dates.
      *
      * @var array
@@ -91,5 +98,19 @@ class Register extends Model
     public function getOpenedAttribute()
     {
         return $this->state === self::STATE_OPENED;
+    }
+
+    /**
+     * Redefines the toArray to rename `cash_movements` to `cashMovements`
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        $array = parent::toArray();
+        $array['cashMovements'] = $array['cash_movements'];
+        unset($array['cash_movements']);
+
+        return $array;
     }
 }

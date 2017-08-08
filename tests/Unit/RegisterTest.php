@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\CashMovement;
 use App\Register;
 use Carbon\Carbon;
 use Tests\TestCase;
@@ -47,5 +48,26 @@ class RegisterTest extends TestCase
         $this->assertEquals($POSTAmount, $this->register->post_amount);
         $this->assertEquals($cashAmount, $this->register->closing_cash);
         $this->assertTrue(abs(Carbon::now()->diffInSeconds($this->register->closed_at)) <= 1);
+    }
+
+    public function testToArray()
+    {
+        $cashMovements = collect([]);
+
+        for ($i = 1; $i <= 2; $i++) {
+            $cashMovement = new CashMovement(['uuid' => 'uuid-cashMovement-'.$i]);
+            $cashMovements->push($cashMovement);
+        }
+
+        $expected = [
+            'cashMovements' => $cashMovements->toArray(),
+        ];
+
+        $register = new Register();
+        $register->id= 456;
+        $register->device_id = 123;
+        $register->setRelation('cashMovements', $cashMovements);
+
+        $this->assertEquals($expected, $register->toArray());
     }
 }
