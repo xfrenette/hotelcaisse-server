@@ -17,10 +17,7 @@ class ProductCategoryTest extends TestCase
                 ['name' => 'Sub 1', 'products' => []],
                 ['name' => 'Sub 2', 'products' => []],
             ],
-            'products' => [
-                ['id' => 123, 'name' => 'Product 1'],
-                ['id' => 465, 'name' => 'Product 1'],
-            ]
+            'products' => [123, 465],
         ];
 
         $business = new Business();
@@ -35,12 +32,9 @@ class ProductCategoryTest extends TestCase
             $categories->push($category);
         }
 
-        foreach ($expected['products'] as $productData) {
-            $product = $this->getMockBuilder(Product::class)
-                ->setMethods(['toArray'])
-                ->getMock();
-            $product->method('toArray')
-                ->willReturn($productData);
+        foreach ($expected['products'] as $productId) {
+            $product = new Product();
+            $product->id = $productId;
             $products->push($product);
         }
 

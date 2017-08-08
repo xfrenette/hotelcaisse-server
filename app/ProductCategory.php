@@ -18,7 +18,7 @@ class ProductCategory extends Model
      *
      * @var array
      */
-    protected $visible = ['name', 'categories', 'products'];
+    protected $visible = ['name', 'categories'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -50,5 +50,17 @@ class ProductCategory extends Model
     public function products()
     {
         return $this->belongsToMany('App\Product');
+    }
+
+    /**
+     * Redefines the toArray to add `products` as an array of ids.
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        return array_merge(parent::toArray(), [
+            'products' => $this->products->pluck('id')->toArray(),
+        ]);
     }
 }
