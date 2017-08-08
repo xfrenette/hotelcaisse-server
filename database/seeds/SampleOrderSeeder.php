@@ -79,7 +79,7 @@ class SampleOrderSeeder extends Seeder
                     ->get()
                     ->map(function ($tax) use ($faker) {
                         return [
-                            'tax_id' => $tax->id,
+                            'tax' => $tax->id,
                             'amount' => $faker->randomFloat(4, 0, 20),
                         ];
                     })->toArray();
