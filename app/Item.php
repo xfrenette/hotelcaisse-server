@@ -14,6 +14,13 @@ class Item extends Model
     protected $fillable = ['uuid', 'quantity'];
 
     /**
+     * The attributes that should be visible in serialization.
+     *
+     * @var array
+     */
+    protected $visible = ['uuid', 'quantity', 'product'];
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function order()
