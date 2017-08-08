@@ -14,7 +14,7 @@ class Product extends Model
      *
      * @var array
      */
-    protected $fillable = ['uuid', 'name', 'price'];
+    protected $fillable = ['name', 'price'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
