@@ -62,15 +62,15 @@ class SampleOrderSeeder extends Seeder
                 'quantity' => $isCustom ? -2 : 2,
             ]);
             $item->order()->associate($order);
-            $item->save();
 
             $itemProduct = new \App\ItemProduct([
                 'name' => $faker->words(2, true),
                 'price' => $faker->randomFloat(2, 0.1, 10),
                 'product_id' => $isCustom ? null : $products->random()->id,
             ]);
-            $itemProduct->item()->associate($item);
             $itemProduct->save();
+            $item->product()->associate($itemProduct);
+            $item->save();
 
             if (!$isCustom) {
                 $taxes = $business->taxes()

@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreateItemsTable extends Migration
 {
@@ -21,6 +21,8 @@ class CreateItemsTable extends Migration
             $table->integer('order_id')->unsigned();
 
             $table->foreign('order_id')->references('id')->on('orders');
+
+            // Note: the item_product_id is added in the create_item_products_table migration
         });
     }
 

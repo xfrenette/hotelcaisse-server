@@ -2,7 +2,6 @@
 
 namespace Tests\Unit;
 
-use App\Item;
 use App\ItemProduct;
 use App\Product;
 use Tests\TestCase;
@@ -24,8 +23,6 @@ class ItemProductTest extends TestCase
 
         $product = new Product();
         $product->id = 963;
-        $item = new Item();
-        $item->id = 741;
 
         $itemProduct = $this->getMockBuilder(ItemProduct::class)
             ->setMethods(['getTaxesAttribute'])
@@ -34,7 +31,6 @@ class ItemProductTest extends TestCase
             ->willReturn($taxes);
         $itemProduct->id = 789;
         $itemProduct->product()->associate($product);
-        $itemProduct->item()->associate($item);
         $itemProduct->fill($expected);
 
         $this->assertEquals($expected, $itemProduct->toArray());

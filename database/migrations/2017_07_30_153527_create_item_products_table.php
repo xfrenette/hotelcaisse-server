@@ -20,10 +20,15 @@ class CreateItemProductsTable extends Migration
             $table->float('price');
             // Reference to the original product. If null, it means it is a custom product
             $table->integer('product_id')->unsigned()->nullable();
-            $table->integer('item_id')->unsigned();
 
             $table->foreign('product_id')->references('id')->on('products');
-            $table->foreign('item_id')->references('id')->on('items');
+        });
+
+        // Update the 'items' table to reference this table
+        Schema::table('items', function (Blueprint $table) {
+            $table->integer('item_product_id')->unsigned();
+
+            $table->foreign('item_product_id')->references('id')->on('item_products');
         });
     }
 
@@ -34,6 +39,11 @@ class CreateItemProductsTable extends Migration
      */
     public function down()
     {
+        Schema::table('items', function (Blueprint $table) {
+            $table->dropForeign(['item_product_id']);
+            $table->dropColumn('item_product_id');
+        });
+
         Schema::dropIfExists('item_products');
     }
 }

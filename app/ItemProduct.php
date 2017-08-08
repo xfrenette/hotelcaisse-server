@@ -42,14 +42,6 @@ class ItemProduct extends Model
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function item()
-    {
-        return $this->belongsTo('App\Item');
-    }
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
     public function product()
     {
         return $this->belongsTo('App\Product');
