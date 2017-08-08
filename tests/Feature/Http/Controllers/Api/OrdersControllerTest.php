@@ -7,6 +7,7 @@ use App\Business;
 use App\Credit;
 use App\Http\Controllers\Api\OrdersController;
 use App\Item;
+use App\ItemProduct;
 use App\Order;
 use App\Room;
 use App\RoomSelection;
@@ -346,6 +347,7 @@ class OrdersControllerTest extends TestCase
         $existingItem->uuid = self::$faker->uuid();
         $existingItem->order()->associate($existingOrder);
         $existingItem->quantity = 1;
+        $existingItem->product()->associate(factory(ItemProduct::class)->create());
         $existingItem->save();
 
         $values = [null, 1, $existingItem->uuid];
@@ -811,6 +813,7 @@ class OrdersControllerTest extends TestCase
         $existingItem->uuid = self::$faker->uuid();
         $existingItem->order()->associate($existingOrder);
         $existingItem->quantity = 1;
+        $existingItem->product()->associate(factory(ItemProduct::class)->create());
         $existingItem->save();
 
         $values = [null, 1, $existingItem->uuid];

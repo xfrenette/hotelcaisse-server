@@ -134,13 +134,10 @@ $factory->defineAs(App\Item::class, 'withOrder', function (\Faker\Generator $fak
     ];
 });
 
-$factory->defineAs(App\ItemProduct::class, 'withItem', function (\Faker\Generator $faker) {
+$factory->define(App\ItemProduct::class, function (\Faker\Generator $faker) {
     return [
         'name' => $faker->word(),
         'price' => $faker->randomFloat(2, 0, 100),
         'product_id' => null,
-        'item_id' => function () {
-            return factory(\App\Item::class, 'withOrder')->create()->id;
-        },
     ];
 });

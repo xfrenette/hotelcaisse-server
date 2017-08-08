@@ -259,12 +259,13 @@ class OrdersController extends ApiController
         foreach ($items as $itemData) {
             $item = new Item($itemData);
             $item->order()->associate($order);
-            $item->save();
 
             $productData = array_get($itemData, 'product');
             $itemProduct = new ItemProduct($productData);
-            $itemProduct->item()->associate($item);
             $itemProduct->save();
+
+            $item->product()->associate($itemProduct);
+            $item->save();
 
             $taxes = array_get($productData, 'taxes', []);
 

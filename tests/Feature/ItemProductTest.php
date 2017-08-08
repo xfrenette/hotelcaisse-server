@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Business;
 use App\ItemProduct;
 use App\Tax;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -20,12 +21,12 @@ class ItemProductTest extends TestCase
     protected function setUp()
     {
         parent::setUp();
-        $this->itemProduct = factory(ItemProduct::class, 'withItem')->create();
+        $this->itemProduct = factory(ItemProduct::class)->create();
     }
 
     public function testSetTaxesCreatesRows()
     {
-        $business = $this->itemProduct->item->order->business;
+        $business = factory(Business::class)->create();
 
         $tax1 = factory(Tax::class)->make();
         $tax1->business()->associate($business);
