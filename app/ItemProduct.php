@@ -68,7 +68,8 @@ class ItemProduct extends Model
     /**
      * Defines the 'applied taxes' to a single unit of this ItemProduct. $taxes is an array where each element is an
      * array with 'tax_id' key (reference to a Tax) and 'amount' (absolute amount, float).
-     * @param array $taxes
+     *
+     * @param array $taxes With keys `tax`(integer, tax id) and `amount` (float, absolute amount)
      */
     public function setTaxes($taxes)
     {
@@ -79,7 +80,7 @@ class ItemProduct extends Model
                 'type' => 'ItemProduct',
                 'amount' => $taxData['amount'],
                 'instance_id' => $selfID,
-                'tax_id' => $taxData['tax_id'],
+                'tax_id' => $taxData['tax'],
             ];
         }, $taxes);
 

@@ -117,7 +117,7 @@ class OrdersControllerTest extends TestCase
                     ->get()
                     ->map(function ($tax) use ($faker) {
                         return [
-                            'tax_id' => $tax->id,
+                            'tax' => $tax->id,
                             'amount' => $faker->randomFloat(4, 0, 20),
                         ];
                     })->toArray();
@@ -393,7 +393,7 @@ class OrdersControllerTest extends TestCase
     {
         $data = $this->generateNewData();
         $values = [null, -1, 'test'];
-        $this->assertValidatesData('api.orders.new', $data, 'items.1.product.taxes.1.tax_id', $values);
+        $this->assertValidatesData('api.orders.new', $data, 'items.1.product.taxes.1.tax', $values);
     }
 
     public function testNewReturnsErrorWithInvalidItemsDataTaxesAmount()
@@ -581,7 +581,7 @@ class OrdersControllerTest extends TestCase
         $product = $order->items[1]->product;
         $taxes = $product->taxes;
         $this->assertEquals(count(array_get($data, 'data.items.1.product.taxes')), $taxes->count());
-        $this->assertEquals(array_get($data, 'data.items.1.product.taxes.1.tax_id'), $taxes[1]['tax_id']);
+        $this->assertEquals(array_get($data, 'data.items.1.product.taxes.1.tax'), $taxes[1]['tax_id']);
         $this->assertEquals(array_get($data, 'data.items.1.product.taxes.1.amount'), $taxes[1]['amount']);
     }
 
@@ -859,7 +859,7 @@ class OrdersControllerTest extends TestCase
     {
         $data = $this->generateEditData();
         $values = [null, -1, 'test'];
-        $this->assertValidatesData('api.orders.edit', $data, 'items.1.product.taxes.1.tax_id', $values);
+        $this->assertValidatesData('api.orders.edit', $data, 'items.1.product.taxes.1.tax', $values);
     }
 
     public function testEditReturnsErrorWithInvalidItemsDataTaxesAmount()
