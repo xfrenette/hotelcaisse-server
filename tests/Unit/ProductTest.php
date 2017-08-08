@@ -19,17 +19,14 @@ class ProductTest extends TestCase
                 ['tax' => 7878, 'amount' => 12.34],
                 ['tax' => 2121, 'amount' => 14.68],
             ],
-            'variants' => [
-                ['id' => 963, 'name' => 'Sub product 1', 'price' => 11.33, 'taxes' => []],
-                ['id' => 852, 'name' => 'Sub product 2', 'price' => 58.65, 'taxes' => []],
-            ]
+            'variants' => [963, 852],
         ];
 
         $variants = collect();
-        foreach ($expected['variants'] as $variantData) {
+        foreach ($expected['variants'] as $variantId) {
             $variant = $this->makeMockedProductWithTaxes();
-            $variant->fill($variantData);
-            $variant->id = $variantData['id'];
+            $variant->fill(['name' => 'Test name #'.$variantId]);
+            $variant->id = $variantId;
             $variants->push($variant);
         }
 
