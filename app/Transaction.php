@@ -14,6 +14,13 @@ class Transaction extends Model
     protected $fillable = ['uuid', 'amount'];
 
     /**
+     * The attributes that should be visible in serialization.
+     *
+     * @var array
+     */
+    protected $visible = ['uuid', 'amount'];
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function order()
@@ -35,5 +42,17 @@ class Transaction extends Model
     public function transactionMode()
     {
         return $this->belongsTo('App\TransactionMode');
+    }
+
+    /**
+     * Redefines the toArray to add transactionMode.
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        return array_merge(parent::toArray(), [
+            'transactionMode' => $this->transaction_mode_id,
+        ]);
     }
 }
