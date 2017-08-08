@@ -16,8 +16,8 @@ class ProductTest extends TestCase
             'description' => 'test description',
             'price' => 12.34,
             'taxes' => [
-                ['name' => 'Tax 1', 'amount' => 12.34],
-                ['name' => 'Tax 2', 'amount' => 14.68],
+                ['tax' => 7878, 'amount' => 12.34],
+                ['tax' => 2121, 'amount' => 14.68],
             ],
             'variants' => [
                 ['id' => 963, 'name' => 'Sub product 1', 'price' => 11.33, 'taxes' => []],
