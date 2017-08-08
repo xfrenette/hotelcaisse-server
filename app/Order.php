@@ -7,6 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = ['uuid', 'note'];
+
+    /**
+     * The attributes that should be visible in serialization.
+     *
+     * @var array
+     */
+    protected $visible = ['uuid', 'note', 'customer', 'items', 'transactions', 'credits', 'roomSelections'];
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function business()
@@ -52,5 +66,19 @@ class Order extends Model
     public function roomSelections()
     {
         return $this->hasMany('App\RoomSelection');
+    }
+
+    /**
+     * Redefines the toArray to rename the room_selections key to roomSelections
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        $array = parent::toArray();
+        $array['roomSelections'] = $array['room_selections'];
+        unset($array['room_selections']);
+
+        return $array;
     }
 }
