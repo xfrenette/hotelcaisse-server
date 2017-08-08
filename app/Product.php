@@ -14,7 +14,21 @@ class Product extends Model
      *
      * @var array
      */
-    protected $fillable = ['name', 'price'];
+    protected $fillable = ['name', 'price', 'description'];
+
+    /**
+     * The attributes that should be visible in serialization.
+     *
+     * @var array
+     */
+    protected $visible = ['id', 'name', 'price', 'description', 'variants', 'appliedTaxes'];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['appliedTaxes'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -58,7 +72,10 @@ class Product extends Model
             }
 
             $appliedAmount = $tax['type'] === 'absolute' ? $tax['amount'] : ($tax['amount'] / 100) * $price;
-            $appliedTaxes->push(['name' => $tax['name'], 'amount' => $appliedAmount]);
+            $appliedTaxes->push([
+                'name' => $tax['name'],
+                'amount' => $appliedAmount,
+            ]);
         });
 
         return $appliedTaxes;
@@ -107,5 +124,19 @@ class Product extends Model
         });
 
         return $taxes;
+    }
+
+    /**
+     * Redefined the toArray to rename `appliedTaxes` to `taxes`.
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        $array = parent::toArray();
+        $array['taxes'] = $array['appliedTaxes'];
+        unset($array['appliedTaxes']);
+
+        return $array;
     }
 }
