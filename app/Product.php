@@ -134,8 +134,11 @@ class Product extends Model
     public function toArray()
     {
         $array = parent::toArray();
-        $array['taxes'] = $array['appliedTaxes'];
-        unset($array['appliedTaxes']);
+
+        if (array_key_exists('appliedTaxes', $array)) {
+            $array['taxes'] = $array['appliedTaxes'];
+            unset($array['appliedTaxes']);
+        }
 
         $array['variants'] = $this->variants->pluck('id')->toArray();
 

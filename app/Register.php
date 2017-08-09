@@ -108,8 +108,11 @@ class Register extends Model
     public function toArray()
     {
         $array = parent::toArray();
-        $array['cashMovements'] = $array['cash_movements'];
-        unset($array['cash_movements']);
+
+        if (array_key_exists('cash_movements', $array)) {
+            $array['cashMovements'] = $array['cash_movements'];
+            unset($array['cash_movements']);
+        }
 
         return $array;
     }

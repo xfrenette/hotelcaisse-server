@@ -76,8 +76,11 @@ class Order extends Model
     public function toArray()
     {
         $array = parent::toArray();
-        $array['roomSelections'] = $array['room_selections'];
-        unset($array['room_selections']);
+
+        if (array_key_exists('room_selections', $array)) {
+            $array['roomSelections'] = $array['room_selections'];
+            unset($array['room_selections']);
+        }
 
         return $array;
     }

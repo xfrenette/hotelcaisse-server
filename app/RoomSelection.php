@@ -75,8 +75,8 @@ class RoomSelection extends Model
     public function toArray()
     {
         return array_merge(parent::toArray(), [
-            'startDate' => $this->start_date->getTimestamp(),
-            'endDate' => $this->end_date->getTimestamp(),
+            'startDate' => $this->start_date ? $this->start_date->getTimestamp() : null,
+            'endDate' => $this->end_date ? $this->end_date->getTimestamp() : null,
             'room' => $this->room_id,
         ]);
     }
