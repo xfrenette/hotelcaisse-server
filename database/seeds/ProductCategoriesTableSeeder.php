@@ -37,6 +37,11 @@ class ProductCategoriesTableSeeder extends Seeder
                 $parentCategory = $category; // redefined at each loop until we reach the following else
             } else {
                 $category->parent()->associate($parentCategory);
+
+                // Third level
+                if ($i === 8) {
+                    $parentCategory = $category;
+                }
             }
 
             $category->save();
