@@ -12,10 +12,11 @@ class ProductCategoryTest extends TestCase
     public function testToArray()
     {
         $expected = [
+            'id' => 123,
             'name' => 'Test category',
             'categories' => [
-                ['name' => 'Sub 1', 'products' => []],
-                ['name' => 'Sub 2', 'products' => []],
+                ['id' => 223, 'name' => 'Sub 1', 'products' => [], 'categories' => []],
+                ['id' => 323, 'name' => 'Sub 2', 'products' => [], 'categories' => []],
             ],
             'products' => [123, 465],
         ];
@@ -23,14 +24,7 @@ class ProductCategoryTest extends TestCase
         $business = new Business();
         $business->id = 963;
 
-        $categories = collect([]);
         $products = collect([]);
-
-        foreach ($expected['categories'] as $categoryData) {
-            $category = new ProductCategory($categoryData);
-            $category->setRelation('products', collect([]));
-            $categories->push($category);
-        }
 
         foreach ($expected['products'] as $productId) {
             $product = new Product();
@@ -38,9 +32,16 @@ class ProductCategoryTest extends TestCase
             $products->push($product);
         }
 
-        $category = new ProductCategory($expected);
+        // Create a mock to simulate recursive categories
+        $category = $this->getMockBuilder(ProductCategory::class)
+            ->setMethods(['getCategoriesRecursiveAttribute'])
+            ->getMock();
+        $category->method('getCategoriesRecursiveAttribute')
+            ->willReturn(collect($expected['categories']));
+
+        $category->id = $expected['id'];
+        $category->fill($expected);
         $category->business()->associate($business);
-        $category->setRelation('categories', $categories);
         $category->setRelation('products', $products);
 
         $this->assertEquals($expected, $category->toArray());

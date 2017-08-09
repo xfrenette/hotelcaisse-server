@@ -18,7 +18,7 @@ class ProductCategory extends Model
      *
      * @var array
      */
-    protected $visible = ['name', 'categories'];
+    protected $visible = ['id', 'name'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -45,6 +45,15 @@ class ProductCategory extends Model
     }
 
     /**
+     * Returns a Collection of sub Categories containing their sub-categories
+     * @return \Illuminate\Support\Collection
+     */
+    public function getCategoriesRecursiveAttribute()
+    {
+        return $this->categories()->with('categories')->get();
+    }
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function products()
@@ -53,7 +62,8 @@ class ProductCategory extends Model
     }
 
     /**
-     * Redefines the toArray to add `products` as an array of ids.
+     * Redefines the toArray to add `products` as an array of ids, and to have ensure categories in `categories` also
+     * include their sub-categories recursively.
      *
      * @return array
      */
@@ -61,6 +71,7 @@ class ProductCategory extends Model
     {
         return array_merge(parent::toArray(), [
             'products' => $this->products->pluck('id')->toArray(),
+            'categories' => $this->categoriesRecursive->toArray(),
         ]);
     }
 }
