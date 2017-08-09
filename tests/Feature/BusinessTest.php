@@ -4,7 +4,11 @@ namespace Tests\Feature;
 
 use App\Business;
 use App\Field;
+use App\Product;
 use App\ProductCategory;
+use App\Room;
+use App\Tax;
+use App\TransactionMode;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -166,5 +170,53 @@ class BusinessTest extends TestCase
 
         $this->assertInstanceOf(ProductCategory::class, $res);
         $this->assertEquals($rootCategory->id, $res->id);
+    }
+
+    // The following test requires the seeded test data
+    public function testToArray()
+    {
+        $business = Business::first();
+        $business->loadAllRelations();
+
+        $array = $business->toArray();
+
+        // Multiple related models all have an `id` and a `name` attribute we can check to see if present
+        $simpleRelations = [
+            'rooms' => Room::class,
+            'taxes' => Tax::class,
+            'transactionModes' => TransactionMode::class,
+            'products' => Product::class,
+        ];
+
+        // For each $simpleRelations, check the count is the correct and that at least one has the same `name` attribute
+        foreach ($simpleRelations as $key => $className) {
+            $models = call_user_func($className . '::where', 'business_id', $business->id);
+            $this->assertCount($models->count(), $array[$key]);
+
+            $sampleModel = $models->first();
+            $sampleData = array_first($array[$key], function ($data) use ($sampleModel) {
+                return $sampleModel->id === $data['id'];
+            }, false);
+            $this->assertEquals($sampleData['name'], $sampleModel->name);
+        }
+
+        // Check the products are present with taxes and variants, where applicable
+        $this->assertNotEmpty($array['products'][0]['taxes']);
+        $this->assertNotFalse(array_first($array['products'], function ($product) {
+            return count($product['variants']) > 0;
+        }, false));
+
+        // Check customerFields
+        $this->assertCount($business->customerFields->count(), $array['customerFields']);
+        $sampleField = Field::find($array['customerFields'][0]['id']);
+        $this->assertEquals($sampleField->type, $array['customerFields'][0]['type']);
+
+        // Check roomSelectionFields
+        $this->assertCount($business->roomSelectionFields->count(), $array['roomSelectionFields']);
+        $sampleField = Field::find($array['roomSelectionFields'][0]['id']);
+        $this->assertEquals($sampleField->type, $array['roomSelectionFields'][0]['type']);
+
+        // Check rootProductCategory is present
+        $this->assertEquals($business->rootProductCategory->id, $array['rootProductCategory']['id']);
     }
 }
