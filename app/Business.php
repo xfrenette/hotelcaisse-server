@@ -246,4 +246,13 @@ class Business extends Model
 
         return $array;
     }
+
+    /**
+     * Just a simple utility function that loads the following relations for this Business: rooms, taxes, products,
+     * transactionModes, customerFields, roomSelectionFields
+     */
+    public function loadAllRelations()
+    {
+        $this->load(['rooms', 'taxes', 'transactionModes', 'products', 'customerFields', 'roomSelectionFields']);
+    }
 }
