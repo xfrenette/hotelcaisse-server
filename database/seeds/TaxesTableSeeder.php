@@ -1,5 +1,6 @@
 <?php
 
+use App\Tax;
 use Illuminate\Database\Seeder;
 
 class TaxesTableSeeder extends Seeder
@@ -22,7 +23,7 @@ class TaxesTableSeeder extends Seeder
             $tax = new \App\Tax();
             $tax->name = $faker->word();
             $tax->amount = $faker->randomFloat(5, 0, 99);
-            $tax->type = $i % 2 === 0 ? 'percentage' : 'absolute';
+            $tax->type = $i % 2 === 0 ? Tax::TYPE_PERCENTAGE : Tax::TYPE_PERCENTAGE;
             $tax->applies_to_all = $i % 2 === 1;
             $tax->business()->associate($business);
             $tax->save();

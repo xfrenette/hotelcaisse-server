@@ -1,5 +1,6 @@
 <?php
 
+use App\Tax;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -18,7 +19,7 @@ class CreateTaxesTable extends Migration
             $table->timestamps();
             $table->string('name', 200);
             $table->float('amount', 8, 5);
-            $table->enum('type', ['percentage', 'absolute'])->default('percentage');
+            $table->enum('type', [Tax::TYPE_PERCENTAGE, Tax::TYPE_ABSOLUTE])->default(Tax::TYPE_PERCENTAGE);
             $table->boolean('applies_to_all')->default(true);
             $table->integer('business_id')->unsigned();
 
