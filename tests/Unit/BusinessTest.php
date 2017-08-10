@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Business;
 use App\Field;
 use App\Product;
+use App\Register;
 use App\Room;
 use App\Tax;
 use App\TransactionMode;
@@ -132,5 +133,33 @@ class BusinessTest extends TestCase
         $business->setRelation('roomSelectionFields', $roomSelectionFields);
 
         $this->assertEquals($expected, $business->toArray());
+    }
+
+    public function testToArrayWithDeviceRegister()
+    {
+        $business = new Business();
+        $expectedRegister = [
+            'cashMovements' => [
+                ['id' => 123, 'amount' => 8.36],
+                ['id' => 456, 'amount' => -4.19],
+            ],
+        ];
+
+        $register = $this->getMockBuilder(Register::class)
+            ->setMethods(['toArray'])
+            ->getMock();
+        $register->method('toArray')
+            ->willReturn($expectedRegister);
+
+        $array = $business->toArrayWithDeviceRegister($register);
+
+        $this->assertEquals($expectedRegister, $array['deviceRegister']);
+    }
+
+    public function testToArrayWithDeviceRegisterNull()
+    {
+        $business = new Business();
+        $array = $business->toArrayWithDeviceRegister(null);
+        $this->assertNull($array['deviceRegister']);
     }
 }
