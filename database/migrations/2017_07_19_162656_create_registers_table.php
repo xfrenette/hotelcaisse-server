@@ -16,6 +16,7 @@ class CreateRegistersTable extends Migration
         Schema::create('registers', function (Blueprint $table) {
             $table->increments('id');
             $table->timestamps();
+            $table->uuid('uuid');
             $table->smallInteger('state', false, false)->nullable();
             $table->string('employee', 100)->nullable();
             $table->timestamp('opened_at')->nullable();
