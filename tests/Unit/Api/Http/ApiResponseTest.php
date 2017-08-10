@@ -4,6 +4,7 @@ namespace Tests\Unit\Api\Http;
 
 use App\Api\Http\ApiResponse;
 use App\Business;
+use App\Register;
 use Tests\TestCase;
 
 class ApiResponseTest extends TestCase
@@ -125,6 +126,40 @@ class ApiResponseTest extends TestCase
         $this->assertArrayNotHasKey('business', $res);
     }
 
+    public function testJsonSerializeDeviceRegister()
+    {
+        $res = $this->response->jsonSerialize();
+        $this->assertArrayNotHasKey('deviceRegister', $res);
+
+        $expected = [
+            'cashMovements' => [
+                ['id' => 123, 'amount' => 12.34],
+                ['id' => 456, 'amount' => -8.69],
+            ],
+        ];
+
+        $register = $this->getMockBuilder(Register::class)
+            ->setMethods(['toArray'])
+            ->getMock();
+        $register->method('toArray')
+            ->willReturn($expected);
+
+        /** @noinspection PhpParamsInspection */
+        $this->response->setDeviceRegister($register);
+        $res = $this->response->jsonSerialize();
+        $this->assertEquals($expected, $res['deviceRegister']);
+
+        // Null is a valid values, contrary to other attributes
+        $this->response->setDeviceRegister(null);
+        $res = $this->response->jsonSerialize();
+        $this->assertNull($res['deviceRegister']);
+
+        // Explicitly unset the deviceRegister
+        $this->response->unsetDeviceRegister();
+        $res = $this->response->jsonSerialize();
+        $this->assertArrayNotHasKey('deviceRegister', $res);
+    }
+
     public function testSetTokenUpdatesData()
     {
         $testValue = 'test';
@@ -177,6 +212,35 @@ class ApiResponseTest extends TestCase
         $this->response->setBusiness($business);
         $data = $this->response->getData(true);
         $this->assertEquals($expected, $data['business']);
+    }
+
+    public function testSetAndUnsetDeviceRegisterUpdatesData()
+    {
+        $expected = [
+            'cashMovements' => [
+                ['id' => 123, 'amount' => 12.34],
+                ['id' => 456, 'amount' => -8.69],
+            ],
+        ];
+
+        $register = $this->getMockBuilder(Register::class)
+            ->setMethods(['toArray'])
+            ->getMock();
+        $register->method('toArray')
+            ->willReturn($expected);
+
+        /** @noinspection PhpParamsInspection */
+        $this->response->setDeviceRegister($register);
+        $data = $this->response->getData(true);
+        $this->assertEquals($expected, $data['deviceRegister']);
+
+        $this->response->setDeviceRegister(null);
+        $data = $this->response->getData(true);
+        $this->assertEquals(null, $data['deviceRegister']);
+
+        $this->response->unsetDeviceRegister();
+        $data = $this->response->getData(true);
+        $this->assertArrayNotHasKey('deviceRegister', $data);
     }
 
     public function testAlwaysHasStatus()

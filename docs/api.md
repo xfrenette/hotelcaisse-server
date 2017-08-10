@@ -23,10 +23,12 @@ All response will be JSON object with the following attributes :
 * `error`: (object) Present only if `status` is `"error"`. Contains the following keys: `code`: (string) error code; and
     `message`: (string) optional message giving more details for the error. This error message will never contain sensitive
     information, but is probably too technical to show the end user. It is also always in English.
-* `business`: (object) If the server judged that the device needs an up to date Business instance (ex: because
+* `business`: (object) If the server determines that the device needs an up to date Business instance (ex: because
     of an outdated `businessVersion` or explicitly requested, see `POST /api/business`), this object will contain the
     updated data. It may be a partial Business object, containing only updated attributes (ex: only `rooms` and
     `transactionModes`) or a full Business instance. See "business attribute" section below.
+* `deviceRegister`: (object) If the server determines that the device needs an up to date Register instance (the Register
+    of the device), this object will contain the (full) Register. See "deviceRegister attribute" below.
 * `token`: (string) if the device is correctly authenticated, contains the token to send in the next request. It can be
     different than the one used in the current request, so always use in your requests the one received in the last
     response. Note that if you make a request and an error is returned, the error will probably not have a `token`. For
@@ -44,7 +46,7 @@ The following error codes can be returned by (almost) all API methods (in the `e
 * `server:error`: generic server error
 
 `businessVersion` attribute
-===
+---
 
 Business data can be modified from different sources (another device, from the admin, ...). To inform devices of new
 data while still limiting sending uselessly the whole business data at each request, the server maintains a "version" of
@@ -57,7 +59,7 @@ that a modification resulting from the device's request will bump the `businessV
 be in the response, if it is the only change that happened, since the device already knows about it. That way
 
 `business` attribute
-===
+---
 
 Only in the response, contains a full or partial Business instance containing the latest Business data. If partial,
 contains only the modified attributes (when compared with the attributes referenced by the `businessVersion` attribute
@@ -105,6 +107,18 @@ in the request). The object has the following attributes:
 * `name` (string) Name of the category
 * `products` (array) List of ids of the products of this category (see `products.*.id`)
 * `categories` (array, optional) List of `category` (recursion) that are sub-categories of this category.
+
+`deviceRegister` attribute
+---
+
+Only in the response, contains a full Register instance (only present if explicitly requested or if the server judges it
+applicable, by comparing the `businessVersion` of the request). Contains the following attributes:
+
+* `uuid` (string) UUID that was assigned when the Register was created by a client
+* `cashMovements` (array) List of CashMovements of this Register
+* `cashMovements.*.uuid` (string) UUID of the CashMovement
+* `cashMovements.*.note` (string) Note of the CashMovement
+* `cashMovements.*.amount` (float) Amount of the CashMovement
 
 API methods
 ===

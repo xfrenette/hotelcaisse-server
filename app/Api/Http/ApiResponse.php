@@ -2,6 +2,7 @@
 
 namespace App\Api\Http;
 
+use App\Register;
 use Illuminate\Http\JsonResponse;
 use JsonSerializable;
 
@@ -44,13 +45,19 @@ class ApiResponse extends JsonResponse implements JsonSerializable
     protected $business = null;
 
     /**
-     * New version of the Register the device must use. Note that, contrary to other attributes, if set to null, it will
-     * still be included in the response (`null` has a significance: no opened Register). To unset, call
-     * `unsetDeviceRegister()`.
+     * New version of the Register the device must use. Note that, contrary to other attributes, null is a valid values.
+     * For this reason, a `$deviceRegisterSet` boolean exists to indicate if a `null` value means the "valid" null or
+     * the "not set" null. See `unsetDeviceRegister()`.
      *
      * @var \App\Register
      */
-    protected $deviceRegister;
+    protected $deviceRegister = null;
+
+    /**
+     * See comment for `$deviceRegister`
+     * @var bool
+     */
+    protected $deviceRegisterSet = false;
 
     /**
      * @param integer $status
@@ -138,6 +145,28 @@ class ApiResponse extends JsonResponse implements JsonSerializable
     }
 
     /**
+     * Sets the deviceRegister. Null is a valid value. To unset, call `unsetDeviceRegister()`. Updates the data.
+     *
+     * @param \App\Register $register
+     */
+    public function setDeviceRegister(Register $register = null)
+    {
+        $this->deviceRegisterSet = true;
+        $this->deviceRegister = $register;
+        $this->updateData();
+    }
+
+    /**
+     * Unsets the deviceRegister (since null is a valid value, calling `setDeviceRegister(null)` would not unset it).
+     * Updates the data.
+     */
+    public function unsetDeviceRegister()
+    {
+        $this->deviceRegisterSet = false;
+        $this->updateData();
+    }
+
+    /**
      * Updates the response's content by updating the json data.
      */
     public function updateData()
@@ -184,6 +213,10 @@ class ApiResponse extends JsonResponse implements JsonSerializable
 
         if (!is_null($this->business)) {
             $data['business'] = $this->business->toArray();
+        }
+
+        if ($this->deviceRegisterSet) {
+            $data['deviceRegister'] = isset($this->deviceRegister) ? $this->deviceRegister->toArray() : null;
         }
 
         return $data;
