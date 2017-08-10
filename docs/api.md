@@ -6,8 +6,8 @@ All request are POST with a Content-Type of `application/json` and a JSON body h
 * `token`: (string) required for all authenticated requests (that is all requests, except `device/register`)
 * `data`: (mixed) put here the data required by the API method you call. Most probably an object. Can be omitted for
     methods that do not require additional input data.
-* `businessVersion`: (string) the last `businessVersion` that you received. See "businessVersion" section below. Always
-    put a `businessVersion` if you received one in your last request. Omit this attribute only if you don't have it.
+* `dataVersion`: (string) the last `dataVersion` that you received. See "dataVersion" section below. Always
+    put a `dataVersion` if you received one in your last request. Omit this attribute only if you don't have it.
 
 Also, all API request are relative to a "business". This is determine by the URL. Ex:
 `https://{my-business-slug}.example.com/api`.
@@ -19,12 +19,12 @@ All response will be JSON object with the following attributes :
 
 * `status`: (string) either `"ok"` or `"error"`
 * `data`: (mixed) data returned by this API method. Can be not present if the method doesn't return data or in case of error.
-* `businessVersion`: (string) current business data version (see "businessVersion attribute" section below).
+* `dataVersion`: (string) current data version (see "dataVersion attribute" section below).
 * `error`: (object) Present only if `status` is `"error"`. Contains the following keys: `code`: (string) error code; and
     `message`: (string) optional message giving more details for the error. This error message will never contain sensitive
     information, but is probably too technical to show the end user. It is also always in English.
 * `business`: (object) If the server determines that the device needs an up to date Business instance (ex: because
-    of an outdated `businessVersion` or explicitly requested, see `POST /api/business`), this object will contain the
+    of an outdated `dataVersion` or explicitly requested, see `POST /api/business`), this object will contain the
     updated data. It may be a partial Business object, containing only updated attributes (ex: only `rooms` and
     `transactionModes`) or a full Business instance. See "business attribute" section below.
 * `deviceRegister`: (object) If the server determines that the device needs an up to date Register instance (the Register
@@ -45,24 +45,25 @@ The following error codes can be returned by (almost) all API methods (in the `e
     parameters, invalid register state, ...
 * `server:error`: generic server error
 
-`businessVersion` attribute
+`dataVersion` attribute
 ---
 
 Business data can be modified from different sources (another device, from the admin, ...). To inform devices of new
-data while still limiting sending uselessly the whole business data at each request, the server maintains a "version" of
-the business data. Any modification to the business data bumps the version, be it from a device, from the admin, from
-another device, ... When the device makes a request, it also sends the last `businessVersion` it received in its JSON
-request. The server will check if the business data was updated from another source than the device (it checks if the
-`businessVersion` changed). If so, the updated business data (only the part that changed) will be sent alongside the
-response's `data` in a `upToDateBusinessData` attribute. If no change occurred, this attribute will not be present. Note
-that a modification resulting from the device's request will bump the `businessVersion`, but the modified data will not
-be in the response, if it is the only change that happened, since the device already knows about it. That way
+data while still limiting sending uselessly the whole data at each request, the server maintains a "version" of the
+data. Any modification to the business data (including the device's register) bumps the version, be it from a device,
+from the admin, from another device, ... When the device makes a request, it also sends the last `dataVersion` it
+received in its JSON request. The server will check if the data was updated since the last sent version number. If so,
+the updated data will be sent alongside the response's `data`. If it is a Business data change (can be partial), it will
+in `business` attribute. If it is the device's register, it will be in `deviceRegister`. If no change occurred, those
+attributes will not be present. Note that a modification resulting from the device's request will bump the
+`dataVersion`, but the modified data will not be in the response, if it is the only change that happened, since the
+device already knows about it. That way
 
 `business` attribute
 ---
 
 Only in the response, contains a full or partial Business instance containing the latest Business data. If partial,
-contains only the modified attributes (when compared with the attributes referenced by the `businessVersion` attribute
+contains only the modified attributes (when compared with the attributes referenced by the `dataVersion` attribute
 in the request). The object has the following attributes:
 
 * `rooms` (array) List of currently available rooms
@@ -111,8 +112,8 @@ in the request). The object has the following attributes:
 `deviceRegister` attribute
 ---
 
-Only in the response, contains a full Register instance (only present if explicitly requested or if the server judges it
-applicable, by comparing the `businessVersion` of the request). Contains the following attributes:
+Only in the response, contains the full data of the device's Register instance (only present if explicitly requested or
+if the server judges it applicable, by comparing the `dataVersion` of the request). Contains the following attributes:
 
 * `uuid` (string) UUID that was assigned when the Register was created by a client
 * `cashMovements` (array) List of CashMovements of this Register

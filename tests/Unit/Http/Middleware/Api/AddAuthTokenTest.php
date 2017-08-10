@@ -38,7 +38,6 @@ class AddAuthTokenTest extends TestCase
         return $stub;
     }
 
-
     public function testWorksIfNotApiResponse()
     {
         $request = $this->makeRequest();
