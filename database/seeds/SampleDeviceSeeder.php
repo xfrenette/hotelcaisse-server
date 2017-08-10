@@ -20,10 +20,5 @@ class SampleDeviceSeeder extends Seeder
 
         $device->business()->associate($business);
         $device->save();
-
-        // Register (closed)
-        $register = new \App\Register();
-        $register->device()->associate($device);
-        $register->save();
     }
 }
