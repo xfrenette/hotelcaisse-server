@@ -31,10 +31,12 @@ class RequestTest extends TestCase
                     return new ApiResponse();
                 });
 
+                /** @noinspection PhpUnusedParameterInspection */
                 Route::post('/api/businesstest/{business}', function (Business $business) {
                     return new ApiResponse();
                 });
 
+                /** @noinspection PhpUnusedParameterInspection */
                 Route::post('/api/auth/{business}', function (Business $business) {
                     return new ApiResponse();
                 })->middleware('apiauth');
@@ -131,6 +133,19 @@ class RequestTest extends TestCase
         $response = $this->json('POST', $uri, ['token' => $apiSession->token]);
         $response->assertJson([
             'token' => ApiAuth::getToken(),
+        ]);
+    }
+
+    public function testHasDataVersion()
+    {
+        // We query an API route in the 'api' middleware to check it has the `dataVersion`attribute
+        $apiSession = factory(ApiSession::class, 'withDeviceAndBusiness')->create();
+        $business = $apiSession->device->business;
+        $business->bumpVersion();
+        $uri = '/api/auth/' . $business->slug;
+        $response = $this->json('POST', $uri, ['token' => $apiSession->token]);
+        $response->assertJson([
+            'dataVersion' => $business->version,
         ]);
     }
 }

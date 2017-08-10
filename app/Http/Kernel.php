@@ -38,9 +38,10 @@ class Kernel extends HttpKernel
 
         'api' => [
             'throttle:60,1',
+            'bindings',
             \App\Http\Middleware\Api\ValidateRequest::class,
             \App\Http\Middleware\Api\AddAuthToken::class,
-            'bindings',
+            \App\Http\Middleware\Api\AddDataVersion::class,
         ],
     ];
 

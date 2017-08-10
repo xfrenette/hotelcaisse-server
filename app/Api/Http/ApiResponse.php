@@ -110,6 +110,14 @@ class ApiResponse extends JsonResponse implements JsonSerializable
     }
 
     /**
+     * @return string
+     */
+    public function getDataVersion()
+    {
+        return $this->dataVersion;
+    }
+
+    /**
      * Sets the object returned in the JSON 'data' attribute and updates the data
      *
      * @param mixed $data
