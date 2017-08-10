@@ -19,13 +19,14 @@ All response will be JSON object with the following attributes :
 
 * `status`: (string) either `"ok"` or `"error"`
 * `data`: (mixed) data returned by this API method. Can be not present if the method doesn't return data or in case of error.
-* `businessVersion`: (string) current business data version (see "businessVersion" section below).
+* `businessVersion`: (string) current business data version (see "businessVersion attribute" section below).
 * `error`: (object) Present only if `status` is `"error"`. Contains the following keys: `code`: (string) error code; and
     `message`: (string) optional message giving more details for the error. This error message will never contain sensitive
     information, but is probably too technical to show the end user. It is also always in English.
-* `upToDateBusinessData`: (object) If the server judged that the device needs updated business data (generally because
-    of an outdated `businessVersion`), this object will contain the updated data. It will probably not contain the whole
-    Business instance (though it is possible) but only the parts that need to be replaced (ex: `products`).
+* `business`: (object) If the server judged that the device needs an up to date Business instance (ex: because
+    of an outdated `businessVersion` or explicitly requested, see `POST /api/business`), this object will contain the
+    updated data. It may be a partial Business object, containing only updated attributes (ex: only `rooms` and
+    `transactionModes`) or a full Business instance. See "business attribute" section below.
 * `token`: (string) if the device is correctly authenticated, contains the token to send in the next request. It can be
     different than the one used in the current request, so always use in your requests the one received in the last
     response. Note that if you make a request and an error is returned, the error will probably not have a `token`. For
@@ -42,7 +43,7 @@ The following error codes can be returned by (almost) all API methods (in the `e
     parameters, invalid register state, ...
 * `server:error`: generic server error
 
-businessVersion
+`businessVersion` attribute
 ===
 
 Business data can be modified from different sources (another device, from the admin, ...). To inform devices of new
@@ -54,6 +55,56 @@ request. The server will check if the business data was updated from another sou
 response's `data` in a `upToDateBusinessData` attribute. If no change occurred, this attribute will not be present. Note
 that a modification resulting from the device's request will bump the `businessVersion`, but the modified data will not
 be in the response, if it is the only change that happened, since the device already knows about it. That way
+
+`business` attribute
+===
+
+Only in the response, contains a full or partial Business instance containing the latest Business data. If partial,
+contains only the modified attributes (when compared with the attributes referenced by the `businessVersion` attribute
+in the request). The object has the following attributes:
+
+* `rooms` (array) List of currently available rooms
+* `rooms.*.id` (number) Id of the room
+* `rooms.*.name` (string) Name of the room
+* `taxes` (array) List of taxes used in the system
+* `taxes.*.id` (number) Id of the tax
+* `taxes.*.name` (string) Name of the tax
+* `transactionModes` (array) List of currently available transaction modes
+* `transactionModes.*.id` (number) Id of the transaction mode
+* `transactionModes.*.name` (string) Name of the transaction mode
+* `products` (array) Flat list (product variants are at the same level as their parent) of all the currently available
+    products.
+* `products.*.id` (number) Id of the product
+* `products.*.name` (string) Name of the product
+* `products.*.description` (string, optional) Description of the product
+* `products.*.price` (float) Unit price of the product
+* `products.*.taxes` (array, optional) List of tax amounts applied for a single unit
+* `products.*.taxes.tax` (number) Id of the tax (see `taxes.*.id)
+* `products.*.taxes.amount` (float) Effective (absolute, in money) amount of the tax for a single unit
+* `products.*.variants` (array) Array of ids of the variant products (see `products.*.id`)
+* `customerFields` (array) Fields for a new Customer
+* `customerFields.*.id` (number) Id of the field
+* `customerFields.*.type` (string) Type of this field
+* `customerFields.*.label` (string) Label of this field
+* `customerFields.*.role` (string, optional) Role of this field
+* `customerFields.*.required` (boolean, optional, default:false) If this field is a required field
+* `customerFields.*.defaultValue` (string, optional) If this field has a default value
+* `customerFields.*.values` (array, optional) If this field is a multi choice field (ex: "SelectField"), the different values
+* `roomSelectionFields` (array) Fields for a new RoomSelection
+* `roomSelectionFields.*.id` (number) Id of the field
+* `roomSelectionFields.*.type` (string) Type of this field
+* `roomSelectionFields.*.label` (string) Label of this field
+* `roomSelectionFields.*.role` (string, optional) Role of this field
+* `roomSelectionFields.*.required` (boolean, optional, default:false) If this field is a required field
+* `roomSelectionFields.*.defaultValue` (string, optional) If this field has a default value
+* `roomSelectionFields.*.values` (array, optional) If this field is a multi choice field (ex: "SelectField"), the different values
+* `rootProductCategory` (category, see below) The root ProductCategory. See `category` below for definition.
+
+`category` type (like rootProductCategory):
+* `id` (number) Id of the category
+* `name` (string) Name of the category
+* `products` (array) List of ids of the products of this category (see `products.*.id`)
+* `categories` (array, optional) List of `category` (recursion) that are sub-categories of this category.
 
 API methods
 ===

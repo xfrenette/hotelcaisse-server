@@ -3,6 +3,7 @@
 namespace Tests\Unit\Api\Http;
 
 use App\Api\Http\ApiResponse;
+use App\Business;
 use Tests\TestCase;
 
 class ApiResponseTest extends TestCase
@@ -93,6 +94,37 @@ class ApiResponseTest extends TestCase
         $this->assertArrayNotHasKey('error', $res);
     }
 
+    public function testJsonSerializeBusiness()
+    {
+        $res = $this->response->jsonSerialize();
+        $this->assertArrayNotHasKey('business', $res);
+
+        $expected = [
+            'rooms' => [
+                ['id' => 123, 'name' => 'Test 1'],
+                ['id' => 456, 'name' => 'Test 2'],
+            ],
+        ];
+
+        $business = $this->getMockBuilder(Business::class)
+            ->setMethods(['toArray'])
+            ->getMock();
+        $business->method('toArray')
+            ->willReturn($expected);
+
+        /** @noinspection PhpParamsInspection */
+        $this->response->setBusiness($business);
+        $res = $this->response->jsonSerialize();
+        $this->assertEquals(
+            $expected,
+            $res['business']
+        );
+
+        $this->response->setBusiness(null);
+        $res = $this->response->jsonSerialize();
+        $this->assertArrayNotHasKey('business', $res);
+    }
+
     public function testSetTokenUpdatesData()
     {
         $testValue = 'test';
@@ -124,6 +156,27 @@ class ApiResponseTest extends TestCase
         $data = $this->response->getData();
         $this->assertEquals($testValue, $data->error->code);
         $this->assertEquals('error', $data->status);
+    }
+
+    public function testSetBusinessUpdatesData()
+    {
+        $expected = [
+            'rooms' => [
+                ['id' => 123, 'name' => 'Test 1'],
+                ['id' => 456, 'name' => 'Test 2'],
+            ],
+        ];
+
+        $business = $this->getMockBuilder(Business::class)
+            ->setMethods(['toArray'])
+            ->getMock();
+        $business->method('toArray')
+            ->willReturn($expected);
+
+        /** @noinspection PhpParamsInspection */
+        $this->response->setBusiness($business);
+        $data = $this->response->getData(true);
+        $this->assertEquals($expected, $data['business']);
     }
 
     public function testAlwaysHasStatus()

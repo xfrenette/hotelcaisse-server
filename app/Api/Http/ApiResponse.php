@@ -38,6 +38,21 @@ class ApiResponse extends JsonResponse implements JsonSerializable
     protected $errorMessage = null;
 
     /**
+     * New version of the Business. Can be a partial Business (ex: having only `products`)
+     * @var \App\Business
+     */
+    protected $business = null;
+
+    /**
+     * New version of the Register the device must use. Note that, contrary to other attributes, if set to null, it will
+     * still be included in the response (`null` has a significance: no opened Register). To unset, call
+     * `unsetDeviceRegister()`.
+     *
+     * @var \App\Register
+     */
+    protected $deviceRegister;
+
+    /**
      * @param integer $status
      * @param array $headers
      * @param integer $options
@@ -99,7 +114,7 @@ class ApiResponse extends JsonResponse implements JsonSerializable
     }
 
     /**
-     * Sets the error code and message. If null is passed, removes the error.  Updates the data
+     * Sets the error code and message. If null is passed, removes the error. Updates the data.
      *
      * @param string $code
      * @param string $message
@@ -108,6 +123,17 @@ class ApiResponse extends JsonResponse implements JsonSerializable
     {
         $this->errorCode = $code;
         $this->errorMessage = $message;
+        $this->updateData();
+    }
+
+    /**
+     * Sets the Business (can be a partial Business). If null is passed, removes the Business. Updates the data.
+     *
+     * @param \App\Business $business
+     */
+    public function setBusiness($business)
+    {
+        $this->business = $business;
         $this->updateData();
     }
 
@@ -154,6 +180,10 @@ class ApiResponse extends JsonResponse implements JsonSerializable
                 'code' => $this->errorCode,
                 'message' => $this->errorMessage,
             ];
+        }
+
+        if (!is_null($this->business)) {
+            $data['business'] = $this->business->toArray();
         }
 
         return $data;
