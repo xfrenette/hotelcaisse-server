@@ -60,11 +60,12 @@ class RegisterTest extends TestCase
         }
 
         $expected = [
+            'uuid' => 'test-uuid',
             'cashMovements' => $cashMovements->toArray(),
         ];
 
-        $register = new Register();
-        $register->id= 456;
+        $register = new Register($expected);
+        $register->id = 456;
         $register->device_id = 123;
         $register->setRelation('cashMovements', $cashMovements);
 

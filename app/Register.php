@@ -17,11 +17,18 @@ class Register extends Model
     const STATE_OPENED = 1;
 
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = ['uuid'];
+
+    /**
      * The attributes that should be visible in serialization.
      *
      * @var array
      */
-    protected $visible = ['cashMovements'];
+    protected $visible = ['uuid', 'cashMovements'];
 
     /**
      * The attributes that should be mutated to dates.
