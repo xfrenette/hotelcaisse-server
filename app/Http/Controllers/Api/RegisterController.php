@@ -20,6 +20,7 @@ class RegisterController extends ApiController
     public function open(Request $request)
     {
         $this->validate($request, [
+            'uuid' => 'bail|required|string|unique:registers',
             'employee' => 'bail|required|string',
             'cashAmount' => 'bail|required|numeric|min:0',
         ]);

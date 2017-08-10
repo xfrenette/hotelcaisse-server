@@ -4,6 +4,7 @@ namespace Tests\Feature\Http\Controllers\Api;
 
 use App\Api\Http\ApiResponse;
 use App\Business;
+use App\Register;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Tests\InteractsWithAPI;
@@ -17,6 +18,7 @@ class RegisterControllerTest extends TestCase
 
     const OPEN_DATA = [
         'data' => [
+            'uuid' => 'test-uuid',
             'employee' => 'Test Employee',
             'cashAmount' => 12.34,
         ],
@@ -34,6 +36,14 @@ class RegisterControllerTest extends TestCase
     {
         parent::setUp();
         $this->business = factory(Business::class)->create();
+    }
+
+    // Uses seeded test data
+    public function testOpenReturnsErrorIfInvalidUUID()
+    {
+        $existingRegister = Register::first();
+        $values = [null, '', ' ', 12, $existingRegister->uuid];
+        $this->assertValidatesData('api.register.open', self::OPEN_DATA, 'uuid', $values);
     }
 
     public function testOpenReturnsErrorIfInvalidEmployee()
