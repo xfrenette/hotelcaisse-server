@@ -248,22 +248,6 @@ class Business extends Model
     }
 
     /**
-     * Returns the array from toArray() but adds a `deviceRegister` key containing the $register->toArray() array. If
-     * $register is null, `deviceRegister` will be null.
-     *
-     * @param \App\Register|null $register
-     *
-     * @return array
-     */
-    public function toArrayWithDeviceRegister(Register $register = null)
-    {
-        $array = $this->toArray();
-        $array['deviceRegister'] = is_null($register) ? null : $register->toArray();
-
-        return $array;
-    }
-
-    /**
      * Just a simple utility function that loads the following relations for this Business: rooms, taxes, products,
      * transactionModes, customerFields, roomSelectionFields
      */
