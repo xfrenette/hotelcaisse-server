@@ -39,7 +39,9 @@ class RegisterController extends ApiController
             return $apiResponse;
         }
 
-        $register = new Register();
+        $register = new Register([
+            'uuid' => $request->json('data.uuid'),
+        ]);
         $register->device()->associate($device);
         $register->open($request->json('data.employee'), $request->json('data.cashAmount'));
         $register->save();
@@ -62,6 +64,7 @@ class RegisterController extends ApiController
     public function close(Request $request)
     {
         $this->validate($request, [
+            'uuid' => 'bail|required|string',
             'cashAmount' => 'bail|required|numeric|min:0',
             'POSTRef' => 'bail|required|string',
             'POSTAmount' => 'bail|required|numeric|min:0',
@@ -71,8 +74,18 @@ class RegisterController extends ApiController
         $device = ApiAuth::getDevice();
         $currentRegister = $device->currentRegister;
 
-        // Return error if the $device has no currentRegister or if it is not opened
-        if (is_null($currentRegister) || !$currentRegister->opened) {
+        // Return validation error if device has no currentRegister or has not the same uuid
+        if (is_null($currentRegister) || $currentRegister->uuid !== $request->json('data.uuid')) {
+            $apiResponse->setError(
+                ApiResponse::ERROR_CLIENT_ERROR,
+                'The UUID does not correspond to the current register of the device. The request was ignored.'
+            );
+
+            return $apiResponse;
+        }
+
+        // Return error if the currentRegister is not opened
+        if (!$currentRegister->opened) {
             $apiResponse->setError(
                 ApiResponse::ERROR_CLIENT_ERROR,
                 'The device doesn\'t have a register assigned or it is not opened. The request was ignored.'

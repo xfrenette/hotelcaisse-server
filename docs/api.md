@@ -133,6 +133,7 @@ Opens a new Register and assigns it as the currentRegister on the authenticated 
 have a current register that is already opened, else an error will be returned and the call will be ignored.
 
 ### Request `data`
+* `uuid`: (string) Client generated UUID for the new Register (must be unique)
 * `employee`: (string) Name of the employee opening the register
 * `cashAmount`: (float, >= 0) Amount of cash in the register at opening
 
@@ -143,9 +144,11 @@ None returned
 ---
 
 Closes the Register currently assigned to the authenticated Device. Note that the Device must have an opened Register
-assigned, else an error will be returned and the call will be ignored.
+assigned with the same UUID, else an error will be returned and the call will be ignored.
 
 ### Request `data`
+* `uuid`: (string) UUID of the Register. Must be supplied to be sure the client is closing the expected Register and we
+    don't end up with unexpected results.
 * `cashAmount`: (float, >= 0) Amount of cash in the register at opening
 * `POSTRef`: (string) Reference number of the Point Of Sale Terminal (POST) batch
 * `POSTAmount`: (float, >= 0) Amount of the POST batch

@@ -38,6 +38,22 @@ class RegisterControllerTest extends TestCase
         $this->business = factory(Business::class)->create();
     }
 
+    /**
+     * @param \App\Device $device
+     *
+     * @return array
+     */
+    protected function generateCloseData($device = null)
+    {
+        $data = self::CLOSE_DATA;
+
+        if ($device && $device->currentRegister) {
+            $data['data']['uuid'] = $device->currentRegister->uuid;
+        }
+
+        return $data;
+    }
+
     // Uses seeded test data
     public function testOpenReturnsErrorIfInvalidUUID()
     {
@@ -114,12 +130,19 @@ class RegisterControllerTest extends TestCase
 
     // ---------------------
 
+    public function testCloseReturnsErrorIfInvalidUUID()
+    {
+        $data = $this->generateCloseData();
+        $values = [null, '', ' ', 12];
+        $this->assertValidatesData('api.register.close', $data, 'uuid', $values);
+    }
+
     public function testCloseReturnsErrorIfInvalidCashAmount()
     {
         $values = [null, '', -5];
 
         foreach ($values as $value) {
-            $data = self::CLOSE_DATA;
+            $data = $this->generateCloseData();
 
             if (is_null($value)) {
                 unset($data['data']['cashAmount']);
@@ -142,7 +165,7 @@ class RegisterControllerTest extends TestCase
         $values = [null, '', -5];
 
         foreach ($values as $value) {
-            $data = self::CLOSE_DATA;
+            $data = $this->generateCloseData();
 
             if (is_null($value)) {
                 unset($data['data']['POSTAmount']);
@@ -165,7 +188,7 @@ class RegisterControllerTest extends TestCase
         $values = [null, '', '  ', 5];
 
         foreach ($values as $value) {
-            $data = self::CLOSE_DATA;
+            $data = $this->generateCloseData();
 
             if (is_null($value)) {
                 unset($data['data']['POSTRef']);
@@ -187,11 +210,28 @@ class RegisterControllerTest extends TestCase
     {
         $device = $this->createDevice(); // No register assigned
         $this->mockApiAuthDevice($device);
+        $data = $this->generateCloseData($device);
 
-        $response = $this->queryAPI('api.register.close', self::CLOSE_DATA);
+        $response = $this->queryAPI('api.register.close', $data);
         $response->assertJson([
             'status' => 'error',
             'error' => ['code' => ApiResponse::ERROR_CLIENT_ERROR],
+        ]);
+    }
+
+    public function testCloseReturnsErrorIfUUIDIsNotDeviceCurrentRegister()
+    {
+        $device = $this->createDeviceWithOpenedRegister();
+        $this->mockApiAuthDevice($device);
+        $data = $this->generateCloseData();
+        $data['data']['uuid'] = $device->currentRegister->uuid . '-other';
+
+        $response = $this->queryAPI('api.register.close', $data);
+        $response->assertJson([
+            'status' => 'error',
+            'error' => [
+                'code' => ApiResponse::ERROR_CLIENT_ERROR,
+            ],
         ]);
     }
 
@@ -199,8 +239,9 @@ class RegisterControllerTest extends TestCase
     {
         $device = $this->createDeviceWithRegister(); // With a closed register
         $this->mockApiAuthDevice($device);
+        $data = $this->generateCloseData($device);
 
-        $response = $this->queryAPI('api.register.close', self::CLOSE_DATA);
+        $response = $this->queryAPI('api.register.close', $data);
         $response->assertJson([
             'status' => 'error',
             'error' => ['code' => ApiResponse::ERROR_CLIENT_ERROR],
@@ -211,8 +252,9 @@ class RegisterControllerTest extends TestCase
     {
         $device = $this->createDeviceWithOpenedRegister();
         $this->mockApiAuthDevice($device);
+        $data = $this->generateCloseData($device);
 
-        $response = $this->queryAPI('api.register.close', self::CLOSE_DATA);
+        $response = $this->queryAPI('api.register.close', $data);
         $response->assertJson([
             'status' => 'ok',
         ]);
@@ -222,8 +264,9 @@ class RegisterControllerTest extends TestCase
     {
         $device = $this->createDeviceWithOpenedRegister();
         $this->mockApiAuthDevice($device);
+        $data = $this->generateCloseData($device);
 
-        $this->queryAPI('api.register.close', self::CLOSE_DATA);
+        $this->queryAPI('api.register.close', $data);
         $device->currentRegister->refresh();
         $this->assertFalse($device->currentRegister->opened);
     }
@@ -232,10 +275,11 @@ class RegisterControllerTest extends TestCase
     {
         $device = $this->createDeviceWithOpenedRegister();
         $this->mockApiAuthDevice($device);
+        $data = $this->generateCloseData($device);
 
         $oldVersion = $this->business->version;
 
-        $this->queryAPI('api.register.close', self::CLOSE_DATA);
+        $this->queryAPI('api.register.close', $data);
         $newVersion = $this->business->version;
         $this->assertNotEquals($oldVersion, $newVersion);
         $this->assertEquals(
