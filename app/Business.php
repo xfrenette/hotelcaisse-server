@@ -145,8 +145,7 @@ class Business extends Model
      */
     public function getVersionAttribute()
     {
-        return DB::table($this->versionTable)
-            ->where('business_id', $this->id)
+        return $this->getVersionsQuery()
             ->orderBy('id', 'desc')
             ->latest()
             ->value('version');
@@ -162,10 +161,7 @@ class Business extends Model
      */
     public function getVersionModifications($version)
     {
-        $res = DB::table($this->versionTable)
-            ->where('business_id', $this->id)
-            ->where('version', $version)
-            ->value('modifications');
+        $res = $this->getVersionQuery($version)->value('modifications');
 
         if (is_null($res)) {
             return null;
@@ -177,6 +173,75 @@ class Business extends Model
         }
 
         return explode(',', $res);
+    }
+
+    /**
+     * Returns a query builder for the specified version.
+     *
+     * @param string $version
+     *
+     * @return \Illuminate\Database\Query\Builder
+     */
+    public function getVersionQuery($version)
+    {
+        return $this->getVersionsQuery()->where('version', $version);
+    }
+
+    /**
+     * Returns a query builder for all the versions of this Business
+     *
+     * @return \Illuminate\Database\Query\Builder
+     */
+    public function getVersionsQuery()
+    {
+        return DB::table($this->versionTable)
+            ->where('business_id', $this->id);
+    }
+
+    /**
+     * Returns Collection of version data (`version` and `modifications`) since a $startVersion. The $startVersion's
+     * modifications are not included, so returns an empty Collection if $startVersion is the current version. Also
+     * returns an empty Collection if the $startVersion does not exist for the current Business.
+     *
+     * @param string $startVersion
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getVersionsSince($startVersion)
+    {
+        // Get the created_at of the startVersion
+        $startVersionDate = $this->getVersionQuery($startVersion)->value('created_at');
+
+        if (is_null($startVersionDate)) {
+            return collect([]);
+        }
+
+        $res = $this->getVersionsQuery()
+            ->select(['version', 'modifications'])
+            ->orderBy('created_at', 'asc')
+            ->where('created_at', '>=', $startVersionDate)
+            ->get();
+
+        // We do not keep the $startVersion or any previous version that would have the exact same created_at, but keep
+        // any later version (including ones which would have the exact same created_at)
+        $startVersionFound = false;
+        $versions = $res->filter(function ($version) use ($startVersion, &$startVersionFound) {
+            // We are after the startVersion, we keep it
+            if ($startVersionFound) {
+                return true;
+            }
+
+            // It is the startVersion, we do not keep it
+            if ($version->version === $startVersion) {
+                $startVersionFound = true;
+                return false;
+            }
+
+            // We are before the startVersion, we do not keep it
+            return false;
+        });
+
+        return $versions;
     }
 
     /**
@@ -197,11 +262,16 @@ class Business extends Model
      *
      * @param string $number
      * @param array $modifications
+     * @param Carbon $createdAt
      */
-    public function insertVersion($number, $modifications = [])
+    public function insertVersion($number, $modifications = [], $createdAt = null)
     {
+        if (is_null($createdAt)) {
+            $createdAt = Carbon::now();
+        }
+
         DB::table($this->versionTable)->insert([
-            'created_at' => Carbon::now()->format('Y-m-d H:m:s'),
+            'created_at' => $createdAt->format('Y-m-d H:m:s'),
             'business_id' => $this->id,
             'version' => $number,
             'modifications' => implode(',', $modifications),

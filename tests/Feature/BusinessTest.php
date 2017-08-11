@@ -9,6 +9,7 @@ use App\ProductCategory;
 use App\Room;
 use App\Tax;
 use App\TransactionMode;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -218,5 +219,107 @@ class BusinessTest extends TestCase
 
         // Check rootProductCategory is present
         $this->assertEquals($business->rootProductCategory->id, $array['rootProductCategory']['id']);
+    }
+
+    public function testGetVersionSince()
+    {
+        $baseDate = Carbon::yesterday();
+
+        $versions = [
+            'v1' => [
+                'created_at' => $baseDate->copy()->subHours(8),
+                'modifications' => [Business::MODIFICATION_ORDERS],
+            ],
+            'v2' => [
+                'created_at' => $baseDate->copy()->subHours(7),
+                'modifications' => [Business::MODIFICATION_ORDERS, Business::MODIFICATION_REGISTER],
+            ],
+            // This version will have same created_at as the v4
+            'v3' => [
+                'created_at' => $baseDate->copy()->subHours(6),
+                'modifications' => [Business::MODIFICATION_ORDERS],
+            ],
+            'v4' => [
+                'created_at' => $baseDate->copy()->subHours(6),
+                'modifications' => [Business::MODIFICATION_REGISTER, Business::MODIFICATION_ORDERS],
+            ],
+            // This version will also have same created_at as the v4
+            'v5' => [
+                'created_at' => $baseDate->copy()->subHours(6),
+                'modifications' => [Business::MODIFICATION_REGISTER],
+            ],
+            // v6 and v7 are inserted in inverse order, but it is their created_at value that will determine that v6
+            // comes before v7
+            'v7' => [
+                'created_at' => $baseDate->copy()->subHours(4), // after v5
+                'modifications' => [Business::MODIFICATION_ORDERS],
+            ],
+            'v6' => [
+                'created_at' => $baseDate->copy()->subHours(5), // before v6
+                'modifications' => [Business::MODIFICATION_ORDERS, Business::MODIFICATION_REGISTER],
+            ],
+            // Current version
+            'v8' => [
+                'created_at' => $baseDate->copy()->subHours(3),
+                'modifications' => [Business::MODIFICATION_ORDERS],
+            ],
+        ];
+
+        $otherBusinessVersions = [
+            'v6.other' => [
+                'created_at' => $baseDate->copy()->subHours(4),
+                'modifications' => [Business::MODIFICATION_ORDERS],
+            ],
+        ];
+
+        $business = factory(Business::class)->create();
+        $this->insertVersions($versions, $business);
+
+        // Other business just to be sure its version are not included
+        $otherBusiness = factory(Business::class)->create();
+        $this->insertVersions($otherBusinessVersions, $otherBusiness);
+
+        // Test v3 is not included when querying for v4, even if they have the same created_at, but v5 will
+        $res = $business->getVersionsSince('v4');
+        $this->assertEquals(['v5', 'v6', 'v7', 'v8'], $res->pluck('version')->toArray());
+
+        // Test querying current version returns empty array
+        $res = $business->getVersionsSince('v8');
+        $this->assertCount(0, $res);
+
+        // Test modifications querying v7
+        $res = $business->getVersionsSince('v7');
+        $this->assertEquals([
+            Business::MODIFICATION_ORDERS,
+
+        ], $res->pluck('modifications')->toArray());
+
+        // Test modifications querying v4
+        $res = $business->getVersionsSince('v4');
+        $this->assertEquals([
+            Business::MODIFICATION_REGISTER,
+            Business::MODIFICATION_ORDERS . ',' . Business::MODIFICATION_REGISTER,
+            Business::MODIFICATION_ORDERS,
+            Business::MODIFICATION_ORDERS,
+
+        ], $res->pluck('modifications')->toArray());
+
+        // Test querying non-existent version (for the $business) returns empty array
+        $res = $business->getVersionsSince('v6.other');
+        $this->assertCount(0, $res);
+
+        $res = $business->getVersionsSince('non-existent');
+        $this->assertCount(0, $res);
+    }
+
+    /**
+     * @param array $versions
+     * @param Business $business
+     */
+    protected function insertVersions($versions, $business)
+    {
+        foreach ($versions as $number => $data) {
+            $business->insertVersion($number, $data['modifications'], $data['created_at']);
+        }
     }
 }
