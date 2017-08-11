@@ -245,6 +245,33 @@ class Business extends Model
     }
 
     /**
+     * From the result of $this->getVersionsSince($startVersion), returns an array of all the modifications since
+     * $startVersion. Contains only unique modifications (duplicate are ignored).
+     *
+     * @param string $startVersion
+     *
+     * @return array
+     */
+    public function getVersionDiff($startVersion)
+    {
+        $versions = $this->getVersionsSince($startVersion);
+        return $versions
+            ->pluck('modifications') // get collection of 'modifications' column value
+            ->map(function ($modifications) {
+                // Transform each modifications string as an array of modifications
+                return explode(',', $modifications);
+            })
+            // All in a single level
+            ->flatten()
+            // Remove duplicate modifications
+            ->unique()
+            // Reset the keys
+            ->values()
+            // return simple array
+            ->toArray();
+    }
+
+    /**
      * Bumps the version of the Business and saves the list of modifications for it.
      *
      * @param array $modifications Array of attributes name

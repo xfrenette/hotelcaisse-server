@@ -133,4 +133,33 @@ class BusinessTest extends TestCase
 
         $this->assertEquals($expected, $business->toArray());
     }
+
+    public function testGetVersionDiff()
+    {
+        $versions = collect([]);
+
+        $business = $this->getMockBuilder(Business::class)
+            ->setMethods(['getVersionsSince'])
+            ->getMock();
+        $business->method('getVersionsSince')
+            ->willReturn($versions);
+
+        // Returns empty array with empty versions
+        $this->assertCount(0, $business->getVersionDiff('test'));
+
+        // return individual modifications
+        $versions->push(['modifications' => 'm1']);
+        $versions->push(['modifications' => 'm2']);
+        $this->assertEquals(['m1', 'm2'], $business->getVersionDiff('test'));
+
+        // works with modifications list
+        $versions->push(['modifications' => 'm3,m4']);
+        $this->assertEquals(['m1', 'm2', 'm3', 'm4'], $business->getVersionDiff('test'));
+
+        // ignores repeated modifications
+        $versions->push(['modifications' => 'm3,m5']);
+        $versions->push(['modifications' => 'm1']);
+        $versions->push(['modifications' => 'm6']);
+        $this->assertEquals(['m1', 'm2', 'm3', 'm4', 'm5', 'm6'], $business->getVersionDiff('test'));
+    }
 }
