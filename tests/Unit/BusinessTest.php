@@ -162,4 +162,37 @@ class BusinessTest extends TestCase
         $versions->push(['modifications' => 'm6']);
         $this->assertEquals(['m1', 'm2', 'm3', 'm4', 'm5', 'm6'], $business->getVersionDiff('test'));
     }
+
+    public function testSetVisibleFromModifications()
+    {
+        $business = new Business();
+
+        $business->setVisibleFromModifications([Business::MODIFICATION_CATEGORIES]);
+        $this->assertEquals(['rootProductCategory'], $business->getVisible());
+
+        $business->setVisibleFromModifications([Business::MODIFICATION_ROOMS]);
+        $this->assertEquals(['rooms'], $business->getVisible());
+
+        $business->setVisibleFromModifications([Business::MODIFICATION_TAXES]);
+        $this->assertEquals(['taxes'], $business->getVisible());
+
+        $business->setVisibleFromModifications([Business::MODIFICATION_TRANSACTION_MODES]);
+        $this->assertEquals(['transactionModes'], $business->getVisible());
+
+        $business->setVisibleFromModifications([Business::MODIFICATION_PRODUCTS]);
+        $this->assertEquals(['products'], $business->getVisible());
+
+        $business->setVisibleFromModifications([Business::MODIFICATION_CUSTOMER_FIELDS]);
+        $this->assertEquals(['customerFields'], $business->getVisible());
+
+        $business->setVisibleFromModifications([Business::MODIFICATION_ROOM_SELECTION_FIELDS]);
+        $this->assertEquals(['roomSelectionFields'], $business->getVisible());
+
+        $business->setVisibleFromModifications([Business::MODIFICATION_ROOMS, Business::MODIFICATION_TAXES]);
+        $this->assertEquals(['rooms', 'taxes'], $business->getVisible());
+
+        // Test duplicates in function are not duplicate in $visible
+        $business->setVisibleFromModifications([Business::MODIFICATION_ROOMS, Business::MODIFICATION_ROOMS]);
+        $this->assertEquals(['rooms'], $business->getVisible());
+    }
 }

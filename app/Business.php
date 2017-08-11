@@ -10,6 +10,13 @@ class Business extends Model
 {
     const MODIFICATION_REGISTER = 'register';
     const MODIFICATION_ORDERS = 'orders';
+    const MODIFICATION_ROOMS = 'rooms';
+    const MODIFICATION_TAXES = 'taxes';
+    const MODIFICATION_TRANSACTION_MODES = 'transactionModes';
+    const MODIFICATION_CATEGORIES = 'categories';
+    const MODIFICATION_PRODUCTS = 'products';
+    const MODIFICATION_CUSTOMER_FIELDS = 'customerFields';
+    const MODIFICATION_ROOM_SELECTION_FIELDS = 'roomSelectionFields';
 
     /**
      * The attributes that should be visible in serialization.
@@ -351,5 +358,34 @@ class Business extends Model
     public function loadAllRelations()
     {
         $this->load(['rooms', 'taxes', 'transactionModes', 'products', 'customerFields', 'roomSelectionFields']);
+    }
+
+    /**
+     * Sets the $visible attribute (used in toArray()) from the list of modifications. Ex: if we have the
+     * self::MODIFICATION_TAXES, we add the 'taxes' attribute in $visible.
+     *
+     * @param array $modifications
+     */
+    public function setVisibleFromModifications($modifications)
+    {
+        $dict = [
+            self::MODIFICATION_ROOMS => 'rooms',
+            self::MODIFICATION_TAXES => 'taxes',
+            self::MODIFICATION_TRANSACTION_MODES => 'transactionModes',
+            self::MODIFICATION_CATEGORIES => 'rootProductCategory',
+            self::MODIFICATION_PRODUCTS => 'products',
+            self::MODIFICATION_CUSTOMER_FIELDS => 'customerFields',
+            self::MODIFICATION_ROOM_SELECTION_FIELDS => 'roomSelectionFields',
+        ];
+
+        $visible = [];
+
+        foreach ($dict as $modification => $attribute) {
+            if (in_array($modification, $modifications)) {
+                $visible[] = $attribute;
+            }
+        }
+
+        $this->setVisible($visible);
     }
 }
