@@ -15,7 +15,7 @@ class CreateBusinessVersionsTable extends Migration
     {
         Schema::create('business_versions', function (Blueprint $table) {
             $table->increments('id');
-            $table->timestamp('created_at')->nullable();
+            $table->timestamp('created_at');
             $table->integer('business_id')->unsigned();
             $table->string('version', 64);
             // Comma separated list of attributes modified in this version
