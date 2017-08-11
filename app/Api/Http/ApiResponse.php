@@ -153,6 +153,14 @@ class ApiResponse extends JsonResponse implements JsonSerializable
     }
 
     /**
+     * @return \App\Business
+     */
+    public function getBusiness()
+    {
+        return $this->business;
+    }
+
+    /**
      * Sets the deviceRegister. Null is a valid value. To unset, call `unsetDeviceRegister()`. Updates the data.
      *
      * @param \App\Register $register
@@ -172,6 +180,14 @@ class ApiResponse extends JsonResponse implements JsonSerializable
     {
         $this->deviceRegisterSet = false;
         $this->updateData();
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasDeviceRegister()
+    {
+        return $this->deviceRegisterSet;
     }
 
     /**

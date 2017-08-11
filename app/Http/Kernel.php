@@ -40,8 +40,16 @@ class Kernel extends HttpKernel
             'throttle:60,1',
             'bindings',
             \App\Http\Middleware\Api\ValidateRequest::class,
+            // The following middleware is authentication related, but put here since it must execute when registering
+            // a device (which does not use 'apiauth' middleware).
             \App\Http\Middleware\Api\AddAuthToken::class,
+        ],
+
+        // All middlewares related to authentication or which require an authenticated device
+        'apiauth' => [
+            \App\Http\Middleware\Api\Authenticate::class,
             \App\Http\Middleware\Api\AddDataVersion::class,
+            \App\Http\Middleware\Api\AddUpdatedData::class,
         ],
     ];
 
@@ -54,7 +62,6 @@ class Kernel extends HttpKernel
      */
     protected $routeMiddleware = [
         'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
-        'apiauth' => \App\Http\Middleware\Api\Authenticate::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'bindings' => \Illuminate\Routing\Middleware\SubstituteBindings::class,
         'can' => \Illuminate\Auth\Middleware\Authorize::class,

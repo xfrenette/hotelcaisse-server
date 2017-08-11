@@ -123,4 +123,34 @@ class Register extends Model
 
         return $array;
     }
+
+    /**
+     * Loads all the relations of this Register
+     */
+    public function loadAllRelations()
+    {
+        $this->load('cashMovements');
+    }
+
+    /**
+     * Returns true if the $modifications array contains at least one Register data specific modification.
+     *
+     * @param array $modifications
+     *
+     * @return bool
+     */
+    public static function containsRelatedModifications($modifications)
+    {
+        $related = [
+            Business::MODIFICATION_REGISTER,
+        ];
+
+        foreach ($related as $rel) {
+            if (in_array($rel, $modifications)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

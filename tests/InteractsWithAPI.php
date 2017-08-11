@@ -64,6 +64,8 @@ trait InteractsWithAPI
         $stub = $this->createMock(ApiAuth::class);
         $stub->method('getDevice')
             ->will($this->returnValue($device));
+        $stub->method('check')
+            ->will($this->returnValue(true));
         App::instance('apiauth', $stub);
         return $stub;
     }

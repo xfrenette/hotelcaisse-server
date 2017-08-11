@@ -7,7 +7,8 @@ All request are POST with a Content-Type of `application/json` and a JSON body h
 * `data`: (mixed) put here the data required by the API method you call. Most probably an object. Can be omitted for
     methods that do not require additional input data.
 * `dataVersion`: (string) the last `dataVersion` that you received. See "dataVersion" section below. Always
-    put a `dataVersion` if you received one in your last request. Omit this attribute only if you don't have it.
+    put the `dataVersion` that you received in the response of your last request. If it is not present, you will not
+    receive updated data.
 
 Also, all API request are relative to a "business". This is determine by the URL. Ex:
 `https://{my-business-slug}.example.com/api`.

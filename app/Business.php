@@ -388,4 +388,32 @@ class Business extends Model
 
         $this->setVisible($visible);
     }
+
+    /**
+     * Returns true if the $modifications array contains at least one Business data specific modification.
+     *
+     * @param array $modifications
+     *
+     * @return bool
+     */
+    public static function containsRelatedModifications($modifications)
+    {
+        $related = [
+            self::MODIFICATION_ROOMS,
+            self::MODIFICATION_TAXES,
+            self::MODIFICATION_TRANSACTION_MODES,
+            self::MODIFICATION_CATEGORIES,
+            self::MODIFICATION_PRODUCTS,
+            self::MODIFICATION_CUSTOMER_FIELDS,
+            self::MODIFICATION_ROOM_SELECTION_FIELDS,
+        ];
+
+        foreach ($related as $rel) {
+            if (in_array($rel, $modifications)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

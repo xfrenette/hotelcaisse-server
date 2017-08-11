@@ -148,4 +148,21 @@ class RequestTest extends TestCase
             'dataVersion' => $business->version,
         ]);
     }
+
+    public function testHasUpdatedDataVersion()
+    {
+        // We query an API route in the 'api' middleware to check it will included updated data
+        $apiSession = factory(ApiSession::class, 'withDeviceAndBusiness')->create();
+        $business = $apiSession->device->business;
+        $business->bumpVersion();
+        $oldVersion = $business->version;
+        $business->bumpVersion([Business::MODIFICATION_REGISTER, Business::MODIFICATION_ROOMS]);
+        $uri = '/api/auth/' . $business->slug;
+
+        $response = $this->json('POST', $uri, ['token' => $apiSession->token, 'dataVersion' => $oldVersion]);
+        $response->assertJsonStructure([
+            'business' => ['rooms'],
+            'deviceRegister',
+        ]);
+    }
 }
