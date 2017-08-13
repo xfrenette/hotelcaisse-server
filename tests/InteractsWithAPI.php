@@ -6,7 +6,10 @@ use App\Api\Auth\ApiAuth;
 use App\Api\Http\ApiResponse;
 use App\Device;
 use App\Register;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Validation\ValidationException;
+use Mockery as m;
 
 trait InteractsWithAPI
 {
@@ -61,15 +64,36 @@ trait InteractsWithAPI
 
     protected function mockApiAuthDevice($device)
     {
-        $stub = $this->createMock(ApiAuth::class);
-        $stub->method('getDevice')
-            ->will($this->returnValue($device));
-        $stub->method('check')
-            ->will($this->returnValue(true));
-        App::instance('apiauth', $stub);
-        return $stub;
+        $apiAuth = m::mock(ApiAuth::class);
+        /** @noinspection PhpMethodParametersCountMismatchInspection */
+        $apiAuth->shouldReceive('getDevice')->andReturn($device);
+        /** @noinspection PhpMethodParametersCountMismatchInspection */
+        $apiAuth->shouldReceive('check')->andReturn(true);
+
+        App::instance('apiauth', $apiAuth);
+
+        return $apiAuth;
     }
 
+    /**
+     * @param array $data
+     *
+     * @return Request
+     */
+    protected function mockRequest($data = [])
+    {
+        $content = json_encode($data);
+        $mock = m::mock(Request::class)->makePartial();
+        $mock->shouldReceive('getContent')->andReturn($content);
+        $mock->shouldReceive('expectsJson')->andReturn(true);
+
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $mock;
+    }
+
+    /**
+     * @TODO should replace calls to this method to use assertValidatesRequestData instead
+     */
     protected function assertValidatesData($routeName, $baseData, $attributeToValidate, $values, $testPresence = true)
     {
         if ($testPresence) {
@@ -100,6 +124,45 @@ trait InteractsWithAPI
                     'code' => ApiResponse::ERROR_CLIENT_ERROR,
                 ],
             ]);
+        }
+    }
+
+    protected function assertValidatesRequestData(
+        $callback,
+        $baseData,
+        $attributeToValidate,
+        $values,
+        $testPresence = true
+    ) {
+        if ($testPresence) {
+            $data = $baseData;
+            array_forget($data, $attributeToValidate);
+            $request = $this->mockRequest($data);
+
+            try {
+                call_user_func($callback, $request);
+                $this->fail('ValidationException not thrown when missing attribute `' . $attributeToValidate . '`');
+            } catch (ValidationException $e) {
+                // Do nothing
+            }
+        }
+
+        if (!$values) {
+            return;
+        }
+
+        foreach ($values as $value) {
+            $data = $baseData;
+            array_set($data, $attributeToValidate, $value);
+            $request = $this->mockRequest($data);
+
+            try {
+                call_user_func($callback, $request);
+                $this->fail('ValidationException not thrown with attribute `'
+                    . $attributeToValidate . '` = `' . $value . '`');
+            } catch (ValidationException $e) {
+                // Do nothing
+            }
         }
     }
 }
