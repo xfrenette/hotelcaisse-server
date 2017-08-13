@@ -32,7 +32,7 @@ class OrdersController extends ApiController
     {
         $data = $this->getRequestData($request);
 
-        $rules = $this->generateValidationRules($data, 'new');
+        $rules = $this->generateMutationValidationRules($data, 'new');
         $this->validate($request, $rules);
         $this->validateRequiredRegisterStatus($data);
 
@@ -56,7 +56,7 @@ class OrdersController extends ApiController
     {
         $data = $this->getRequestData($request);
 
-        $rules = $this->generateValidationRules($data, 'edit');
+        $rules = $this->generateMutationValidationRules($data, 'edit');
         $this->validate($request, $rules);
         $this->validateRequiredRegisterStatus($data);
 
@@ -65,6 +65,38 @@ class OrdersController extends ApiController
         $this->updateOrder($order, $data, $device->currentRegister);
 
         return new ApiResponse();
+    }
+
+    /**
+     * Controller method for /api/orders/list method (see docs/api.md)
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \App\Api\Http\ApiResponse
+     */
+    public function list(Request $request)
+    {
+        $this->validateList($request);
+
+        return new ApiResponse();
+    }
+
+    /**
+     * Validates the parameters for the 'list' controller method. Throws exception in case of validation error.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     * @param \Illuminate\Http\Request $request
+     */
+    public function validateList(Request $request)
+    {
+        $business = ApiAuth::getDevice()->business;
+        $quantityMax = config('api.orders.list.quantity.max', 30);
+        $rules = [
+            'quantity' => 'required|numeric|min:0|max:' . $quantityMax . '|not_in:0',
+            'from' => 'sometimes|string|filled|exists:orders,uuid,business_id,' . $business->id,
+        ];
+
+        $this->validate($request, $rules);
     }
 
     /**
@@ -87,14 +119,15 @@ class OrdersController extends ApiController
     }
 
     /**
-     * Returns the validation rules for the request's data. Rules can be generated for a new Order or an existing Order
-     * with the $newOrEdit parameter. Some rules are conditionally made for some attributes, so we need the Request.
+     * Returns the validation rules when mutating an Order (creating or editing an Order). Rules can be generated for a
+     * new Order or an existing Order with the $newOrEdit parameter. Some rules are conditionally made for some
+     * attributes, so we need the Request.
      *
      * @param array $data
      * @param string $newOrEdit Must be 'new' or 'edit'
      * @return array
      */
-    protected function generateValidationRules($data, $newOrEdit)
+    protected function generateMutationValidationRules($data, $newOrEdit)
     {
         $isNew = $newOrEdit === 'new';
 

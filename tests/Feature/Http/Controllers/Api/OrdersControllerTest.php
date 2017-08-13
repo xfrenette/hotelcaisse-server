@@ -1176,4 +1176,50 @@ class OrdersControllerTest extends TestCase
             $this->assertEquals($newData['startDate'], $roomSelection->start_date->getTimestamp());
         });
     }
+
+    // ----------------------------
+
+    protected function generateListData()
+    {
+        return [
+            'data' => [
+                'quantity' => 4,
+                'from' => $this->business->orders()->first()->uuid,
+            ],
+        ];
+    }
+
+    public function testValidateList()
+    {
+        $device = $this->createDevice();
+        $this->mockApiAuthDevice($device);
+        $data = $this->generateListData();
+
+        // Quantity
+        $max = config('api.orders.list.quantity.max');
+        $values = [-1, 0, '', ' ', null, $max + 1];
+        $this->assertValidatesRequestData([$this->controller, 'validateList'], $data, 'data.quantity', $values);
+
+        // from (UUID)
+        // Create a Order that will be saved, but that is assigned to another $business (so should fail validation, thus
+        // passing the test)
+        $otherOrder = \factory(Order::class, 'withCustomer')->create();
+        $values = ['non-existent', false, '', ' ', null, $otherOrder->uuid];
+        $this->assertValidatesRequestData([$this->controller, 'validateList'], $data, 'data.from', $values, false);
+
+        // Works without from
+        $testData = $data;
+        array_forget($testData, 'data.from');
+        $request = $this->mockRequest($testData);
+        $this->controller->validateList($request); // No exception should be thrown
+
+        // Works with valid data
+        $request = $this->mockRequest($data);
+        $this->controller->validateList($request); // No exception should be thrown
+    }
+
+    public function testListCallsValidateList()
+    {
+        $this->fail();
+    }
 }
