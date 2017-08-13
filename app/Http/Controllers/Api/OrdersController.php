@@ -7,6 +7,7 @@ use App\Business;
 use App\Credit;
 use App\Customer;
 use App\Exceptions\Api\InvalidRequestException;
+use App\Exceptions\CrossBusinessAccessException;
 use App\Item;
 use App\ItemProduct;
 use App\Order;
@@ -79,6 +80,43 @@ class OrdersController extends ApiController
         $this->validateList($request);
 
         return new ApiResponse();
+    }
+
+    /**
+     * Gets the latest $quantity Orders of the $business. If $from is passed, Order are following $from. In the
+     * returning Collection, the most recent Order is first.
+     *
+     * @param \App\Business $business
+     * @param integer $quantity
+     * @param \App\Order|null $from
+     *
+     * @return Collection
+     * @throws \App\Exceptions\CrossBusinessAccessException
+     */
+    public function getOrders(Business $business, $quantity, Order $from = null)
+    {
+        // Make sure $from has the same business as $business
+        if (!is_null($from)) {
+            if ($from->business_id !== $business->id) {
+                throw new CrossBusinessAccessException('$from Order is not in $business.');
+            }
+        }
+
+        $query = $business->orders()->take($quantity);
+
+        if (is_null($from)) {
+            $query->orderBy('created_at', 'DESC');
+        } else {
+            $query->from($from)->orderBy('created_at', 'ASC');
+        }
+
+        $results = $query->get();
+
+        if (!is_null($from)) {
+            return $results->reverse();
+        }
+
+        return $results;
     }
 
     /**
