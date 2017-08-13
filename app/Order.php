@@ -84,4 +84,26 @@ class Order extends Model
 
         return $array;
     }
+
+    /**
+     * Select Order that were created after the $from Order
+     *
+     * @param \Illuminate\Database\Query\Builder $query
+     * @param \App\Order $from
+     *
+     * @return \Illuminate\Database\Query\Builder
+     */
+    public function scopeFrom($query, Order $from)
+    {
+        // Next line because of missing type in PHPDoc, see https://github.com/laravel/framework/issues/20546
+        /** @noinspection PhpParamsInspection */
+        return $query
+            // All Orders created *after* $from
+            ->where('created_at', '>', $from->created_at)
+            // Rare case: For Order with the exact same created_at, we take all that have greater id
+            ->orWhere([
+                ['created_at', $from->created_at],
+                ['id', '>', $from->id],
+            ]);
+    }
 }
