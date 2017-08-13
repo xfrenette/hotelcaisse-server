@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use Faker\Factory;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
+use Mockery as m;
 use Tests\InteractsWithAPI;
 use Tests\TestCase;
 
@@ -47,6 +48,12 @@ class OrdersControllerTest extends TestCase
         if (!self::$faker) {
             self::$faker = Factory::create();
         }
+    }
+
+    protected function tearDown()
+    {
+        parent::tearDown();
+        m::close();
     }
 
     protected function generateNewData()
@@ -1220,6 +1227,11 @@ class OrdersControllerTest extends TestCase
 
     public function testListCallsValidateList()
     {
-        $this->fail();
+        $request = $this->mockRequest();
+        $controller = m::mock(OrdersController::class);
+        /** @noinspection PhpMethodParametersCountMismatchInspection */
+        $controller->shouldReceive('validateList')->atLeast()->once();
+
+        $controller->list($request);
     }
 }
