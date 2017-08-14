@@ -41,7 +41,7 @@ class OrderTest extends TestCase
         }
 
         $from = Order::where('uuid', 'test-3')->first();
-        $res = Order::from($from)->orderBy('created_at')->get();
+        $res = Order::where('business_id', $customer->business->id)->from($from)->orderBy('created_at')->get();
         $uuids = $res->pluck('uuid')->toArray();
         $this->assertEquals(['test-4', 'test-5', 'test-6', 'test-7', 'test-8'], $uuids);
     }

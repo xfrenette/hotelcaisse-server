@@ -1301,16 +1301,15 @@ class OrdersControllerTest extends TestCase
             ['uuid' => 'other-business', 'created_at' => $baseDate->copy()->subHours(4)],
         ];
 
-        $customer = new Customer();
-        $customer->business()->associate($this->business);
-        $customer->save();
+        $customer = \factory(Customer::class, 'withBusiness')->create();
+        $business = $customer->business;
 
         $otherOrder = null;
 
         foreach ($orders as $index => $orderData) {
             $order = new Order($orderData);
             $order->created_at = $orderData['created_at'];
-            $order->business()->associate($this->business);
+            $order->business()->associate($business);
             $order->customer()->associate($customer);
             $order->save();
 
@@ -1326,29 +1325,29 @@ class OrdersControllerTest extends TestCase
         $otherOrder->save();
 
         // No $from specified
-        $res = $this->controller->getOrders($this->business, 2);
+        $res = $this->controller->getOrders($business, 2);
         $uuids = $res->pluck('uuid')->toArray();
         $this->assertEquals(['test-5', 'test-4'], $uuids);
 
         // With $from specified
         $from = Order::where('uuid', 'test-2')->first();
-        $res = $this->controller->getOrders($this->business, 2, $from);
+        $res = $this->controller->getOrders($business, 2, $from);
         $uuids = $res->pluck('uuid')->toArray();
         $this->assertEquals(['test-4', 'test-3'], $uuids);
 
         // With $quantity larger than available
-        $res = $this->controller->getOrders($this->business, 10, $from);
+        $res = $this->controller->getOrders($business, 10, $from);
         $uuids = $res->pluck('uuid')->toArray();
         $this->assertEquals(['test-5', 'test-4', 'test-3'], $uuids);
 
         // Ask the last one of the business
         $from = Order::where('uuid', 'test-5')->first();
-        $res = $this->controller->getOrders($this->business, 5, $from);
+        $res = $this->controller->getOrders($business, 5, $from);
         $this->assertEmpty($res);
 
         // Throws error if $from is not of the same business
         try {
-            $this->controller->getOrders($this->business, 5, $otherOrder);
+            $this->controller->getOrders($business, 5, $otherOrder);
             $this->fail('Did not throw exception with $from an Order for another Business');
         } catch (CrossBusinessAccessException $e) {
             // Do nothing
