@@ -290,3 +290,50 @@ Some attributes are "editable lists", others are "add-only lists".
 
 ### Response `data`
 None returned
+
+`POST /orders`
+---
+
+Returns the list of Orders for the current Business. The Orders are returned in reverse order, sorted by creation date,
+so the last Orders are returned first. A `quantity` must be provided. If a `from` (an Order UUID) is supplied, the list
+are the Orders following (by creation date) the `from`.
+
+### Request `data`
+* `quantity`: (number) Number of Order to return (it has a maximum defined by the server).
+* `from`: (optional, string) UUID of the Order after which we want to get the Orders. If not defined, will return the
+    last Orders.
+
+### Response `data`
+Returns an array of Orders, where is is an object with the following attributes:
+
+* `*.uuid` (string) UUID of the Order
+* `*.note` (string) Note of the Order
+* `*.customer` (object) Customer info of the Order
+* `*.customer.fieldValues` (array) Field values
+* `*.customer.fieldValues.*.field` (number) Id of the Field
+* `*.customer.fieldValues.*.value` (string) Value of the Field
+* `*.items` (array) Items of the Order
+* `*.items.*.uuid` (string) UUID of the Item
+* `*.items.*.quantity` (float) Quantity of the Item (if negative, the item is a refunded item)
+* `*.items.*.product` (object) Product info
+* `*.items.*.product.name` (string) Full name of the Item
+* `*.items.*.product.price` (float) Unit price of the Product
+* `*.items.*.product.taxes` (array) List of unit taxes
+* `*.items.*.product.taxes.*.tax_id` (number) Id of the Tax object
+* `*.items.*.product.taxes.*.amount` (float) Unit amount of tax for this product
+* `*.transactions` (array) List of Transactions
+* `*.transactions.*.uuid` (string) UUID of the Transaction
+* `*.transactions.*.amount` (float) Amount of the Transaction (if negative, it is a refund)
+* `*.transactions.*.transactionMode` (number) Id of the TransactionMode
+* `*.credits` (array) List of Credits
+* `*.credits.*.uuid` (string) UUID of the Credit
+* `*.credits.*.note` (string) Note of the Credit
+* `*.credits.*.amount` (float) Amount of the Credit
+* `*.roomSelections` (array) List of RoomSelections
+* `*.roomSelections.*.uuid` (string) UUID of the RoomSelections
+* `*.roomSelections.*.startDate` (number) Timestamp of the start date
+* `*.roomSelections.*.endDate` (number) Timestamp of the end date
+* `*.roomSelections.*.room` (number) Id of the Room
+* `*.roomSelections.fieldValues` (array) Field values
+* `*.roomSelections.fieldValues.*.field` (number) Id of the Field
+* `*.roomSelections.fieldValues.*.value` (string) Value of the Field
