@@ -1229,12 +1229,60 @@ class OrdersControllerTest extends TestCase
 
     public function testListCallsValidateList()
     {
+        $device = $this->createDevice();
+        $this->mockApiAuthDevice($device);
         $request = $this->mockRequest();
-        $controller = m::mock(OrdersController::class);
+        $controller = m::mock(OrdersController::class)->makePartial();
         /** @noinspection PhpMethodParametersCountMismatchInspection */
-        $controller->shouldReceive('validateList')->atLeast()->once();
+        $controller->shouldReceive('validateList')
+            ->andReturnNull()
+            ->atLeast()
+            ->once();
 
         $controller->list($request);
+    }
+
+    public function testListReturnsGetOrdersResult()
+    {
+        $ordersResult = collect([
+            'test' => true,
+        ]);
+
+        $device = $this->createDevice();
+        $this->mockApiAuthDevice($device);
+        $quantity = 4;
+        $from = $this->business->orders()->first();
+
+        $request = $this->mockRequest(['data' => ['quantity' => $quantity, 'from' => $from->uuid]]);
+        $controller = m::mock(OrdersController::class);
+        /** @noinspection PhpMethodParametersCountMismatchInspection */
+        $controller->shouldReceive('validateList')->andReturnNull();
+        /** @noinspection PhpMethodParametersCountMismatchInspection */
+        $controller->shouldReceive('getOrders')
+            ->withArgs([$device->business, $quantity, m::on(function ($arg) use ($from) {
+                return $arg->uuid === $from->uuid;
+            })])
+            ->once()
+            ->andReturn($ordersResult);
+
+        $res = $controller->list($request);
+        $this->assertEquals($ordersResult, $res->getResponseData());
+    }
+
+    public function testListRoute()
+    {
+        $device = $this->createDevice();
+        $this->mockApiAuthDevice($device);
+        $quantity = 1;
+        $orders = $this->controller->getOrders($device->business, $quantity);
+        $data = [
+            'data' => ['quantity' => $quantity],
+        ];
+
+        $response = $this->queryAPI('api.orders.list', $data);
+        $response->assertJson([
+            'data' => $orders->toArray(),
+        ]);
     }
 
     // ------------------------

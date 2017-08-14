@@ -79,7 +79,21 @@ class OrdersController extends ApiController
     {
         $this->validateList($request);
 
-        return new ApiResponse();
+        $business = ApiAuth::getDevice()->business;
+        $quantity = $request->json('data.quantity');
+        $uuid = $request->json('data.from', null);
+        $from = null;
+
+        if (!is_null($uuid)) {
+            $from = $business->orders()->where('uuid', $uuid)->first();
+        }
+
+        $orders = $this->getOrders($business, $quantity, $from);
+
+        $response = new ApiResponse();
+        $response->setResponseData($orders);
+
+        return $response;
     }
 
     /**

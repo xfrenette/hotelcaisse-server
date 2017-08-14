@@ -129,6 +129,14 @@ class ApiResponse extends JsonResponse implements JsonSerializable
     }
 
     /**
+     * @return mixed
+     */
+    public function getResponseData()
+    {
+        return $this->responseData;
+    }
+
+    /**
      * Sets the error code and message. If null is passed, removes the error. Updates the data.
      *
      * @param string $code
