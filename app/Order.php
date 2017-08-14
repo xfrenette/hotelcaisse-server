@@ -69,6 +69,14 @@ class Order extends Model
     }
 
     /**
+     * Loads all relations (use it before toArray() to have the entire hierarchy)
+     */
+    public function loadAllRelations()
+    {
+        $this->load(['customer', 'items.product', 'transactions', 'credits', 'roomSelections']);
+    }
+
+    /**
      * Redefines the toArray to rename the room_selections key to roomSelections
      *
      * @return array

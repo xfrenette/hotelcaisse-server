@@ -45,4 +45,19 @@ class OrderTest extends TestCase
         $uuids = $res->pluck('uuid')->toArray();
         $this->assertEquals(['test-4', 'test-5', 'test-6', 'test-7', 'test-8'], $uuids);
     }
+
+    public function testLoadAllRelations()
+    {
+        $order = Order::first();
+        $order->loadAllRelations();
+
+        $this->assertTrue($order->relationLoaded('items'));
+        $this->assertTrue($order->relationLoaded('transactions'));
+        $this->assertTrue($order->relationLoaded('customer'));
+        $this->assertTrue($order->relationLoaded('credits'));
+        $this->assertTrue($order->relationLoaded('roomSelections'));
+
+        // Check that sub-relations are loaded
+        $this->assertTrue($order->items->first()->relationLoaded('product'));
+    }
 }
