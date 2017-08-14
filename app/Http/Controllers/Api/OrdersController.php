@@ -98,7 +98,7 @@ class OrdersController extends ApiController
 
     /**
      * Gets the latest $quantity Orders of the $business. If $from is passed, Order are following $from. In the
-     * returning Collection, the most recent Order is first.
+     * returning Collection, the most recent Order is first. All relations of each Order are also loaded.
      *
      * @param \App\Business $business
      * @param integer $quantity
@@ -116,7 +116,7 @@ class OrdersController extends ApiController
             }
         }
 
-        $query = $business->orders()->take($quantity);
+        $query = $business->orders()->with(Order::RELATIONS)->take($quantity);
 
         if (is_null($from)) {
             $query->orderBy('created_at', 'DESC');

@@ -1353,4 +1353,21 @@ class OrdersControllerTest extends TestCase
             // Do nothing
         }
     }
+
+    public function testGetOrdersLoadsAllRelations()
+    {
+        $business = Business::first();
+        $orders = $this->controller->getOrders($business, 3);
+
+        $order = $orders->first();
+
+        $this->assertTrue($order->relationLoaded('items'));
+        $this->assertTrue($order->relationLoaded('transactions'));
+        $this->assertTrue($order->relationLoaded('customer'));
+        $this->assertTrue($order->relationLoaded('credits'));
+        $this->assertTrue($order->relationLoaded('roomSelections'));
+
+        // Check that sub-relations are loaded
+        $this->assertTrue($order->items->first()->relationLoaded('product'));
+    }
 }

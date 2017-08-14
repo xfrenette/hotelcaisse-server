@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     /**
+     * All relation names, used when loading all the relations
+     */
+    const RELATIONS = ['customer', 'items.product', 'transactions', 'credits', 'roomSelections'];
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
@@ -73,7 +78,7 @@ class Order extends Model
      */
     public function loadAllRelations()
     {
-        $this->load(['customer', 'items.product', 'transactions', 'credits', 'roomSelections']);
+        $this->load(self::RELATIONS);
     }
 
     /**
