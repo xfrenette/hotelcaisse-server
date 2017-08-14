@@ -168,6 +168,12 @@ return [
          */
         Laravel\Tinker\TinkerServiceProvider::class,
 
+        /**
+         * Spark
+         */
+        Laravel\Spark\Providers\SparkServiceProvider::class,
+        Laravel\Cashier\CashierServiceProvider::class,
+
         /*
          * Application Service Providers...
          */
@@ -177,6 +183,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\ApiAuthServiceProvider::class,
+        App\Providers\SparkServiceProvider::class,
 
     ],
 

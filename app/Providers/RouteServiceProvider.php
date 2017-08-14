@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Routing\Router;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
 
@@ -31,13 +32,14 @@ class RouteServiceProvider extends ServiceProvider
     /**
      * Define the routes for the application.
      *
+     * @param  \Illuminate\Routing\Router  $router
      * @return void
      */
-    public function map()
+    public function map(Router $router)
     {
-        $this->mapApiRoutes();
+        $this->mapWebRoutes($router);
 
-        $this->mapWebRoutes();
+        $this->mapApiRoutes($router);
 
         //
     }
@@ -47,25 +49,27 @@ class RouteServiceProvider extends ServiceProvider
      *
      * These routes all receive session state, CSRF protection, etc.
      *
+     * @param  \Illuminate\Routing\Router  $router
      * @return void
      */
-    protected function mapWebRoutes()
+    protected function mapWebRoutes(Router $router)
     {
-        Route::middleware('web')
-             ->namespace($this->namespace)
-             ->group(base_path('routes/web.php'));
+        $router->group([
+            'namespace' => $this->namespace, 'middleware' => ['web', 'hasTeam'],
+        ], function ($router) {
+            require base_path('routes/web.php');
+        });
     }
 
     /**
      * Define the "api" routes for the application.
      *
-     * These routes are typically stateless.
-     *
+     * @param  \Illuminate\Routing\Router  $router
      * @return void
      */
-    protected function mapApiRoutes()
+    protected function mapApiRoutes(Router $router)
     {
-        Route::domain(config('api.domain'))
+        $router->domain(config('api.domain'))
             ->prefix('api')
             ->name('api.')
             ->middleware('api')
