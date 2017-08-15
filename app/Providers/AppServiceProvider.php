@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Repositories\TeamRepository;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Spark\Contracts\Repositories\TeamRepository as BaseTeamRepository;
+use Spark;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -13,7 +16,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        $this->enhanceTeamCreation();
     }
 
     /**
@@ -24,5 +27,13 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         //
+    }
+
+    /**
+     * When creating a new Team through Spark, also creates a new Business and assign a slug.
+     */
+    protected function enhanceTeamCreation()
+    {
+        Spark::swap(BaseTeamRepository::class.'@create', TeamRepository::class.'@create');
     }
 }
