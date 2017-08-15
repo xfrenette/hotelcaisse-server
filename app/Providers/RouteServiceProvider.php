@@ -2,9 +2,8 @@
 
 namespace App\Providers;
 
-use Illuminate\Routing\Router;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Route;
+use Illuminate\Routing\Router;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -56,7 +55,7 @@ class RouteServiceProvider extends ServiceProvider
     {
         $router->group([
             'namespace' => $this->namespace, 'middleware' => ['web', 'hasTeam'],
-        ], function ($router) {
+        ], function () {
             require base_path('routes/web.php');
         });
     }
@@ -69,9 +68,8 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function mapApiRoutes(Router $router)
     {
-        $router->domain(config('api.domain'))
-            ->prefix('api')
-            ->name('api.')
+        $router->name('api.')
+            ->prefix('api/1.0/{team}')
             ->middleware('api')
             ->namespace($this->namespace . '\Api')
             ->group(base_path('routes/api.php'));
