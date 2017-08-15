@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use App\Register;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class RegisterTest extends TestCase
 {
+    use DatabaseTransactions;
+
     // This test requires the seeded test data
     public function testToArray()
     {

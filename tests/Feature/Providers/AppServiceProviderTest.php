@@ -4,12 +4,15 @@ namespace Tests\Feature\Providers;
 
 use App\Business;
 use App\User;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Laravel\Spark\Contracts\Interactions\Settings\Teams\CreateTeam;
 use Laravel\Spark\Spark;
 use Tests\TestCase;
 
 class AppServiceProviderTest extends TestCase
 {
+    use DatabaseTransactions;
+
     public function testCreateTeamCreatesBusinessAndSlug()
     {
         $user = factory(User::class)->create();

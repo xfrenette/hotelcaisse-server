@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use App\ProductCategory;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class ProductCategoryTest extends TestCase
 {
+    use DatabaseTransactions;
+
     // This test requires the test seeded data
     public function testToArray()
     {

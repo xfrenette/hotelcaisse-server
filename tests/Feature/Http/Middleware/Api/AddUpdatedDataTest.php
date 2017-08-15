@@ -5,11 +5,13 @@ namespace Tests\Feature\Http\Middleware\Api;
 use App\Api\Http\ApiResponse;
 use App\Business;
 use App\Http\Middleware\Api\AddUpdatedData;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\InteractsWithAPI;
 use Tests\TestCase;
 
 class AddUpdatedDataTest extends TestCase
 {
+    use DatabaseTransactions;
     use InteractsWithAPI;
 
     /**
