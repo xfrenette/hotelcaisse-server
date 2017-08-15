@@ -13,10 +13,36 @@ use Illuminate\Support\Facades\Hash;
 |
 */
 
+$factory->defineAs(App\Team::class, 'withBusiness', function (Faker\Generator $faker) {
+    return [
+        'name' => $faker->company,
+        'slug' => $faker->slug,
+        'owner_id' => 1,
+        'business_id' => function () {
+            return factory(\App\Business::class)->create()->id;
+        },
+    ];
+});
+
+$factory->define(App\Team::class, function (Faker\Generator $faker) {
+    return [
+        'name' => $faker->company,
+        'slug' => $faker->slug,
+        'owner_id' => 1,
+    ];
+});
+
+$factory->define(App\User::class, function (Faker\Generator $faker) {
+    return [
+        'name' => $faker->name,
+        'email' => $faker->email,
+        'password' => $faker->password(),
+    ];
+});
+
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
 $factory->define(App\Business::class, function (Faker\Generator $faker) {
     return [
-        'slug' => $faker->slug,
     ];
 });
 
@@ -25,10 +51,10 @@ $factory->define(App\Device::class, function () {
     ];
 });
 
-$factory->defineAs(App\Device::class, 'withBusiness', function () {
+$factory->defineAs(App\Device::class, 'withTeam', function () {
     return [
-        'business_id' => function () {
-            return factory(\App\Business::class)->create()->id;
+        'team_id' => function () {
+            return factory(\App\Team::class, 'withBusiness')->create()->id;
         },
     ];
 });
@@ -40,12 +66,12 @@ $factory->define(App\ApiSession::class, function (Faker\Generator $faker) {
     ];
 });
 
-$factory->defineAs(App\ApiSession::class, 'withDeviceAndBusiness', function () {
+$factory->defineAs(App\ApiSession::class, 'withDevice', function () {
     return [
         'token' => str_random(32),
         'expires_at' => \Carbon\Carbon::tomorrow(),
         'device_id' => function () {
-            return factory(\App\Device::class, 'withBusiness')->create()->id;
+            return factory(\App\Device::class, 'withTeam')->create()->id;
         },
     ];
 });
@@ -57,12 +83,12 @@ $factory->define(App\DeviceApproval::class, function () {
     ];
 });
 
-$factory->defineAs(App\DeviceApproval::class, 'withDeviceAndBusiness', function () {
+$factory->defineAs(App\DeviceApproval::class, 'withDevice', function () {
     return [
         'passcode' => Hash::make('1234'),
         'expires_at' => \Carbon\Carbon::tomorrow(),
         'device_id' => function () {
-            return factory(\App\Device::class, 'withBusiness')->create()->id;
+            return factory(\App\Device::class, 'withTeam')->create()->id;
         },
     ];
 });

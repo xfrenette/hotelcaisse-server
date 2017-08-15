@@ -5,6 +5,7 @@ namespace App\Api\Auth;
 use App\ApiSession;
 use App\Business;
 use App\Device;
+use App\Team;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 
@@ -35,11 +36,13 @@ class ApiAuth
      */
     public function getBusiness()
     {
-        if (is_null($this->apiSession)) {
+        $device = $this->getDevice();
+
+        if (is_null($device)) {
             return null;
         }
 
-        return $this->apiSession->device->business;
+        return $device->team->business;
     }
 
     /**
@@ -71,8 +74,8 @@ class ApiAuth
     }
 
     /**
-     * Tries to find a (not expired) ApiSession with the specified $token and associated to the $business (it could
-     * work only with the token, but we require the Business for (small) security reason : both information must be
+     * Tries to find a (not expired) ApiSession with the specified $token and associated to the $team (it could
+     * work with only the token, but we require the Team for (small) security reason : both information must be
      * provided).
      *
      * If an ApiSession is found, it is loaded and we are authenticated; the method returns true.
@@ -81,11 +84,11 @@ class ApiAuth
      * Calling this method will clear the currently loaded ApiSession.
      *
      * @param $token
-     * @param Business $business
+     * @param Team $team
      *
      * @return bool
      */
-    public function loadSession($token, Business $business)
+    public function loadSession($token, Team $team)
     {
         $this->logout();
 
@@ -95,16 +98,26 @@ class ApiAuth
         $apiSession = ApiSession::valid()
             ->select("$apiSessionsTN.*")
             ->join($devicesTN, "$apiSessionsTN.device_id", '=', "$devicesTN.id")
-            ->where("$devicesTN.business_id", $business->id)
+            ->where("$devicesTN.team_id", $team->id)
             ->where("$apiSessionsTN.token", $token)
             ->first();
 
         if (!is_null($apiSession)) {
-            $this->apiSession = $apiSession;
+            $this->setApiSession($apiSession);
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Sets the API session, thus logging the Device associated.
+     *
+     * @param \App\ApiSession $apiSession
+     */
+    public function setApiSession(ApiSession $apiSession)
+    {
+        $this->apiSession = $apiSession;
     }
 
     /**
@@ -201,16 +214,16 @@ class ApiAuth
     }
 
     /**
-     * Finds in the DB the still valid DeviceApproval with the $passcode and $business. Returns it if found, else
+     * Finds in the DB the still valid DeviceApproval with the $passcode and $team. Returns it if found, else
      * returns null.
      *
      * @param string $passcode
-     * @param \App\Business $business
+     * @param \App\Team $team
      * @return \App\DeviceApproval|null
      */
-    public function findDeviceApproval($passcode, Business $business)
+    public function findDeviceApproval($passcode, Team $team)
     {
-        $candidates = $business->deviceApprovals()->valid()->get();
+        $candidates = $team->deviceApprovals()->valid()->get();
 
         // Find the one with which the passcode matches
         return $candidates->first(function ($deviceApproval) use ($passcode) {
@@ -219,17 +232,17 @@ class ApiAuth
     }
 
     /**
-     * If a DeviceApproval with the specified $passcode and $business exist, create an ApiSession from it and set it in
+     * If a DeviceApproval with the specified $passcode and $team exists, create an ApiSession from it and set it in
      * ApiAuth. The DeviceApproval is destroyed. Returns true if the DeviceApproval exists, else return false (wrong
-     * $passcode and/or $business).
+     * $passcode and/or $team).
      *
      * @param $passcode
-     * @param \App\Business $business
+     * @param \App\Team $team
      * @return bool
      */
-    public function attemptRegister($passcode, Business $business)
+    public function attemptRegister($passcode, Team $team)
     {
-        $deviceApproval = $this->findDeviceApproval($passcode, $business);
+        $deviceApproval = $this->findDeviceApproval($passcode, $team);
 
         if (is_null($deviceApproval)) {
             return false;

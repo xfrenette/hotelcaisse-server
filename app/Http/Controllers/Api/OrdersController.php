@@ -6,7 +6,6 @@ use App\Api\Http\ApiResponse;
 use App\Business;
 use App\Credit;
 use App\Customer;
-use App\Exceptions\Api\InvalidRequestException;
 use App\Exceptions\CrossBusinessAccessException;
 use App\Item;
 use App\ItemProduct;
@@ -31,17 +30,16 @@ class OrdersController extends ApiController
      */
     public function new(Request $request)
     {
+        $this->validateNew($request);
         $data = $this->getRequestData($request);
-
-        $rules = $this->generateMutationValidationRules($data, 'new');
-        $this->validate($request, $rules);
         $this->validateRequiredRegisterStatus($data);
 
         $device = ApiAuth::getDevice();
-        $this->createOrder($data, $device->business, $device->currentRegister);
+        $business = ApiAuth::getBusiness();
+        $this->createOrder($data, $business, $device->currentRegister);
 
         // Bump the version of Business
-        $device->business->bumpVersion([Business::MODIFICATION_ORDERS]);
+        $business->bumpVersion([Business::MODIFICATION_ORDERS]);
 
         return new ApiResponse();
     }
@@ -55,14 +53,13 @@ class OrdersController extends ApiController
      */
     public function edit(Request $request)
     {
+        $this->validateEdit($request);
         $data = $this->getRequestData($request);
-
-        $rules = $this->generateMutationValidationRules($data, 'edit');
-        $this->validate($request, $rules);
         $this->validateRequiredRegisterStatus($data);
 
         $device = ApiAuth::getDevice();
-        $order = $device->business->orders()->where('uuid', array_get($data, 'uuid'))->firstOrFail();
+        $business = ApiAuth::getBusiness();
+        $order = $business->orders()->where('uuid', array_get($data, 'uuid'))->firstOrFail();
         $this->updateOrder($order, $data, $device->currentRegister);
 
         return new ApiResponse();
@@ -79,7 +76,7 @@ class OrdersController extends ApiController
     {
         $this->validateList($request);
 
-        $business = ApiAuth::getDevice()->business;
+        $business = ApiAuth::getBusiness();
         $quantity = $request->json('data.quantity');
         $uuid = $request->json('data.from', null);
         $from = null;
@@ -134,6 +131,32 @@ class OrdersController extends ApiController
     }
 
     /**
+     * Validates the parameters for the 'new' controller method. Throws exception in case of validation error.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     * @param \Illuminate\Http\Request $request
+     */
+    public function validateNew(Request $request)
+    {
+        $data = $this->getRequestData($request);
+        $rules = $this->generateMutationValidationRules($data, 'new');
+        $this->validate($request, $rules);
+    }
+
+    /**
+     * Validates the parameters for the 'edit' controller method. Throws exception in case of validation error.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     * @param \Illuminate\Http\Request $request
+     */
+    public function validateEdit(Request $request)
+    {
+        $data = $this->getRequestData($request);
+        $rules = $this->generateMutationValidationRules($data, 'edit');
+        $this->validate($request, $rules);
+    }
+
+    /**
      * Validates the parameters for the 'list' controller method. Throws exception in case of validation error.
      *
      * @throws \Illuminate\Validation\ValidationException
@@ -141,7 +164,7 @@ class OrdersController extends ApiController
      */
     public function validateList(Request $request)
     {
-        $business = ApiAuth::getDevice()->business;
+        $business = ApiAuth::getBusiness();
         $quantityMax = config('api.orders.list.quantity.max', 30);
         $rules = [
             'quantity' => 'required|numeric|min:0|max:' . $quantityMax . '|not_in:0',
@@ -162,11 +185,7 @@ class OrdersController extends ApiController
     protected function validateRequiredRegisterStatus($data)
     {
         if (count(array_get($data, 'transactions', []))) {
-            $device = ApiAuth::getDevice();
-            if (!$device->isCurrentRegisterOpened) {
-                $message = 'The register of the device must be opened to accept new transactions.';
-                throw new InvalidRequestException($message);
-            }
+            $this->validateRegisterOpened();
         }
     }
 

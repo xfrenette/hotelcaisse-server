@@ -4,6 +4,7 @@ namespace Tests\Feature\Http\Controllers\Api;
 
 use App\Api\Http\ApiResponse;
 use App\Business;
+use App\Http\Controllers\Api\RegisterController;
 use App\Register;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
@@ -32,10 +33,13 @@ class RegisterControllerTest extends TestCase
         ],
     ];
 
+    protected $controller;
+
     protected function setUp()
     {
         parent::setUp();
         $this->business = factory(Business::class)->create();
+        $this->controller = new RegisterController();
     }
 
     /**
@@ -55,26 +59,26 @@ class RegisterControllerTest extends TestCase
     }
 
     // Uses seeded test data
-    public function testOpenReturnsErrorIfInvalidUUID()
+    public function testValidateOpenReturnsErrorIfInvalidUUID()
     {
         $existingRegister = Register::first();
         $values = [null, '', ' ', 12, $existingRegister->uuid];
-        $this->assertValidatesData('api.register.open', self::OPEN_DATA, 'uuid', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateOpen'], self::OPEN_DATA, 'data.uuid', $values);
     }
 
-    public function testOpenReturnsErrorIfInvalidEmployee()
+    public function testValidateOpenReturnsErrorIfInvalidEmployee()
     {
         $values = [null, '', ' ', 12];
-        $this->assertValidatesData('api.register.open', self::OPEN_DATA, 'employee', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateOpen'], self::OPEN_DATA, 'data.employee', $values);
     }
 
-    public function testOpenReturnsErrorIfInvalidCashAmount()
+    public function testValidateOpenReturnsErrorIfInvalidCashAmount()
     {
         $values = [null, '', -5];
-        $this->assertValidatesData('api.register.open', self::OPEN_DATA, 'cashAmount', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateOpen'], self::OPEN_DATA, 'data.cashAmount', $values);
     }
 
-    public function testOpenReturnsErrorIfRegisterAlreadyOpened()
+    public function testValidateOpenReturnsErrorIfRegisterAlreadyOpened()
     {
         $device = $this->createDeviceWithOpenedRegister();
         $this->mockApiAuthDevice($device);
@@ -91,16 +95,17 @@ class RegisterControllerTest extends TestCase
     public function testOpenBumpsBusinessVersionWithModifications()
     {
         $device = $this->createDeviceWithRegister();
-        $this->mockApiAuthDevice($device);
+        $this->logDevice($device);
+        $business = $device->team->business;
 
-        $oldVersion = $this->business->version;
+        $oldVersion = $business->version;
 
         $this->queryAPI('api.register.open', self::OPEN_DATA);
-        $newVersion = $this->business->version;
+        $newVersion = $business->version;
         $this->assertNotEquals($oldVersion, $newVersion);
         $this->assertEquals(
             [Business::MODIFICATION_REGISTER],
-            $this->business->getVersionModifications($newVersion)
+            $business->getVersionModifications($newVersion)
         );
     }
 
@@ -130,83 +135,35 @@ class RegisterControllerTest extends TestCase
 
     // ---------------------
 
-    public function testCloseReturnsErrorIfInvalidUUID()
+    public function testValidateCloseReturnsErrorIfInvalidUUID()
     {
         $data = $this->generateCloseData();
         $values = [null, '', ' ', 12];
-        $this->assertValidatesData('api.register.close', $data, 'uuid', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateClose'], $data, 'data.uuid', $values);
     }
 
-    public function testCloseReturnsErrorIfInvalidCashAmount()
+    public function testValidateCloseReturnsErrorIfInvalidCashAmount()
     {
+        $data = $this->generateCloseData();
         $values = [null, '', -5];
-
-        foreach ($values as $value) {
-            $data = $this->generateCloseData();
-
-            if (is_null($value)) {
-                unset($data['data']['cashAmount']);
-            } else {
-                $data['data']['cashAmount'] = $value;
-            }
-
-            $response = $this->queryAPI('api.register.close', $data);
-            $response->assertJson([
-                'status' => 'error',
-                'error' => [
-                    'code' => ApiResponse::ERROR_CLIENT_ERROR,
-                ],
-            ]);
-        }
+        $this->assertValidatesRequestData([$this->controller, 'validateClose'], $data, 'data.cashAmount', $values);
     }
 
-    public function testCloseReturnsErrorIfInvalidPOSTAmount()
+    public function testValidateCloseReturnsErrorIfInvalidPOSTAmount()
     {
+        $data = $this->generateCloseData();
         $values = [null, '', -5];
-
-        foreach ($values as $value) {
-            $data = $this->generateCloseData();
-
-            if (is_null($value)) {
-                unset($data['data']['POSTAmount']);
-            } else {
-                $data['data']['POSTAmount'] = $value;
-            }
-
-            $response = $this->queryAPI('api.register.close', $data);
-            $response->assertJson([
-                'status' => 'error',
-                'error' => [
-                    'code' => ApiResponse::ERROR_CLIENT_ERROR,
-                ],
-            ]);
-        }
+        $this->assertValidatesRequestData([$this->controller, 'validateClose'], $data, 'data.POSTAmount', $values);
     }
 
-    public function testCloseReturnsErrorIfInvalidPOSTRef()
+    public function testValidateCloseReturnsErrorIfInvalidPOSTRef()
     {
+        $data = $this->generateCloseData();
         $values = [null, '', '  ', 5];
-
-        foreach ($values as $value) {
-            $data = $this->generateCloseData();
-
-            if (is_null($value)) {
-                unset($data['data']['POSTRef']);
-            } else {
-                $data['data']['POSTRef'] = $value;
-            }
-
-            $response = $this->queryAPI('api.register.close', $data);
-            $response->assertJson([
-                'status' => 'error',
-                'error' => [
-                    'code' => ApiResponse::ERROR_CLIENT_ERROR,
-                ],
-            ]);
-        }
+        $this->assertValidatesRequestData([$this->controller, 'validateClose'], $data, 'data.POSTRef', $values);
     }
 
-    public function testCloseReturnsErrorIfNoRegister()
+    public function testValidateCloseReturnsErrorIfNoRegister()
     {
         $device = $this->createDevice(); // No register assigned
         $this->mockApiAuthDevice($device);
@@ -219,7 +176,7 @@ class RegisterControllerTest extends TestCase
         ]);
     }
 
-    public function testCloseReturnsErrorIfUUIDIsNotDeviceCurrentRegister()
+    public function testValidateCloseReturnsErrorIfUUIDIsNotDeviceCurrentRegister()
     {
         $device = $this->createDeviceWithOpenedRegister();
         $this->mockApiAuthDevice($device);
@@ -235,7 +192,7 @@ class RegisterControllerTest extends TestCase
         ]);
     }
 
-    public function testCloseReturnsErrorIfNoOpenedRegister()
+    public function testValidateCloseReturnsErrorIfNoOpenedRegister()
     {
         $device = $this->createDeviceWithRegister(); // With a closed register
         $this->mockApiAuthDevice($device);
@@ -274,17 +231,18 @@ class RegisterControllerTest extends TestCase
     public function testCloseBumpsBusinessVersionWithModifications()
     {
         $device = $this->createDeviceWithOpenedRegister();
+        $business = $device->team->business;
         $this->mockApiAuthDevice($device);
         $data = $this->generateCloseData($device);
 
-        $oldVersion = $this->business->version;
+        $oldVersion = $business->version;
 
         $this->queryAPI('api.register.close', $data);
-        $newVersion = $this->business->version;
+        $newVersion = $business->version;
         $this->assertNotEquals($oldVersion, $newVersion);
         $this->assertEquals(
             [Business::MODIFICATION_REGISTER],
-            $this->business->getVersionModifications($newVersion)
+            $business->getVersionModifications($newVersion)
         );
     }
 }

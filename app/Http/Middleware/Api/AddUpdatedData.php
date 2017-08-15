@@ -32,7 +32,7 @@ class AddUpdatedData
         }
 
         $device = ApiAuth::getDevice();
-        $business = $device->business;
+        $business = ApiAuth::getBusiness();
 
         // Before executing the request (which can modify the Business version), we retrieve the current version of
         // Business.
@@ -46,7 +46,6 @@ class AddUpdatedData
             return $response;
         }
 
-        // Compare the version
         $requestVersion = $request->json('dataVersion');
 
         // If the same version, we do nothing

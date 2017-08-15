@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\Api\InvalidRegisterStateException;
+use App\Support\Facades\ApiAuth;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
@@ -28,6 +30,45 @@ class ApiController extends BaseController
 
         if ($validator->fails()) {
             $this->throwValidationException($request, $validator);
+        }
+    }
+
+    /**
+     * Validates that the current device has an opened register.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function validateRegisterOpened()
+    {
+        $valid = false;
+
+        if (ApiAuth::check()) {
+            $device = ApiAuth::getDevice();
+            $valid = $device->isCurrentRegisterOpened;
+        }
+
+        if (!$valid) {
+            throw new InvalidRegisterStateException('The device must have an opened register.');
+        }
+    }
+
+    /**
+     * Validates that the current device doesn't have an opened register (register is not opened, or no register at
+     * all).
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function validateRegisterNotOpened()
+    {
+        $valid = true;
+
+        if (ApiAuth::check()) {
+            $device = ApiAuth::getDevice();
+            $valid = !$device->isCurrentRegisterOpened;
+        }
+
+        if (!$valid) {
+            throw new InvalidRegisterStateException('The device must *not* have an opened register.');
         }
     }
 

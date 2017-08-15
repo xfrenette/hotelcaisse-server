@@ -3,10 +3,10 @@
 namespace Tests\Unit\Http\Middleware\Api;
 
 use App\Api\Auth\ApiAuth;
-use App\Business;
 use App\Exceptions\Api\InvalidRequestException;
 use App\Exceptions\Api\InvalidTokenException;
 use App\Http\Middleware\Api\Authenticate;
+use App\Team;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
@@ -18,18 +18,24 @@ class AuthenticateTest extends TestCase
      */
     protected $middleware;
     /**
-     * @var Business
+     * @var Team
      */
-    protected $business;
+    protected $team;
 
     protected function setUp()
     {
         parent::setUp();
         $this->middleware = new Authenticate();
-        $this->business = factory(Business::class)->create();
+        $this->team = factory(Team::class, 'withBusiness')->create();
     }
 
-    protected function mockRequest($json, $business = null)
+    /**
+     * @param $json
+     * @param null $team
+     *
+     * @return Request
+     */
+    protected function mockRequest($json, $team = null)
     {
         $stub = $this->createMock(Request::class);
 
@@ -38,7 +44,7 @@ class AuthenticateTest extends TestCase
         ];
 
         $routeMap = [
-            ['business', $business],
+            ['team', $team],
         ];
 
         $stub->expects($this->any())
@@ -49,6 +55,7 @@ class AuthenticateTest extends TestCase
             ->method('route')
             ->will($this->returnValueMap($routeMap));
 
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $stub;
     }
 
@@ -70,7 +77,7 @@ class AuthenticateTest extends TestCase
         });
     }
 
-    public function testThrowsIfNoBusiness()
+    public function testThrowsIfNoTeam()
     {
         $request = $this->mockRequest(['token' => 'test']);
         $this->expectException(InvalidRequestException::class);
@@ -81,7 +88,7 @@ class AuthenticateTest extends TestCase
 
     public function testThrowsIfInvalidToken()
     {
-        $request = $this->mockRequest(['token' => 'invalid'], $this->business);
+        $request = $this->mockRequest(['token' => 'invalid'], $this->team);
         $this->expectException(InvalidTokenException::class);
         $this->middleware->handle($request, function () {
             //
@@ -92,7 +99,7 @@ class AuthenticateTest extends TestCase
     {
         $this->mockApiAuth();
         $called = false;
-        $request = $this->mockRequest(['token' => 'test'], $this->business);
+        $request = $this->mockRequest(['token' => 'test'], $this->team);
         $this->middleware->handle($request, function () use (&$called) {
             $called = true;
         });
@@ -102,7 +109,7 @@ class AuthenticateTest extends TestCase
     public function testRegeneratesTokenIfValid()
     {
         $apiAuth = $this->mockApiAuth();
-        $request = $this->mockRequest(['token' => 'test'], $this->business);
+        $request = $this->mockRequest(['token' => 'test'], $this->team);
         $apiAuth->expects($this->once())->method('regenerateToken');
 
         $this->middleware->handle($request, function () {

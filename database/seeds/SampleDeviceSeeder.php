@@ -1,5 +1,7 @@
 <?php
 
+use App\Device;
+use App\Team;
 use Illuminate\Database\Seeder;
 
 class SampleDeviceSeeder extends Seeder
@@ -11,14 +13,14 @@ class SampleDeviceSeeder extends Seeder
      */
     public function run()
     {
-        if (\App\Device::count() > 0) {
+        if (Device::count() > 0) {
             return;
         }
 
-        $business = \App\Business::first();
-        $device = new \App\Device();
+        $team = Team::first();
+        $device = new Device();
 
-        $device->business()->associate($business);
+        $device->team()->associate($team);
         $device->save();
     }
 }

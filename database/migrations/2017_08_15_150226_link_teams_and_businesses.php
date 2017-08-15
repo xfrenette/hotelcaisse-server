@@ -17,9 +17,7 @@ class LinkTeamsAndBusinesses extends Migration
     public function up()
     {
         Schema::table('teams', function (Blueprint $table) {
-            // Following column nullable, since Spark first creates the Team and then our code creates the Business, so
-            // for a time, Team has no Business.
-            $table->integer('business_id')->unsigned()->nullable();
+            $table->integer('business_id')->unsigned();
             $table->foreign('business_id')->references('id')->on('businesses');
         });
     }

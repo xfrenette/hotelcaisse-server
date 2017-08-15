@@ -20,8 +20,8 @@ class AddDataVersion
         $response = $next($request);
 
         if ($response instanceof ApiResponse && ApiAuth::check()) {
-            $device = ApiAuth::getDevice();
-            $response->setDataVersion($device->business->version);
+            $business = ApiAuth::getBusiness();
+            $response->setDataVersion($business->version);
         }
 
         return $response;

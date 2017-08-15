@@ -10,8 +10,8 @@ All request are POST with a Content-Type of `application/json` and a JSON body h
     put the `dataVersion` that you received in the response of your last request. If it is not present, you will not
     receive updated data.
 
-Also, all API request are relative to a "business". This is determine by the URL. Ex:
-`https://{my-business-slug}.example.com/api`.
+Also, all API request are relative to a "team". This is determine by the URL. Ex:
+`https://{my-team-slug}.example.com/api`.
 
 Response format
 ===
@@ -128,7 +128,7 @@ API methods
 `POST /device/register`
 ---
 
-Registers the device to use the API for this business by sending the passcode generated in the admin. If correctly
+Registers the device to use the API for this team by sending the passcode generated in the admin. If correctly
 authenticated, the response will contain the token to use for the next request.
 
 ### Request `data`

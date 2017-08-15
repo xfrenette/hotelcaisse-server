@@ -47,13 +47,11 @@ class Business extends Model
     protected $versionTable = 'business_versions';
 
     /**
-     * Get the route key for the model.
-     *
-     * @return string
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
-    public function getRouteKeyName()
+    public function team()
     {
-        return 'slug';
+        return $this->hasOne('App\Team');
     }
 
     /**
@@ -128,21 +126,6 @@ class Business extends Model
             'business_id' => $this->id,
             'parent_id' => null,
         ])->first();
-    }
-
-    /**
-     * Returns a query builder that returns all the device approval for devices of this business.
-     *
-     * @return \Illuminate\Database\Query\Builder
-     */
-    public function deviceApprovals()
-    {
-        $deviceApprovalsTN = with(new DeviceApproval())->getTable();
-        $devicesTN = with(new Device())->getTable();
-
-        return DeviceApproval::select("$deviceApprovalsTN.*")
-            ->join($devicesTN, "$deviceApprovalsTN.device_id", '=', "$devicesTN.id")
-            ->where("$devicesTN.business_id", $this->id);
     }
 
     /**

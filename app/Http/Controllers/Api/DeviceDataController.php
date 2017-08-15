@@ -17,9 +17,9 @@ class DeviceDataController extends ApiController
         $response = new ApiResponse();
 
         $device = ApiAuth::getDevice();
+        $business = ApiAuth::getBusiness();
 
         // Add Business
-        $business = $device->business;
         $business->loadAllRelations();
         $response->setBusiness($business);
 

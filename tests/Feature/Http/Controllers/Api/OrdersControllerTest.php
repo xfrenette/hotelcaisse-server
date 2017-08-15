@@ -13,10 +13,12 @@ use App\ItemProduct;
 use App\Order;
 use App\Room;
 use App\RoomSelection;
+use App\Team;
 use Carbon\Carbon;
 use Faker\Factory;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
+use Illuminate\Validation\ValidationException;
 use Mockery as m;
 use Tests\InteractsWithAPI;
 use Tests\TestCase;
@@ -40,12 +42,7 @@ class OrdersControllerTest extends TestCase
     protected function setUp()
     {
         parent::setUp();
-        $this->business = Business::first();
         $this->controller = new OrdersController();
-
-        if (is_null($this->business)) {
-            throw new \Exception('This test class requires test data. Run the seeder.');
-        }
 
         if (!self::$faker) {
             self::$faker = Factory::create();
@@ -61,6 +58,7 @@ class OrdersControllerTest extends TestCase
     protected function generateNewData()
     {
         $faker = self::$faker;
+        $business = Business::first();
 
         $data = [
             'uuid' => $faker->uuid(),
@@ -85,7 +83,7 @@ class OrdersControllerTest extends TestCase
         ];
 
         // customer.fieldValues
-        $customerFields = $this->business->customerFields;
+        $customerFields = $business->customerFields;
         $customerFields->each(function ($field) use (&$data, $faker) {
             $data['customer']['fieldValues'][] = [
                 'field' => $field->id,
@@ -105,7 +103,7 @@ class OrdersControllerTest extends TestCase
         }
 
         // items
-        $products = $this->business->products;
+        $products = $business->products;
         for ($i = 0; $i < 3; $i++) {
             $isCustom = $i === 2;
 
@@ -120,7 +118,7 @@ class OrdersControllerTest extends TestCase
             ];
 
             if (!$isCustom) {
-                $taxes = $this->business->taxes()
+                $taxes = $business->taxes()
                     ->inRandomOrder()
                     ->take(2)
                     ->get()
@@ -137,8 +135,8 @@ class OrdersControllerTest extends TestCase
         }
 
         // roomSelections
-        $rooms = $this->business->rooms;
-        $roomSelectionFields = $this->business->roomSelectionFields;
+        $rooms = $business->rooms;
+        $roomSelectionFields = $business->roomSelectionFields;
         for ($i = 0; $i < 2; $i++) {
             $endDate = $faker->dateTimeThisMonth();
             $startDate = clone $endDate;
@@ -161,7 +159,7 @@ class OrdersControllerTest extends TestCase
         }
 
         // transactions
-        $transactionModes = $this->business->transactionModes;
+        $transactionModes = $business->transactionModes;
         for ($i = 0; $i < 2; $i++) {
             $amount = $faker->randomFloat(2, -10, 10);
 
@@ -175,10 +173,15 @@ class OrdersControllerTest extends TestCase
         return ['data' => $data];
     }
 
-    protected function generateEditData()
+    protected function generateEditData($device = null)
     {
         $data = $this->generateNewData();
-        $order = Order::first();
+
+        if (is_null($device)) {
+            $order = Order::first();
+        } else {
+            $order = $device->team->business->orders()->first();
+        }
 
         if (is_null($order)) {
             throw new \Exception('This test requires test data. Run the seeder.');
@@ -191,8 +194,9 @@ class OrdersControllerTest extends TestCase
 
     protected function createOtherOrder()
     {
+        $business = Business::first();
         $existingOrder = factory(Order::class, 'withCustomer')->make();
-        $existingOrder->business()->associate($this->business);
+        $existingOrder->business()->associate($business);
         $existingOrder->save();
 
         return $existingOrder;
@@ -201,7 +205,7 @@ class OrdersControllerTest extends TestCase
     public function testNewWorksWithValidData()
     {
         $device = $this->createDeviceWithOpenedRegister();
-        $this->mockApiAuthDevice($device);
+        $this->logDevice($device);
 
         $data = $this->generateNewData();
         $response = $this->queryAPI('api.orders.new', $data);
@@ -213,7 +217,7 @@ class OrdersControllerTest extends TestCase
     public function testNewWorksWithMissingOptionalAttributes()
     {
         $device = $this->createDeviceWithOpenedRegister();
-        $this->mockApiAuthDevice($device);
+        $this->logDevice($device);
 
         $data = $this->generateNewData();
         array_forget($data, 'data.credits');
@@ -227,55 +231,92 @@ class OrdersControllerTest extends TestCase
         ]);
     }
 
-    public function testNewReturnsErrorWithInvalidUUID()
+    public function testValidateNewReturnsErrorWithInvalidUUID()
     {
         $existingOrder = $this->createOtherOrder();
 
         $data = $this->generateNewData();
         $values = [null, 123, '', ' ', $existingOrder->uuid];
-        $this->assertValidatesData('api.orders.new', $data, 'uuid', $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.uuid',
+            $values
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidNote()
+    public function testValidateNewReturnsErrorWithInvalidNote()
     {
         $data = $this->generateNewData();
         $values = [123];
-        $this->assertValidatesData('api.orders.new', $data, 'note', $values, false);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.note',
+            $values,
+            false
+        );
     }
 
-    public function testNewReturnsErrorWithMissingCustomer()
+    public function testValidateNewReturnsErrorWithMissingCustomer()
     {
         $data = $this->generateNewData();
         $values = [null, false, 'test'];
-        $this->assertValidatesData('api.orders.new', $data, 'customer', $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.customer',
+            $values
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidCustomerFields()
+    public function testValidateNewReturnsErrorWithInvalidCustomerFields()
     {
         // test customer.fieldValues
         $data = $this->generateNewData();
         $values = [null, 1, []];
-        $this->assertValidatesData('api.orders.new', $data, 'customer.fieldValues', $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.customer.fieldValues',
+            $values
+        );
 
         // test customer.fieldValues.*.field
         $data = $this->generateNewData();
         $values = [null, false, 0];
-        $this->assertValidatesData('api.orders.new', $data, "customer.fieldValues.0.field", $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.customer.fieldValues.0.field',
+            $values
+        );
 
         // test customer.fieldValues.*.value
         $data = $this->generateNewData();
         $values = [null, false, 2];
-        $this->assertValidatesData('api.orders.new', $data, "customer.fieldValues.0.value", $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.customer.fieldValues.0.value',
+            $values
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidCredits()
+    public function testValidateNewReturnsErrorWithInvalidCredits()
     {
         $data = $this->generateNewData();
         $values = [null, 1];
-        $this->assertValidatesData('api.orders.new', $data, 'credits', $values, false);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.credits',
+            $values,
+            false
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidCreditsDataUUID()
+    public function testValidateNewReturnsErrorWithInvalidCreditsDataUUID()
     {
         $existingOrder = $this->createOtherOrder();
         $existingCredit = new Credit();
@@ -287,67 +328,114 @@ class OrdersControllerTest extends TestCase
 
         $data = $this->generateNewData();
         $values = [null, 1, $existingCredit->uuid];
-        $this->assertValidatesData('api.orders.new', $data, 'credits.1.uuid', $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.credits.1.uuid',
+            $values
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidCreditsDataNote()
+    public function testValidateNewReturnsErrorWithInvalidCreditsDataNote()
     {
         $data = $this->generateNewData();
         $values = [null, 1, '', ' '];
-        $this->assertValidatesData('api.orders.new', $data, 'credits.1.note', $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.credits.1.note',
+            $values
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidCreditsDataAmount()
+    public function testValidateNewReturnsErrorWithInvalidCreditsDataAmount()
     {
         $data = $this->generateNewData();
         $values = [null, 0, 'test', -5];
-        $this->assertValidatesData('api.orders.new', $data, 'credits.1.amount', $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.credits.1.amount',
+            $values
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidTransactions()
+    public function testValidateNewReturnsErrorWithInvalidTransactions()
     {
         $data = $this->generateNewData();
         $values = [null, 1];
-        $this->assertValidatesData('api.orders.new', $data, 'transactions', $values, false);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.transactions',
+            $values,
+            false
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidTransactionsDataUUID()
+    public function testValidateNewReturnsErrorWithInvalidTransactionsDataUUID()
     {
         // TODO: test for existing id
         $data = $this->generateNewData();
         $values = [null, 1];
-        $this->assertValidatesData('api.orders.new', $data, 'transactions.1.uuid', $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.transactions.1.uuid',
+            $values
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidTransactionsDataAmount()
+    public function testValidateNewReturnsErrorWithInvalidTransactionsDataAmount()
     {
         $data = $this->generateNewData();
         $values = [null, 0, 'test'];
-        $this->assertValidatesData('api.orders.new', $data, 'transactions.1.amount', $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.transactions.1.amount',
+            $values
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidTransactionsDataTransactionMode()
+    public function testValidateNewReturnsErrorWithInvalidTransactionsDataTransactionMode()
     {
         $data = $this->generateNewData();
         $values = [null, 0, 'test'];
-        $this->assertValidatesData('api.orders.new', $data, 'transactions.1.transactionMode', $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.transactions.1.transactionMode',
+            $values
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidItems()
+    public function testValidateNewReturnsErrorWithInvalidItems()
     {
         $data = $this->generateNewData();
         $values = [null, 1];
-        $this->assertValidatesData('api.orders.new', $data, 'items', $values, false);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.items',
+            $values,
+            false
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidItemsDataQuantity()
+    public function testValidateNewReturnsErrorWithInvalidItemsDataQuantity()
     {
         $data = $this->generateNewData();
         $values = [null, 0, 'test'];
-        $this->assertValidatesData('api.orders.new', $data, 'items.1.quantity', $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.items.1.quantity',
+            $values
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidItemsDataUUID()
+    public function testValidateNewReturnsErrorWithInvalidItemsDataUUID()
     {
         $data = $this->generateNewData();
 
@@ -360,66 +448,114 @@ class OrdersControllerTest extends TestCase
         $existingItem->save();
 
         $values = [null, 1, $existingItem->uuid];
-        $this->assertValidatesData('api.orders.new', $data, 'items.1.uuid', $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.items.1.uuid',
+            $values
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidItemsDataProduct()
+    public function testValidateNewReturnsErrorWithInvalidItemsDataProduct()
     {
         $data = $this->generateNewData();
         $values = [null, 0, 'test'];
-        $this->assertValidatesData('api.orders.new', $data, 'items.1.product', $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.items.1.product',
+            $values
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidItemsDataProductName()
+    public function testValidateNewReturnsErrorWithInvalidItemsDataProductName()
     {
         $data = $this->generateNewData();
         $values = [null, 0];
-        $this->assertValidatesData('api.orders.new', $data, 'items.1.product.name', $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.items.1.product.name',
+            $values
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidItemsDataProductPrice()
+    public function testValidateNewReturnsErrorWithInvalidItemsDataProductPrice()
     {
         $data = $this->generateNewData();
         $values = [null, -5, 'test'];
-        $this->assertValidatesData('api.orders.new', $data, 'items.1.product.price', $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.items.1.product.price',
+            $values
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidItemsDataProductID()
+    public function testValidateNewReturnsErrorWithInvalidItemsDataProductID()
     {
         $data = $this->generateNewData();
         $values = [-1, 'test'];
-        $this->assertValidatesData('api.orders.new', $data, 'items.1.product.product_id', $values, false);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.items.1.product.product_id',
+            $values,
+            false
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidItemsDataTaxes()
+    public function testValidateNewReturnsErrorWithInvalidItemsDataTaxes()
     {
         $data = $this->generateNewData();
         $values = [1, 'test'];
-        $this->assertValidatesData('api.orders.new', $data, 'items.1.product.taxes', $values, false);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.items.1.product.taxes',
+            $values,
+            false
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidItemsDataTaxesId()
+    public function testValidateNewReturnsErrorWithInvalidItemsDataTaxesId()
     {
         $data = $this->generateNewData();
         $values = [null, -1, 'test'];
-        $this->assertValidatesData('api.orders.new', $data, 'items.1.product.taxes.1.tax', $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.items.1.product.taxes.1.tax',
+            $values
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidItemsDataTaxesAmount()
+    public function testValidateNewReturnsErrorWithInvalidItemsDataTaxesAmount()
     {
         $data = $this->generateNewData();
         $values = [null, -1, 0, 'test'];
-        $this->assertValidatesData('api.orders.new', $data, 'items.1.product.taxes.1.amount', $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.items.1.product.taxes.1.amount',
+            $values
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidRoomSelections()
+    public function testValidateNewReturnsErrorWithInvalidRoomSelections()
     {
         $data = $this->generateNewData();
         $values = [null, 1];
-        $this->assertValidatesData('api.orders.new', $data, 'roomSelections', $values, false);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.roomSelections',
+            $values,
+            false
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidRoomSelectionsDataUUID()
+    public function testValidateNewReturnsErrorWithInvalidRoomSelectionsDataUUID()
     {
         $data = $this->generateNewData();
 
@@ -433,24 +569,34 @@ class OrdersControllerTest extends TestCase
         $existingRoomSelection->save();
 
         $values = [null, 1, $existingRoomSelection->uuid];
-        $this->assertValidatesData('api.orders.new', $data, 'roomSelections.1.uuid', $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.roomSelections.1.uuid',
+            $values
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidRoomSelectionsDataStartDate()
+    public function testValidateNewReturnsErrorWithInvalidRoomSelectionsDataStartDate()
     {
         $data = $this->generateNewData();
         $values = [null, 'test', -1];
-        $this->assertValidatesData('api.orders.new', $data, 'roomSelections.1.startDate', $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateNew'],
+            $data,
+            'data.roomSelections.1.startDate',
+            $values
+        );
     }
 
-    public function testNewReturnsErrorWithInvalidRoomSelectionsDataEndDate()
+    public function testValidateNewReturnsErrorWithInvalidRoomSelectionsDataEndDate()
     {
         $data = $this->generateNewData();
         $values = [null, 'test', -2];
-        $this->assertValidatesData('api.orders.new', $data, 'roomSelections.1.endDate', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateNew'], $data, 'data.roomSelections.1.endDate', $values);
     }
 
-    public function testNewReturnsErrorWithInvalidRoomSelectionsDataStartDateBeforeEnd()
+    public function testValidateNewReturnsErrorWithInvalidRoomSelectionsDataStartDateBeforeEnd()
     {
         $data = $this->generateNewData();
         $start = array_get($data, 'data.roomSelections.1.startDate');
@@ -459,38 +605,35 @@ class OrdersControllerTest extends TestCase
         array_set($data, 'data.roomSelections.1.endDate', $start);
         array_set($data, 'data.roomSelections.1.startDate', $end);
 
-        $response = $this->queryAPI('api.orders.new', $data);
-        $response->assertJson([
-            'status' => 'error',
-            'error' => [
-                'code' => ApiResponse::ERROR_CLIENT_ERROR,
-            ],
-        ]);
+        $request = $this->mockRequest($data);
+
+        $this->expectException(ValidationException::class);
+        $this->controller->validateNew($request);
     }
 
-    public function testNewReturnsErrorWithInvalidRoomSelectionsDataRoom()
+    public function testValidateNewReturnsErrorWithInvalidRoomSelectionsDataRoom()
     {
         $data = $this->generateNewData();
         $values = [null, 'test', 0];
-        $this->assertValidatesData('api.orders.new', $data, 'roomSelections.1.room', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateNew'], $data, 'data.roomSelections.1.room', $values);
     }
 
-    public function testNewReturnsErrorWithInvalidRoomSelectionFields()
+    public function testValidateNewReturnsErrorWithInvalidRoomSelectionFields()
     {
         // test roomSelections.*.fieldValues
         $data = $this->generateNewData();
         $values = [null, 1, []];
-        $this->assertValidatesData('api.orders.new', $data, 'roomSelections.1.fieldValues', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateNew'], $data, 'data.roomSelections.1.fieldValues', $values);
 
         // test roomSelections.*.fieldValues.*.field
         $data = $this->generateNewData();
         $values = [null, false, 0];
-        $this->assertValidatesData('api.orders.new', $data, "roomSelections.1.fieldValues.0.field", $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateNew'], $data, 'data.roomSelections.1.fieldValues.0.field', $values);
 
         // test customer.fieldValues.*.value
         $data = $this->generateNewData();
         $values = [null, false, 2];
-        $this->assertValidatesData('api.orders.new', $data, "roomSelections.1.fieldValues.0.value", $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateNew'], $data, 'data.roomSelections.1.fieldValues.0.value', $values);
     }
 
     // --------------------
@@ -499,7 +642,7 @@ class OrdersControllerTest extends TestCase
     {
         $data = $this->generateNewData();
         $device = $this->createDevice();
-        $this->mockApiAuthDevice($device);
+        $this->logDevice($device);
         $response = $this->queryAPI('api.orders.new', $data);
 
         $response->assertJson([
@@ -516,8 +659,8 @@ class OrdersControllerTest extends TestCase
     {
         $data = $this->generateNewData();
         $device = $this->createDeviceWithOpenedRegister();
-        $business = $device->business;
-        $this->mockApiAuthDevice($device);
+        $business = $device->team->business;
+        $this->logDevice($device);
         $order = $this->controller->createOrder($data['data'], $business, $device->currentRegister);
 
         $uuid = array_get($data, 'data.uuid');
@@ -531,8 +674,8 @@ class OrdersControllerTest extends TestCase
     {
         $data = $this->generateNewData();
         $device = $this->createDeviceWithOpenedRegister();
-        $business = $device->business;
-        $this->mockApiAuthDevice($device);
+        $business = $device->team->business;
+        $this->logDevice($device);
         $order = $this->controller->createOrder($data['data'], $business, $device->currentRegister);
 
         $expected = count(array_get($data, 'data.customer.fieldValues'));
@@ -543,8 +686,8 @@ class OrdersControllerTest extends TestCase
     {
         $data = $this->generateNewData();
         $device = $this->createDeviceWithOpenedRegister();
-        $business = $device->business;
-        $this->mockApiAuthDevice($device);
+        $business = $device->team->business;
+        $this->logDevice($device);
         $order = $this->controller->createOrder($data['data'], $business, $device->currentRegister);
 
         $count = count(array_get($data, 'data.credits'));
@@ -559,8 +702,8 @@ class OrdersControllerTest extends TestCase
     {
         $data = $this->generateNewData();
         $device = $this->createDeviceWithOpenedRegister();
-        $business = $device->business;
-        $this->mockApiAuthDevice($device);
+        $business = $device->team->business;
+        $this->logDevice($device);
         $order = $this->controller->createOrder($data['data'], $business, $device->currentRegister);
 
         $count = count(array_get($data, 'data.items'));
@@ -583,8 +726,8 @@ class OrdersControllerTest extends TestCase
     {
         $data = $this->generateNewData();
         $device = $this->createDeviceWithOpenedRegister();
-        $business = $device->business;
-        $this->mockApiAuthDevice($device);
+        $business = $device->team->business;
+        $this->logDevice($device);
         $order = $this->controller->createOrder($data['data'], $business, $device->currentRegister);
 
         $product = $order->items[1]->product;
@@ -598,8 +741,8 @@ class OrdersControllerTest extends TestCase
     {
         $data = $this->generateNewData();
         $device = $this->createDeviceWithOpenedRegister();
-        $business = $device->business;
-        $this->mockApiAuthDevice($device);
+        $business = $device->team->business;
+        $this->logDevice($device);
         $order = $this->controller->createOrder($data['data'], $business, $device->currentRegister);
 
         $count = count(array_get($data, 'data.roomSelections'));
@@ -625,8 +768,8 @@ class OrdersControllerTest extends TestCase
     {
         $data = $this->generateNewData();
         $device = $this->createDeviceWithOpenedRegister();
-        $business = $device->business;
-        $this->mockApiAuthDevice($device);
+        $business = $device->team->business;
+        $this->logDevice($device);
         $order = $this->controller->createOrder($data['data'], $business, $device->currentRegister);
 
         $count = count(array_get($data, 'data.transactions'));
@@ -643,18 +786,18 @@ class OrdersControllerTest extends TestCase
     public function testNewBumpsBusinessVersionWithModifications()
     {
         $device = $this->createDeviceWithOpenedRegister();
-        $this->mockApiAuthDevice($device);
+        $this->logDevice($device);
         $data = $this->generateNewData();
-
-        $oldVersion = $this->business->version;
+        $business = $device->team->business;
+        $oldVersion = $business->version;
 
         $this->queryAPI('api.orders.new', $data);
 
-        $newVersion = $this->business->version;
+        $newVersion = $business->version;
         $this->assertNotEquals($oldVersion, $newVersion);
         $this->assertEquals(
             [Business::MODIFICATION_ORDERS],
-            $this->business->getVersionModifications($newVersion)
+            $business->getVersionModifications($newVersion)
         );
     }
 
@@ -664,11 +807,11 @@ class OrdersControllerTest extends TestCase
 
     public function testEditWorksWithValidData()
     {
-        $device = $this->createDeviceWithOpenedRegister();
-        $this->mockApiAuthDevice($device);
+        $device = Team::first()->devices()->first();
+        $this->logDevice($device);
 
         $data = $this->generateEditData();
-        $response = $this->queryAPI('api.orders.edit', $data);
+        $response = $this->queryAPI('api.orders.edit', $data, $device->team);
         $response->assertJson([
             'status' => 'ok'
         ]);
@@ -676,10 +819,10 @@ class OrdersControllerTest extends TestCase
 
     public function testEditWorksWithMissingOptionalAttributes()
     {
-        $device = $this->createDeviceWithOpenedRegister();
-        $this->mockApiAuthDevice($device);
+        $device = Team::first()->devices()->first();
+        $this->logDevice($device);
 
-        $data = $this->generateEditData();
+        $data = $this->generateEditData($device);
 
         array_forget($data, 'data.customer');
         array_forget($data, 'data.note');
@@ -694,10 +837,10 @@ class OrdersControllerTest extends TestCase
         ]);
     }
 
-    public function testEditReturnsErrorWithInvalidUUID()
+    public function testValidateEditReturnsErrorWithInvalidUUID()
     {
         $device = $this->createDeviceWithOpenedRegister();
-        $this->mockApiAuthDevice($device);
+        $this->logDevice($device);
 
         $data = $this->generateEditData();
         $data['data']['uuid'] = 'non-existent';
@@ -710,110 +853,110 @@ class OrdersControllerTest extends TestCase
         ]);
     }
 
-    public function testEditReturnsErrorWithInvalidNote()
+    public function testValidateEditReturnsErrorWithInvalidNote()
     {
         $data = $this->generateEditData();
         $values = [123];
-        $this->assertValidatesData('api.orders.edit', $data, 'note', $values, false);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.note', $values, false);
     }
 
-    public function testEditReturnsErrorWithInvalidCustomer()
+    public function testValidateEditReturnsErrorWithInvalidCustomer()
     {
         $data = $this->generateEditData();
         $values = [null, false, 'test'];
-        $this->assertValidatesData('api.orders.edit', $data, 'customer', $values, false);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.customer', $values, false);
     }
 
-    public function testEditReturnsErrorWithInvalidCustomerFields()
+    public function testValidateEditReturnsErrorWithInvalidCustomerFields()
     {
         // test customer.fieldValues
         $data = $this->generateEditData();
         $values = [null, 1, []];
-        $this->assertValidatesData('api.orders.edit', $data, 'customer.fieldValues', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.customer.fieldValues', $values);
 
         // test customer.fieldValues.*.field
         $data = $this->generateEditData();
         $values = [null, false, 0];
-        $this->assertValidatesData('api.orders.edit', $data, "customer.fieldValues.0.field", $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.customer.fieldValues.0.field', $values);
 
         // test customer.fieldValues.*.value
         $data = $this->generateEditData();
         $values = [null, false, 2];
-        $this->assertValidatesData('api.orders.edit', $data, "customer.fieldValues.0.value", $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.customer.fieldValues.0.value', $values);
     }
 
-    public function testEditReturnsErrorWithInvalidCredits()
+    public function testValidateEditReturnsErrorWithInvalidCredits()
     {
         $data = $this->generateEditData();
         $values = [null, 1];
-        $this->assertValidatesData('api.orders.edit', $data, 'credits', $values, false);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.credits', $values, false);
     }
 
-    public function testEditReturnsErrorWithInvalidCreditsDataUUID()
+    public function testValidateEditReturnsErrorWithInvalidCreditsDataUUID()
     {
         $data = $this->generateEditData();
         $values = [null, 1];
-        $this->assertValidatesData('api.orders.edit', $data, 'credits.1.uuid', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.credits.1.uuid', $values);
     }
 
-    public function testEditReturnsErrorWithInvalidCreditsDataNote()
+    public function testValidateEditReturnsErrorWithInvalidCreditsDataNote()
     {
         $data = $this->generateEditData();
         $values = [null, 1, '', ' '];
-        $this->assertValidatesData('api.orders.edit', $data, 'credits.1.note', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.credits.1.note', $values);
     }
 
-    public function testEditReturnsErrorWithInvalidCreditsDataAmount()
+    public function testValidateEditReturnsErrorWithInvalidCreditsDataAmount()
     {
         $data = $this->generateEditData();
         $values = [null, 0, 'test', -5];
-        $this->assertValidatesData('api.orders.edit', $data, 'credits.1.amount', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.credits.1.amount', $values);
     }
 
-    public function testEditReturnsErrorWithInvalidTransactions()
+    public function testValidateEditReturnsErrorWithInvalidTransactions()
     {
         $data = $this->generateEditData();
         $values = [null, 1];
-        $this->assertValidatesData('api.orders.edit', $data, 'transactions', $values, false);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.transactions', $values, false);
     }
 
-    public function testEditReturnsErrorWithInvalidTransactionsDataUUID()
+    public function testValidateEditReturnsErrorWithInvalidTransactionsDataUUID()
     {
         // TODO: test for existing id
         $data = $this->generateEditData();
         $values = [null, 1];
-        $this->assertValidatesData('api.orders.edit', $data, 'transactions.1.uuid', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.transactions.1.uuid', $values);
     }
 
-    public function testEditReturnsErrorWithInvalidTransactionsDataAmount()
+    public function testValidateEditReturnsErrorWithInvalidTransactionsDataAmount()
     {
         $data = $this->generateEditData();
         $values = [null, 0, 'test'];
-        $this->assertValidatesData('api.orders.edit', $data, 'transactions.1.amount', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.transactions.1.amount', $values);
     }
 
-    public function testEditReturnsErrorWithInvalidTransactionsDataTransactionMode()
+    public function testValidateEditReturnsErrorWithInvalidTransactionsDataTransactionMode()
     {
         $data = $this->generateEditData();
         $values = [null, 0, 'test'];
-        $this->assertValidatesData('api.orders.edit', $data, 'transactions.1.transactionMode', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.transactions.1.transactionMode', $values);
     }
 
-    public function testEditReturnsErrorWithInvalidItems()
+    public function testValidateEditReturnsErrorWithInvalidItems()
     {
         $data = $this->generateEditData();
         $values = [null, 1];
-        $this->assertValidatesData('api.orders.edit', $data, 'items', $values, false);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.items', $values, false);
     }
 
-    public function testEditReturnsErrorWithInvalidItemsDataQuantity()
+    public function testValidateEditReturnsErrorWithInvalidItemsDataQuantity()
     {
         $data = $this->generateEditData();
         $values = [null, 0, 'test'];
-        $this->assertValidatesData('api.orders.edit', $data, 'items.1.quantity', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.items.1.quantity', $values);
     }
 
-    public function testEditReturnsErrorWithInvalidItemsDataUUID()
+    public function testValidateEditReturnsErrorWithInvalidItemsDataUUID()
     {
         $data = $this->generateEditData();
 
@@ -826,88 +969,88 @@ class OrdersControllerTest extends TestCase
         $existingItem->save();
 
         $values = [null, 1, $existingItem->uuid];
-        $this->assertValidatesData('api.orders.edit', $data, 'items.1.uuid', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.items.1.uuid', $values);
     }
 
-    public function testEditReturnsErrorWithInvalidItemsDataProduct()
+    public function testValidateEditReturnsErrorWithInvalidItemsDataProduct()
     {
         $data = $this->generateEditData();
         $values = [null, 0, 'test'];
-        $this->assertValidatesData('api.orders.edit', $data, 'items.1.product', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.items.1.product', $values);
     }
 
-    public function testEditReturnsErrorWithInvalidItemsDataProductName()
+    public function testValidateEditReturnsErrorWithInvalidItemsDataProductName()
     {
         $data = $this->generateEditData();
         $values = [null, 0];
-        $this->assertValidatesData('api.orders.edit', $data, 'items.1.product.name', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.items.1.product.name', $values);
     }
 
-    public function testEditReturnsErrorWithInvalidItemsDataProductPrice()
+    public function testValidateEditReturnsErrorWithInvalidItemsDataProductPrice()
     {
         $data = $this->generateEditData();
         $values = [null, -5, 'test'];
-        $this->assertValidatesData('api.orders.edit', $data, 'items.1.product.price', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.items.1.product.price', $values);
     }
 
-    public function testEditReturnsErrorWithInvalidItemsDataProductID()
+    public function testValidateEditReturnsErrorWithInvalidItemsDataProductID()
     {
         $data = $this->generateEditData();
         $values = [-1, 'test'];
-        $this->assertValidatesData('api.orders.edit', $data, 'items.1.product.product_id', $values, false);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.items.1.product.product_id', $values, false);
     }
 
-    public function testEditReturnsErrorWithInvalidItemsDataTaxes()
+    public function testValidateEditReturnsErrorWithInvalidItemsDataTaxes()
     {
         $data = $this->generateEditData();
         $values = [1, 'test'];
-        $this->assertValidatesData('api.orders.edit', $data, 'items.1.product.taxes', $values, false);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.items.1.product.taxes', $values, false);
     }
 
-    public function testEditReturnsErrorWithInvalidItemsDataTaxesId()
+    public function testValidateEditReturnsErrorWithInvalidItemsDataTaxesId()
     {
         $data = $this->generateEditData();
         $values = [null, -1, 'test'];
-        $this->assertValidatesData('api.orders.edit', $data, 'items.1.product.taxes.1.tax', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.items.1.product.taxes.1.tax', $values);
     }
 
-    public function testEditReturnsErrorWithInvalidItemsDataTaxesAmount()
+    public function testValidateEditReturnsErrorWithInvalidItemsDataTaxesAmount()
     {
         $data = $this->generateEditData();
         $values = [null, -1, 0, 'test'];
-        $this->assertValidatesData('api.orders.edit', $data, 'items.1.product.taxes.1.amount', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.items.1.product.taxes.1.amount', $values);
     }
 
-    public function testEditReturnsErrorWithInvalidRoomSelections()
+    public function testValidateEditReturnsErrorWithInvalidRoomSelections()
     {
         $data = $this->generateEditData();
         $values = [null, 1];
-        $this->assertValidatesData('api.orders.edit', $data, 'roomSelections', $values, false);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.roomSelections', $values, false);
     }
 
-    public function testEditReturnsErrorWithInvalidRoomSelectionsDataUUID()
+    public function testValidateEditReturnsErrorWithInvalidRoomSelectionsDataUUID()
     {
         $data = $this->generateEditData();
 
         $values = [null, 1];
-        $this->assertValidatesData('api.orders.edit', $data, 'roomSelections.1.uuid', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.roomSelections.1.uuid', $values);
     }
 
-    public function testEditReturnsErrorWithInvalidRoomSelectionsDataStartDate()
+    public function testValidateEditReturnsErrorWithInvalidRoomSelectionsDataStartDate()
     {
         $data = $this->generateEditData();
         $values = [null, 'test', -1];
-        $this->assertValidatesData('api.orders.edit', $data, 'roomSelections.1.startDate', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.roomSelections.1.startDate', $values);
     }
 
-    public function testEditReturnsErrorWithInvalidRoomSelectionsDataEndDate()
+    public function testValidateEditReturnsErrorWithInvalidRoomSelectionsDataEndDate()
     {
         $data = $this->generateEditData();
         $values = [null, 'test', -2];
-        $this->assertValidatesData('api.orders.edit', $data, 'roomSelections.1.endDate', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.roomSelections.1.endDate', $values);
     }
 
-    public function testEditReturnsErrorWithInvalidRoomSelectionsDataStartDateBeforeEnd()
+    public function testValidateEditReturnsErrorWithInvalidRoomSelectionsDataStartDateBeforeEnd()
     {
         $data = $this->generateEditData();
         $start = array_get($data, 'data.roomSelections.1.startDate');
@@ -916,38 +1059,35 @@ class OrdersControllerTest extends TestCase
         array_set($data, 'data.roomSelections.1.endDate', $start);
         array_set($data, 'data.roomSelections.1.startDate', $end);
 
-        $response = $this->queryAPI('api.orders.edit', $data);
-        $response->assertJson([
-            'status' => 'error',
-            'error' => [
-                'code' => ApiResponse::ERROR_CLIENT_ERROR,
-            ],
-        ]);
+        $request = $this->mockRequest($data);
+
+        $this->expectException(ValidationException::class);
+        $this->controller->validateEdit($request);
     }
 
-    public function testEditReturnsErrorWithInvalidRoomSelectionsDataRoom()
+    public function testValidateEditReturnsErrorWithInvalidRoomSelectionsDataRoom()
     {
         $data = $this->generateEditData();
         $values = [null, 'test', 0];
-        $this->assertValidatesData('api.orders.edit', $data, 'roomSelections.1.room', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.roomSelections.1.room', $values);
     }
 
-    public function testEditReturnsErrorWithInvalidRoomSelectionFields()
+    public function testValidateEditReturnsErrorWithInvalidRoomSelectionFields()
     {
         // test roomSelections.*.fieldValues
         $data = $this->generateEditData();
         $values = [null, 1, []];
-        $this->assertValidatesData('api.orders.edit', $data, 'roomSelections.1.fieldValues', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.roomSelections.1.fieldValues', $values);
 
         // test roomSelections.*.fieldValues.*.field
         $data = $this->generateEditData();
         $values = [null, false, 0];
-        $this->assertValidatesData('api.orders.edit', $data, "roomSelections.1.fieldValues.0.field", $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.roomSelections.1.fieldValues.0.field', $values);
 
         // test customer.fieldValues.*.value
         $data = $this->generateEditData();
         $values = [null, false, 2];
-        $this->assertValidatesData('api.orders.edit', $data, "roomSelections.1.fieldValues.0.value", $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.roomSelections.1.fieldValues.0.value', $values);
     }
 
     // --------------------
@@ -956,7 +1096,7 @@ class OrdersControllerTest extends TestCase
     {
         $baseData = $this->generateEditData();
         $device = $this->createDevice();
-        $this->mockApiAuthDevice($device);
+        $this->logDevice($device);
         $data = [
             'data' => array_only($baseData['data'], ['uuid', 'transactions']),
         ];
@@ -972,9 +1112,9 @@ class OrdersControllerTest extends TestCase
 
     public function testEditIgnoresOpenedRegisterIfNoTransactions()
     {
-        $baseData = $this->generateEditData();
-        $device = $this->createDevice();
-        $this->mockApiAuthDevice($device);
+        $device = Team::first()->devices()->first();
+        $baseData = $this->generateEditData($device);
+        $this->logDevice($device);
         $data = [
             'data' => array_only($baseData['data'], ['uuid', 'items']),
         ];
@@ -1190,18 +1330,20 @@ class OrdersControllerTest extends TestCase
 
     protected function generateListData()
     {
+        $business = Business::first();
+
         return [
             'data' => [
                 'quantity' => 4,
-                'from' => $this->business->orders()->first()->uuid,
+                'from' => $business->orders()->first()->uuid,
             ],
         ];
     }
 
     public function testValidateList()
     {
-        $device = $this->createDevice();
-        $this->mockApiAuthDevice($device);
+        $device = Business::first()->team->devices()->first();
+        $this->logDevice($device);
         $data = $this->generateListData();
 
         // Quantity
@@ -1210,7 +1352,7 @@ class OrdersControllerTest extends TestCase
         $this->assertValidatesRequestData([$this->controller, 'validateList'], $data, 'data.quantity', $values);
 
         // from (UUID)
-        // Create a Order that will be saved, but that is assigned to another $business (so should fail validation, thus
+        // Create a Order that will be saved, but that is assigned to another $team (so should fail validation, thus
         // passing the test)
         $otherOrder = \factory(Order::class, 'withCustomer')->create();
         $values = ['non-existent', false, '', ' ', null, $otherOrder->uuid];
@@ -1230,7 +1372,7 @@ class OrdersControllerTest extends TestCase
     public function testListCallsValidateList()
     {
         $device = $this->createDevice();
-        $this->mockApiAuthDevice($device);
+        $this->logDevice($device);
         $request = $this->mockRequest();
         $controller = m::mock(OrdersController::class)->makePartial();
         /** @noinspection PhpMethodParametersCountMismatchInspection */
@@ -1244,14 +1386,17 @@ class OrdersControllerTest extends TestCase
 
     public function testListReturnsGetOrdersResult()
     {
+        $business = Business::first();
         $ordersResult = collect([
             'test' => true,
         ]);
 
         $device = $this->createDevice();
-        $this->mockApiAuthDevice($device);
+        $device->team->business()->associate($business);
+        $device->team->save();
+        $this->logDevice($device);
         $quantity = 4;
-        $from = $this->business->orders()->first();
+        $from = $business->orders()->first();
 
         $request = $this->mockRequest(['data' => ['quantity' => $quantity, 'from' => $from->uuid]]);
         $controller = m::mock(OrdersController::class);
@@ -1259,7 +1404,7 @@ class OrdersControllerTest extends TestCase
         $controller->shouldReceive('validateList')->andReturnNull();
         /** @noinspection PhpMethodParametersCountMismatchInspection */
         $controller->shouldReceive('getOrders')
-            ->withArgs([$device->business, $quantity, m::on(function ($arg) use ($from) {
+            ->withArgs([$device->team->business, $quantity, m::on(function ($arg) use ($from) {
                 return $arg->uuid === $from->uuid;
             })])
             ->once()
@@ -1272,9 +1417,9 @@ class OrdersControllerTest extends TestCase
     public function testListRoute()
     {
         $device = $this->createDevice();
-        $this->mockApiAuthDevice($device);
+        $this->logDevice($device);
         $quantity = 1;
-        $orders = $this->controller->getOrders($device->business, $quantity);
+        $orders = $this->controller->getOrders($device->team->business, $quantity);
         $data = [
             'data' => ['quantity' => $quantity],
         ];
@@ -1318,7 +1463,7 @@ class OrdersControllerTest extends TestCase
             }
         }
 
-        // Move last Order to another business
+        // Move last Order to another team
         $otherCustomer = \factory(Customer::class, 'withBusiness')->create();
         $otherOrder->customer()->associate($otherCustomer);
         $otherOrder->business()->associate($otherCustomer->business);
@@ -1340,12 +1485,12 @@ class OrdersControllerTest extends TestCase
         $uuids = $res->pluck('uuid')->toArray();
         $this->assertEquals(['test-5', 'test-4', 'test-3'], $uuids);
 
-        // Ask the last one of the business
+        // Ask the last one of the team
         $from = Order::where('uuid', 'test-5')->first();
         $res = $this->controller->getOrders($business, 5, $from);
         $this->assertEmpty($res);
 
-        // Throws error if $from is not of the same business
+        // Throws error if $from is not of the same team
         try {
             $this->controller->getOrders($business, 5, $otherOrder);
             $this->fail('Did not throw exception with $from an Order for another Business');

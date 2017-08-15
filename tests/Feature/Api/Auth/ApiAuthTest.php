@@ -4,9 +4,9 @@ namespace Feature\Api\Auth;
 
 use App\Api\Auth\ApiAuth;
 use App\ApiSession;
-use App\Business;
 use App\Device;
 use App\DeviceApproval;
+use App\Team;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
@@ -19,10 +19,6 @@ class ApiAuthTest extends TestCase
      */
     protected $apiAuth;
     /**
-     * @var Business
-     */
-    protected $business;
-    /**
      * @var ApiSession
      */
     protected $apiSession;
@@ -31,22 +27,39 @@ class ApiAuthTest extends TestCase
     {
         parent::setUp();
         $this->apiAuth = new ApiAuth();
-        $this->apiSession = factory(ApiSession::class, 'withDeviceAndBusiness')->create();
-        $this->business = $this->apiSession->device->business;
+
+        $team = factory(Team::class, 'withBusiness')->create();
+
+        $device = factory(Device::class)->make();
+        $device->team()->associate($team);
+        $device->save();
+
+        $apiSession = factory(ApiSession::class)->make();
+        $apiSession->device()->associate($device);
+        $apiSession->save();
+
+        $this->apiSession = $apiSession;
     }
 
     protected function loadValidSession()
     {
-        return $this->apiAuth->loadSession($this->apiSession->token, $this->business);
+        $token = $this->apiSession->token;
+        $team = $this->apiSession->device->team;
+        return $this->apiAuth->loadSession($token, $team);
     }
 
-    protected function createDeviceApproval($passcode, $business = null)
+    protected function createDeviceApproval($passcode, $team = null)
     {
-        $deviceApproval = factory(DeviceApproval::class, 'withDeviceAndBusiness')->make();
-        if ($business) {
-            $deviceApproval->device->business = $business;
-            $deviceApproval->device->save();
+        if (is_null($team)) {
+            $team = factory(Team::class, 'withBusiness')->create();
         }
+
+        $device = factory(Device::class)->make();
+        $device->team()->associate($team);
+        $device->save();
+
+        $deviceApproval = factory(DeviceApproval::class)->make();
+        $deviceApproval->device()->associate($device);
         $deviceApproval->passcode = $passcode;
         $deviceApproval->save();
 
@@ -55,20 +68,29 @@ class ApiAuthTest extends TestCase
 
     public function testLoadSessionReturnsFalseIfInvalidToken()
     {
-        $this->assertFalse($this->apiAuth->loadSession('false-token', $this->business));
+        $token = 'false-token';
+        $team = $this->apiSession->device->team;
+
+        $this->assertFalse($this->apiAuth->loadSession($token, $team));
     }
 
-    public function testLoadSessionReturnsFalseIfValidTokenButInvalidBusiness()
+    public function testLoadSessionReturnsFalseIfValidTokenButInvalidTeam()
     {
-        $newBusiness = factory(Business::class)->create();
-        $this->assertFalse($this->apiAuth->loadSession($this->apiSession->token, $newBusiness));
+        $token = $this->apiSession->token;
+        $newTeam = factory(Team::class, 'withBusiness')->create();
+
+        $this->assertFalse($this->apiAuth->loadSession($token, $newTeam));
     }
 
     public function testLoadSessionReturnsFalseIfExpiredSession()
     {
         $this->apiSession->expire();
         $this->apiSession->save();
-        $this->assertFalse($this->apiAuth->loadSession($this->apiSession->token, $this->business));
+
+        $token = $this->apiSession->token;
+        $team = $this->apiSession->device->team;
+
+        $this->assertFalse($this->apiAuth->loadSession($token, $team));
     }
 
     public function testLoadSessionReturnsTrueIfValid()
@@ -84,8 +106,11 @@ class ApiAuthTest extends TestCase
 
     public function testLoadSessionClearsCurrentSession()
     {
+        $token = 'invalid-token';
+        $team = $this->apiSession->device->team;
         $this->loadValidSession();
-        $this->apiAuth->loadSession('invalid-token', $this->business);
+
+        $this->apiAuth->loadSession($token, $team);
         $this->assertFalse($this->apiAuth->check());
     }
 
@@ -101,7 +126,9 @@ class ApiAuthTest extends TestCase
     public function testGetBusiness()
     {
         $this->loadValidSession();
-        $this->assertEquals($this->business->id, $this->apiAuth->getBusiness()->id);
+        $business = $this->apiSession->device->team->business;
+
+        $this->assertEquals($business->id, $this->apiAuth->getBusiness()->id);
 
         $this->apiAuth->logout();
         $this->assertNull($this->apiAuth->getBusiness());
@@ -139,8 +166,10 @@ class ApiAuthTest extends TestCase
     {
         $this->loadValidSession();
         $oldToken = $this->apiAuth->getToken();
+        $team = $this->apiSession->device->team;
         $this->apiAuth->destroySession();
-        $this->assertFalse($this->apiAuth->loadSession($oldToken, $this->business));
+
+        $this->assertFalse($this->apiAuth->loadSession($oldToken, $team));
     }
 
     public function testDestroySessionLogsOut()
@@ -168,8 +197,9 @@ class ApiAuthTest extends TestCase
         $this->loadValidSession();
         $this->apiAuth->regenerateToken();
         $newToken = $this->apiAuth->getToken();
+        $team = $this->apiSession->device->team;
         $this->apiAuth->logout();
-        $this->assertTrue($this->apiAuth->loadSession($newToken, $this->business));
+        $this->assertTrue($this->apiAuth->loadSession($newToken, $team));
     }
 
     public function testRegenerateTokenMakesNewToken()
@@ -184,20 +214,21 @@ class ApiAuthTest extends TestCase
     {
         $this->loadValidSession();
         $oldToken = $this->apiAuth->getToken();
+        $team = $this->apiSession->device->team;
         $this->apiAuth->regenerateToken();
-        $this->assertFalse($this->apiAuth->loadSession($oldToken, $this->business));
+        $this->assertFalse($this->apiAuth->loadSession($oldToken, $team));
     }
 
     public function testCreateApiSessionReturnsApiSession()
     {
-        $device = factory(Device::class, 'withBusiness')->create();
+        $device = factory(Device::class, 'withTeam')->create();
         $apiSession = $this->apiAuth->createApiSession($device);
         $this->assertNotNull(ApiSession::find($apiSession->id));
     }
 
     public function testCreateApiSessionDeletesAnyConflictingApiSession()
     {
-        $existingApiSession = factory(ApiSession::class, 'withDeviceAndBusiness')->create();
+        $existingApiSession = factory(ApiSession::class, 'withDevice')->create();
         $this->apiAuth->createApiSession($existingApiSession->device);
         $this->assertNull(ApiSession::find($existingApiSession->id));
     }
@@ -206,32 +237,32 @@ class ApiAuthTest extends TestCase
     {
         $passcode = '4567';
         $deviceApproval = $this->createDeviceApproval($passcode);
-        $business = $deviceApproval->device->business;
-        $otherBusiness = factory(Business::class)->create();
+        $team = $deviceApproval->device->team;
+        $otherTeam = factory(Team::class, 'withBusiness')->create();
 
-        $this->assertNull($this->apiAuth->findDeviceApproval($passcode . '0', $business));
-        $this->assertNull($this->apiAuth->findDeviceApproval($passcode, $otherBusiness));
-        $this->assertNull($this->apiAuth->findDeviceApproval($passcode . '0', $otherBusiness));
+        $this->assertNull($this->apiAuth->findDeviceApproval($passcode . '0', $team));
+        $this->assertNull($this->apiAuth->findDeviceApproval($passcode, $otherTeam));
+        $this->assertNull($this->apiAuth->findDeviceApproval($passcode . '0', $otherTeam));
     }
 
     public function testFindDeviceApprovalReturnsNullWithExpiredDeviceApproval()
     {
         $passcode = '4567';
         $deviceApproval = $this->createDeviceApproval($passcode);
-        $business = $deviceApproval->device->business;
+        $team = $deviceApproval->device->team;
         $deviceApproval->expire();
         $deviceApproval->save();
 
-        $this->assertNull($this->apiAuth->findDeviceApproval($passcode, $business));
+        $this->assertNull($this->apiAuth->findDeviceApproval($passcode, $team));
     }
 
     public function testFindDeviceApprovalReturnsDeviceApprovalWithGoodCredentials()
     {
         $passcode = '4567';
         $deviceApproval = $this->createDeviceApproval($passcode);
-        $business = $deviceApproval->device->business;
+        $team = $deviceApproval->device->team;
 
-        $res = $this->apiAuth->findDeviceApproval($passcode, $business);
+        $res = $this->apiAuth->findDeviceApproval($passcode, $team);
         $this->assertInstanceOf(DeviceApproval::class, $res);
         $this->assertEquals($deviceApproval->id, $res->id);
     }
@@ -239,14 +270,14 @@ class ApiAuthTest extends TestCase
     public function testAttemptRegisterReturnsFalseWithWrongCredentials()
     {
         $deviceApproval = $this->createDeviceApproval('4567');
-        $this->assertFalse($this->apiAuth->attemptRegister('8901', $deviceApproval->device->business));
+        $this->assertFalse($this->apiAuth->attemptRegister('8901', $deviceApproval->device->team));
     }
 
     public function testAttemptRegisterReturnsTrueWithValidCredentials()
     {
         $passcode = '4567';
         $deviceApproval = $this->createDeviceApproval($passcode);
-        $this->assertTrue($this->apiAuth->attemptRegister($passcode, $deviceApproval->device->business));
+        $this->assertTrue($this->apiAuth->attemptRegister($passcode, $deviceApproval->device->team));
     }
 
     public function testAttemptRegisterSetsApiSessionInApiAuth()
@@ -255,7 +286,7 @@ class ApiAuthTest extends TestCase
         $deviceApproval = $this->createDeviceApproval($passcode);
 
         $this->apiAuth->logout();
-        $this->apiAuth->attemptRegister($passcode, $deviceApproval->device->business);
+        $this->apiAuth->attemptRegister($passcode, $deviceApproval->device->team);
 
         $this->assertTrue($this->apiAuth->check());
         $this->assertEquals($deviceApproval->device->id, $this->apiAuth->getDevice()->id);
@@ -266,8 +297,8 @@ class ApiAuthTest extends TestCase
         $passcode = '4567';
         $deviceApproval = $this->createDeviceApproval($passcode);
 
-        $this->apiAuth->attemptRegister($passcode, $deviceApproval->device->business);
+        $this->apiAuth->attemptRegister($passcode, $deviceApproval->device->team);
 
-        $this->assertNull($this->apiAuth->findDeviceApproval($passcode, $deviceApproval->device->business));
+        $this->assertNull($this->apiAuth->findDeviceApproval($passcode, $deviceApproval->device->team));
     }
 }

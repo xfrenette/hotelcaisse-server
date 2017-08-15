@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Api\Http\ApiResponse;
 use App\Business;
+use App\Exceptions\Api\InvalidRequestException;
 use App\Register;
 use App\Support\Facades\ApiAuth;
 use Illuminate\Http\Request;
@@ -19,25 +20,12 @@ class RegisterController extends ApiController
      */
     public function open(Request $request)
     {
-        $this->validate($request, [
-            'uuid' => 'bail|required|string|unique:registers',
-            'employee' => 'bail|required|string',
-            'cashAmount' => 'bail|required|numeric|min:0',
-        ]);
+        $this->validateOpen($request);
+        $this->validateRegisterNotOpened();
 
         $apiResponse = new ApiResponse();
         $device = ApiAuth::getDevice();
-
-        // If the logged device has a register that is already opened, return an error
-        $currentRegister = $device->currentRegister;
-        if (!is_null($currentRegister) && $currentRegister->opened) {
-            $apiResponse->setError(
-                ApiResponse::ERROR_CLIENT_ERROR,
-                'The device has an already opened register. Close it first. This request was ignored.'
-            );
-
-            return $apiResponse;
-        }
+        $business = ApiAuth::getBusiness();
 
         $register = new Register([
             'uuid' => $request->json('data.uuid'),
@@ -49,7 +37,7 @@ class RegisterController extends ApiController
         $device->currentRegister()->associate($register);
         $device->save();
 
-        $device->business->bumpVersion([Business::MODIFICATION_REGISTER]);
+        $business->bumpVersion([Business::MODIFICATION_REGISTER]);
 
         return $apiResponse;
     }
@@ -60,38 +48,22 @@ class RegisterController extends ApiController
      * @param \Illuminate\Http\Request $request
      *
      * @return \App\Api\Http\ApiResponse
+     * @throws \App\Exceptions\Api\InvalidRequestException
      */
     public function close(Request $request)
     {
-        $this->validate($request, [
-            'uuid' => 'bail|required|string',
-            'cashAmount' => 'bail|required|numeric|min:0',
-            'POSTRef' => 'bail|required|string',
-            'POSTAmount' => 'bail|required|numeric|min:0',
-        ]);
+        $this->validateClose($request);
+        $this->validateRegisterOpened();
 
         $apiResponse = new ApiResponse();
         $device = ApiAuth::getDevice();
+        $business = ApiAuth::getBusiness();
         $currentRegister = $device->currentRegister;
 
-        // Return validation error if device has no currentRegister or has not the same uuid
-        if (is_null($currentRegister) || $currentRegister->uuid !== $request->json('data.uuid')) {
-            $apiResponse->setError(
-                ApiResponse::ERROR_CLIENT_ERROR,
-                'The UUID does not correspond to the current register of the device. The request was ignored.'
-            );
-
-            return $apiResponse;
-        }
-
-        // Return error if the currentRegister is not opened
-        if (!$currentRegister->opened) {
-            $apiResponse->setError(
-                ApiResponse::ERROR_CLIENT_ERROR,
-                'The device doesn\'t have a register assigned or it is not opened. The request was ignored.'
-            );
-
-            return $apiResponse;
+        // Throws validation error if device has no currentRegister or has not the same uuid
+        if ($currentRegister->uuid !== $request->json('data.uuid')) {
+            $message = 'The UUID does not correspond to the current register of the device. The request was ignored.';
+            throw new InvalidRequestException($message);
         }
 
         // Close the register
@@ -103,8 +75,39 @@ class RegisterController extends ApiController
         $currentRegister->save();
 
         // Bump the business version
-        $device->business->bumpVersion([Business::MODIFICATION_REGISTER]);
+        $business->bumpVersion([Business::MODIFICATION_REGISTER]);
 
         return $apiResponse;
+    }
+
+    /**
+     * Validates the parameters for the 'open' controller method. Throws exception in case of validation error.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     * @param \Illuminate\Http\Request $request
+     */
+    public function validateOpen(Request $request)
+    {
+        $this->validate($request, [
+            'uuid' => 'bail|required|string|unique:registers',
+            'employee' => 'bail|required|string',
+            'cashAmount' => 'bail|required|numeric|min:0',
+        ]);
+    }
+
+    /**
+     * Validates the parameters for the 'close' controller method. Throws exception in case of validation error.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     * @param \Illuminate\Http\Request $request
+     */
+    public function validateClose(Request $request)
+    {
+        $this->validate($request, [
+            'uuid' => 'bail|required|string',
+            'cashAmount' => 'bail|required|numeric|min:0',
+            'POSTRef' => 'bail|required|string',
+            'POSTAmount' => 'bail|required|numeric|min:0',
+        ]);
     }
 }

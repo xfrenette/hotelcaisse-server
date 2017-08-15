@@ -11,15 +11,9 @@ class ApiSessionTest extends TestCase
 {
     use DatabaseTransactions;
 
-    /**
-     * @var ApiSession
-     */
-    protected $apiSession;
-
     protected function setUp()
     {
         parent::setUp();
-        $this->apiSession = factory(ApiSession::class, 'withDeviceAndBusiness')->create();
     }
 
     public function testScopeValid()
@@ -27,7 +21,7 @@ class ApiSessionTest extends TestCase
         $query = ApiSession::valid();
         $prevCount = $query->count();
 
-        $apiSession = factory(ApiSession::class, 'withDeviceAndBusiness')->make();
+        $apiSession = factory(ApiSession::class, 'withDevice')->make();
         $apiSession->expires_at = Carbon::tomorrow();
         $apiSession->save();
 

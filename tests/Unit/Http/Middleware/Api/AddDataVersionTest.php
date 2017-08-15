@@ -2,17 +2,19 @@
 
 namespace Tests\Unit\Http\Middleware\Api;
 
-use App\Api\Auth\ApiAuth;
 use App\Api\Http\ApiResponse;
 use App\Business;
 use App\Device;
 use App\Http\Middleware\Api\AddDataVersion;
+use App\Team;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
+use Tests\InteractsWithAPI;
 use Tests\TestCase;
 
 class AddDataVersionTest extends TestCase
 {
+    use InteractsWithAPI;
+
     /**
      * @var AddDataVersion
      */
@@ -37,19 +39,16 @@ class AddDataVersionTest extends TestCase
             ->getMock();
         $business->method('getVersionAttribute')
             ->willReturn($version);
-
-        $device->business()->associate($business);
+        $team = new Team();
+        $team->business()->associate($business);
+        $device->team()->associate($team);
         return $device;
     }
 
     protected function mockApiAuthDevice($device)
     {
-        $stub = $this->createMock(ApiAuth::class);
-        $stub->method('getDevice')
-            ->will($this->returnValue($device));
-        $stub->method('check')
-            ->will($this->returnValue(true));
-        App::instance('apiauth', $stub);
+        $stub = $this->mockApiAuth();
+        $stub->shouldReceive('getDevice')->andReturn($this->returnValue($device));
         return $stub;
     }
 
@@ -76,11 +75,15 @@ class AddDataVersionTest extends TestCase
     {
         $version = 'test-version';
         $request = $this->makeRequest();
-        $device = $this->makeMockDeviceWithBusiness($version);
-        $this->mockApiAuthDevice($device);
+        $business = \Mockery::mock(Business::class)->makePartial();
+        $business->shouldReceive('getVersionAttribute')->andReturn($version);
+        $apiAuth = $this->mockApiAuth();
+        $apiAuth->shouldReceive('getBusiness')->andReturn($business);
+
         $res = $this->middleware->handle($request, function () {
             return new ApiResponse();
         });
+
         $this->assertEquals($version, $res->getDataVersion());
     }
 }

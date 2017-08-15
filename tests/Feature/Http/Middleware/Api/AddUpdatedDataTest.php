@@ -5,7 +5,6 @@ namespace Tests\Feature\Http\Middleware\Api;
 use App\Api\Http\ApiResponse;
 use App\Business;
 use App\Http\Middleware\Api\AddUpdatedData;
-use Illuminate\Http\Request;
 use Tests\InteractsWithAPI;
 use Tests\TestCase;
 
@@ -21,54 +20,46 @@ class AddUpdatedDataTest extends TestCase
     protected function setUp()
     {
         parent::setUp();
-        $this->business = Business::first();
         $this->middleware = new AddUpdatedData();
     }
 
-    protected function makeRequest($version = null)
+    protected function mockRequestWithVersion($version = null)
     {
-        $request = Request::create('/test');
-
-        if (!is_null($version)) {
-            /** @noinspection PhpParamsInspection */
-            $request->setJson(collect([
-                'dataVersion' => $version,
-            ]));
-        }
-
-        return $request;
+        return $this->mockRequest(['dataVersion' => $version]);
     }
 
     public function testHandleLoadsBusinessRelations()
     {
         $device = $this->createDevice();
-        $this->mockApiAuthDevice($device);
+        $this->logDevice($device);
 
-        $this->business->bumpVersion();
-        $oldVersion = $this->business->version;
-        $this->business->bumpVersion([Business::MODIFICATION_TAXES, Business::MODIFICATION_ROOMS]);
+        $business = $device->team->business;
+        $business->bumpVersion();
+        $oldVersion = $business->version;
+        $business->bumpVersion([Business::MODIFICATION_TAXES, Business::MODIFICATION_ROOMS]);
 
-        $request = $this->makeRequest($oldVersion);
+        $request = $this->mockRequestWithVersion($oldVersion);
         $res = $this->middleware->handle($request, function () {
             return new ApiResponse();
         });
 
         $data = $res->getData(true);
-        $this->assertEquals($this->business->rooms->count(), count($data['business']['rooms']));
-        $this->assertEquals($this->business->taxes->count(), count($data['business']['taxes']));
+        $this->assertEquals($business->rooms->count(), count($data['business']['rooms']));
+        $this->assertEquals($business->taxes->count(), count($data['business']['taxes']));
     }
 
     public function testHandleLoadsRegisterRelations()
     {
         $device = $this->createDeviceWithOpenedRegister();
         $register = $device->currentRegister;
-        $this->mockApiAuthDevice($device);
+        $this->logDevice($device);
 
-        $this->business->bumpVersion();
-        $oldVersion = $this->business->version;
-        $this->business->bumpVersion([Business::MODIFICATION_REGISTER]);
+        $business = $device->team->business;
+        $business->bumpVersion();
+        $oldVersion = $business->version;
+        $business->bumpVersion([Business::MODIFICATION_REGISTER]);
 
-        $request = $this->makeRequest($oldVersion);
+        $request = $this->mockRequestWithVersion($oldVersion);
         $res = $this->middleware->handle($request, function () {
             return new ApiResponse();
         });
@@ -80,13 +71,14 @@ class AddUpdatedDataTest extends TestCase
     public function testHandleWorksWithNoRegister()
     {
         $device = $this->createDevice();
-        $this->mockApiAuthDevice($device);
+        $this->logDevice($device);
 
-        $this->business->bumpVersion();
-        $oldVersion = $this->business->version;
-        $this->business->bumpVersion([Business::MODIFICATION_REGISTER]);
+        $business = $device->team->business;
+        $business->bumpVersion();
+        $oldVersion = $business->version;
+        $business->bumpVersion([Business::MODIFICATION_REGISTER]);
 
-        $request = $this->makeRequest($oldVersion);
+        $request = $this->mockRequestWithVersion($oldVersion);
         $res = $this->middleware->handle($request, function () {
             return new ApiResponse();
         });

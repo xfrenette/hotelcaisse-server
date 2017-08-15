@@ -2,10 +2,10 @@
 
 namespace App\Http\Middleware\Api;
 
-use App\Business;
 use App\Exceptions\Api\InvalidRequestException;
 use App\Exceptions\Api\InvalidTokenException;
 use App\Support\Facades\ApiAuth;
+use App\Team;
 use Illuminate\Http\Request;
 
 class Authenticate
@@ -23,9 +23,9 @@ class Authenticate
     public function handle(Request $request, \Closure $next)
     {
         $token = $request->json('token');
-        $business = $request->route('business');
+        $team = $request->route('team');
 
-        $this->validateAuth($token, $business);
+        $this->validateAuth($token, $team);
 
         ApiAuth::regenerateToken();
 
@@ -33,26 +33,26 @@ class Authenticate
     }
 
     /**
-     * Calls ApiAuth::loadSession() with the specified $token and $business. If either is null or if we could not load
+     * Calls ApiAuth::loadSession() with the specified $token and $team. If either is null or if we could not load
      * the session, throw an error. Else do nothing.
      *
      * @param string $token
-     * @param \App\Business|null $business
+     * @param \App\Team|null $team
      *
      * @throws \App\Exceptions\Api\InvalidRequestException
      * @throws \App\Exceptions\Api\InvalidTokenException
      */
-    protected function validateAuth($token, Business $business = null)
+    protected function validateAuth($token, Team $team = null)
     {
         if (is_null($token)) {
             throw new InvalidTokenException('"token" property is missing.');
         }
 
-        if (is_null($business)) {
-            throw new InvalidRequestException('Missing business.');
+        if (is_null($team)) {
+            throw new InvalidRequestException('Missing Team.');
         }
 
-        $result = ApiAuth::loadSession($token, $business);
+        $result = ApiAuth::loadSession($token, $team);
 
         if (!$result) {
             throw new InvalidTokenException('Invalid token for the business.');

@@ -65,7 +65,7 @@ class BusinessTest extends TestCase
         $this->business->insertVersion($oldVersion);
         $newVersion = $this->business->bumpVersion();
         $this->assertNotEquals($oldVersion, $newVersion);
-        // Ensure the new version is the one returned by `$business->version`
+        // Ensure the new version is the one returned by `$team->version`
         $this->assertEquals($newVersion, $this->business->version);
     }
 
@@ -88,7 +88,7 @@ class BusinessTest extends TestCase
     public function testGetVersionModificationsReturnsNullIfNotAVersion()
     {
         $version = '4';
-        // We insert the version number for *another* business
+        // We insert the version number for *another* team
         $otherBusiness = factory(Business::class)->create();
         $otherBusiness->insertVersion($version);
         $this->assertNull($this->business->getVersionModifications($version));
@@ -275,7 +275,7 @@ class BusinessTest extends TestCase
         $business = factory(Business::class)->create();
         $this->insertVersions($versions, $business);
 
-        // Other business just to be sure its version are not included
+        // Other team just to be sure its version are not included
         $otherBusiness = factory(Business::class)->create();
         $this->insertVersions($otherBusinessVersions, $otherBusiness);
 
@@ -304,7 +304,7 @@ class BusinessTest extends TestCase
 
         ], $res->pluck('modifications')->toArray());
 
-        // Test querying non-existent version (for the $business) returns empty array
+        // Test querying non-existent version (for the $team) returns empty array
         $res = $business->getVersionsSince('v6.other');
         $this->assertCount(0, $res);
 

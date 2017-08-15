@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Api\Http\ApiResponse;
-use App\Business;
 use App\Exceptions\Api\InvalidRequestException;
 use App\Http\Controllers\Controller;
 use App\Support\Facades\ApiAuth;
+use App\Team;
 use Illuminate\Http\Request;
 
 class DeviceController extends Controller
 {
-    public function register(Request $request, Business $business)
+    public function register(Request $request, Team $team)
     {
         $passcode = $request->json('data.passcode');
 
@@ -20,7 +20,7 @@ class DeviceController extends Controller
         }
 
         $apiResponse = new ApiResponse();
-        $success = ApiAuth::attemptRegister($passcode, $business);
+        $success = ApiAuth::attemptRegister($passcode, $team);
 
         if (!$success) {
             $apiResponse->setError(ApiResponse::ERROR_AUTH_FAILED, 'passcode invalid for business');

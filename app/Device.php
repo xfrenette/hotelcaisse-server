@@ -13,9 +13,9 @@ class Device extends Model
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function business()
+    public function team()
     {
-        return $this->belongsTo('App\Business');
+        return $this->belongsTo('App\Team');
     }
 
     /**

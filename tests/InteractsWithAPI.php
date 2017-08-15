@@ -4,8 +4,10 @@ namespace Tests;
 
 use App\Api\Auth\ApiAuth;
 use App\Api\Http\ApiResponse;
+use App\ApiSession;
 use App\Device;
 use App\Register;
+use App\Team;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Validation\ValidationException;
@@ -24,18 +26,37 @@ trait InteractsWithAPI
      *
      * @return \Illuminate\Foundation\Testing\TestResponse
      */
-    protected function queryAPI($routeName, $data = [])
+    protected function queryAPI($routeName, $data = [], Team $team = null)
     {
-        $uri = route($routeName, ['business' => $this->business->slug]);
+        $slug = null;
+
+        if ($team) {
+            $slug = $team->slug;
+        } else {
+            $device = \App\Support\Facades\ApiAuth::getDevice();
+            $slug = $device->team->slug;
+        }
+
+        $uri = route($routeName, ['team' => $slug]);
         return $this->json('POST', $uri, $data);
     }
 
-    protected function createDevice()
+    protected function createDevice($team = null)
     {
+        if (is_null($team)) {
+            $team = factory(Team::class, 'withBusiness')->create();
+        }
+
         $device = factory(Device::class)->make();
-        $device->business()->associate($this->business);
+        $device->team()->associate($team);
         $device->save();
 
+        return $device;
+    }
+
+    protected function mockDevice()
+    {
+        $device = \Mockery::mock(Device::class)->makePartial();
         return $device;
     }
 
@@ -64,9 +85,29 @@ trait InteractsWithAPI
 
     protected function mockApiAuthDevice($device)
     {
-        $apiAuth = m::mock(ApiAuth::class);
+        $apiAuth = $this->mockApiAuth();
         /** @noinspection PhpMethodParametersCountMismatchInspection */
         $apiAuth->shouldReceive('getDevice')->andReturn($device);
+
+        App::instance('apiauth', $apiAuth);
+
+        return $apiAuth;
+    }
+
+    protected function logDevice($device)
+    {
+        $apiSession = factory(ApiSession::class)->make();
+        $apiSession->device()->associate($device);
+        $apiSession->save();
+
+        \App\Support\Facades\ApiAuth::setApiSession($apiSession);
+
+        return $apiSession;
+    }
+
+    protected function mockApiAuth()
+    {
+        $apiAuth = m::mock(ApiAuth::class)->makePartial();
         /** @noinspection PhpMethodParametersCountMismatchInspection */
         $apiAuth->shouldReceive('check')->andReturn(true);
 
@@ -159,7 +200,7 @@ trait InteractsWithAPI
             try {
                 call_user_func($callback, $request);
                 $this->fail('ValidationException not thrown with attribute `'
-                    . $attributeToValidate . '` = `' . $value . '`');
+                    . $attributeToValidate . '` = ' . (is_null($value) ? 'NULL' : '`'.$value.'`'));
             } catch (ValidationException $e) {
                 // Do nothing
             }

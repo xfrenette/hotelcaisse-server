@@ -5,6 +5,7 @@ namespace Tests\Feature\Http\Controllers\Api;
 use App\Api\Http\ApiResponse;
 use App\Business;
 use App\CashMovement;
+use App\Http\Controllers\Api\CashMovementsController;
 use App\Register;
 use Faker\Factory;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -20,10 +21,16 @@ class CashMovementsControllerTest extends TestCase
 
     protected static $faker;
 
+    /**
+     * @var \App\Http\Controllers\Api\CashMovementsController
+     */
+    protected $controller;
+
     protected function setUp()
     {
         parent::setUp();
         $this->business = factory(Business::class)->create();
+        $this->controller = new CashMovementsController();
     }
 
     protected static function generateAddData()
@@ -41,39 +48,10 @@ class CashMovementsControllerTest extends TestCase
         ];
     }
 
-    public function testAddReturnsErrorIfInvalidUUID()
-    {
-        $values = [null, '', ' ', 12];
-        $this->assertValidatesData('api.cashMovements.add', self::generateAddData(), 'uuid', $values);
-    }
-
-    public function testAddReturnsErrorIfInvalidNote()
-    {
-        $values = [null, '', ' ', 12];
-        $this->assertValidatesData('api.cashMovements.add', self::generateAddData(), 'note', $values);
-    }
-
-    public function testAddReturnsErrorIfInvalidAmount()
-    {
-        $values = [null, '', ' ', false, 0];
-        $this->assertValidatesData('api.cashMovements.add', self::generateAddData(), 'amount', $values);
-    }
-
-    public function testAddWorksWithValidData()
-    {
-        $device = $this->createDeviceWithOpenedRegister();
-        $this->mockApiAuthDevice($device);
-
-        $response = $this->queryAPI('api.cashMovements.add', self::generateAddData());
-        $response->assertJson([
-            'status' => 'ok'
-        ]);
-    }
-
     public function testAddReturnsErrorIfNoRegister()
     {
         $device = $this->createDevice();
-        $this->mockApiAuthDevice($device);
+        $this->logDevice($device);
         $response = $this->queryAPI('api.cashMovements.add', self::generateAddData());
         $response->assertJson([
             'status' => 'error',
@@ -84,7 +62,7 @@ class CashMovementsControllerTest extends TestCase
     public function testAddReturnsErrorIfRegisterIsNotOpened()
     {
         $device = $this->createDeviceWithRegister();
-        $this->mockApiAuthDevice($device);
+        $this->logDevice($device);
         $response = $this->queryAPI('api.cashMovements.add', self::generateAddData());
         $response->assertJson([
             'status' => 'error',
@@ -96,7 +74,7 @@ class CashMovementsControllerTest extends TestCase
     {
         $data = self::generateAddData();
         $device = $this->createDeviceWithOpenedRegister();
-        $this->mockApiAuthDevice($device);
+        $this->logDevice($device);
         $this->queryAPI('api.cashMovements.add', $data);
 
         $cashMovement = CashMovement::where('register_id', $device->currentRegister->id)->first();
@@ -107,33 +85,28 @@ class CashMovementsControllerTest extends TestCase
     public function testAddBumpsBusinessVersionWithModifications()
     {
         $device = $this->createDeviceWithOpenedRegister();
-        $this->mockApiAuthDevice($device);
-
-        $oldVersion = $this->business->version;
+        $this->logDevice($device);
+        $business = $device->team->business;
+        $oldVersion = $business->version;
 
         $this->queryAPI('api.cashMovements.add', self::generateAddData());
-        $newVersion = $this->business->version;
+        $newVersion = $business->version;
         $this->assertNotEquals($oldVersion, $newVersion);
         $this->assertEquals(
             [Business::MODIFICATION_REGISTER],
-            $this->business->getVersionModifications($newVersion)
+            $business->getVersionModifications($newVersion)
         );
     }
 
     // --------------------------
 
-    public function testDeleteReturnsErrorIfInvalidUUID()
-    {
-        $values = [null, '', ' ', 12];
-        $this->assertValidatesData('api.cashMovements.delete', ['data' => []], 'uuid', $values);
-    }
-
-    public function testDeleteReturnsErrorIfNonExistentUUID()
+    public function testValidateDeleteReturnsErrorIfNonExistentUUID()
     {
         $device = $this->createDeviceWithOpenedRegister();
-        $this->mockApiAuthDevice($device);
+        $this->logDevice($device);
         $data = ['data' => ['uuid' => 'non-existent']];
-        $oldVersion = $device->business->version;
+        $business = $device->team->business;
+        $oldVersion = $business->version;
 
         $response = $this->queryAPI('api.cashMovements.delete', $data);
         $response->assertJson([
@@ -141,16 +114,17 @@ class CashMovementsControllerTest extends TestCase
             'error' => ['code' => ApiResponse::ERROR_CLIENT_ERROR],
         ]);
 
-        // Test business version is same
-        $this->assertEquals($oldVersion, $device->business->version);
+        // Test team version is same
+        $this->assertEquals($oldVersion, $business->version);
     }
 
-    public function testDeleteReturnsErrorIfUUIDOfOtherRegister()
+    public function testValidateDeleteReturnsErrorIfUUIDOfOtherRegister()
     {
         $uuid = Factory::create()->uuid();
         $device = $this->createDeviceWithOpenedRegister();
-        $this->mockApiAuthDevice($device);
-        $oldVersion = $device->business->version;
+        $this->logDevice($device);
+        $business = $device->team->business;
+        $oldVersion = $business->version;
 
         // Create another register of same device and assign it a cash movement
         $otherRegister = \factory(Register::class)->make();
@@ -175,15 +149,15 @@ class CashMovementsControllerTest extends TestCase
         $query = CashMovement::where('uuid', $uuid);
         $this->assertEquals(1, $query->count());
 
-        // Test business version is same
-        $this->assertEquals($oldVersion, $device->business->version);
+        // Test team version is same
+        $this->assertEquals($oldVersion, $business->version);
     }
 
     public function testDeleteDeletesCashMovementIfValid()
     {
         $uuid = Factory::create()->uuid();
         $device = $this->createDeviceWithOpenedRegister();
-        $this->mockApiAuthDevice($device);
+        $this->logDevice($device);
         $cashMovement = new CashMovement([
             'uuid' => $uuid,
             'amount' => -12.34,
@@ -205,7 +179,9 @@ class CashMovementsControllerTest extends TestCase
     {
         $uuid = Factory::create()->uuid();
         $device = $this->createDeviceWithOpenedRegister();
-        $this->mockApiAuthDevice($device);
+        $this->logDevice($device);
+        $business = $device->team->business;
+
         $cashMovement = new CashMovement([
             'uuid' => $uuid,
             'amount' => -12.34,
@@ -214,14 +190,14 @@ class CashMovementsControllerTest extends TestCase
         $cashMovement->register()->associate($device->currentRegister);
         $cashMovement->save();
 
-        $oldVersion = $this->business->version;
+        $oldVersion = $business->version;
 
         $this->queryAPI('api.cashMovements.delete', ['data' => ['uuid' => $uuid]]);
-        $newVersion = $this->business->version;
+        $newVersion = $business->version;
         $this->assertNotEquals($oldVersion, $newVersion);
         $this->assertEquals(
             [Business::MODIFICATION_REGISTER],
-            $this->business->getVersionModifications($newVersion)
+            $business->getVersionModifications($newVersion)
         );
     }
 }
