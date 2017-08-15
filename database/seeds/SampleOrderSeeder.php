@@ -20,9 +20,10 @@ class SampleOrderSeeder extends Seeder
 
         $customer = new \App\Customer();
 
+        $fieldValues = [];
         $customerFields = $business->customerFields;
-        $customerFields->each(function ($field) use (&$data, $faker) {
-            $data['customer']['fieldValues'][] = [
+        $customerFields->each(function ($field) use (&$fieldValues, $faker) {
+            $fieldValues[] = [
                 'field' => $field->id,
                 'value' => $faker->word(),
             ];
@@ -30,6 +31,7 @@ class SampleOrderSeeder extends Seeder
 
         $customer->business()->associate($business);
         $customer->save();
+        $customer->setFieldValues($fieldValues);
 
         $order = new \App\Order();
         $order->uuid = $faker->uuid();
