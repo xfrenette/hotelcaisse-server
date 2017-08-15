@@ -4,6 +4,7 @@ namespace Tests\Feature\Exceptions;
 
 use App\Api\Http\ApiResponse;
 use App\Business;
+use App\Exceptions\Api\InvalidRegisterStateException;
 use App\Exceptions\Api\InvalidRequestException;
 use App\Exceptions\Api\InvalidTokenException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -48,6 +49,23 @@ class ExceptionsTest extends TestCase
             Validator::make([], [
                 'test' => 'required',
             ])->validate();
+        });
+
+        $response = $this->json('GET', '/api/test');
+
+        $response->assertStatus(422);
+        $response->assertJson([
+            'status' => 'error',
+            'error' => [
+                'code' => ApiResponse::ERROR_CLIENT_ERROR,
+            ],
+        ]);
+    }
+
+    public function testInvalidRegisterStateException()
+    {
+        Route::get('/api/test', function () {
+            throw new InvalidRegisterStateException('Test');
         });
 
         $response = $this->json('GET', '/api/test');

@@ -100,6 +100,10 @@ class Handler extends ExceptionHandler
             return $this->apiResponseError(404, ApiResponse::ERROR_NOT_FOUND);
         }
 
+        if ($exception instanceof Api\InvalidRegisterStateException) {
+            return $this->apiResponseError(422, ApiResponse::ERROR_CLIENT_ERROR, $exception->getMessage());
+        }
+
         if ($exception instanceof ValidationException) {
             $message = 'Validation error(s): ';
             $errors = $exception->validator->errors();
