@@ -27,7 +27,7 @@ class Customer extends Model
      * @see HasFields#getFieldsClass
      * @return string
      */
-    protected function getFieldsClass()
+    public function getFieldsClass()
     {
         return 'Customer';
     }

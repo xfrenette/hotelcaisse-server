@@ -27,4 +27,10 @@ class CustomerTest extends TestCase
 
         $this->assertEquals($expected, $customer->toArray());
     }
+
+    public function testGetFieldsClass()
+    {
+        $customer = new Customer();
+        $this->assertEquals('Customer', $customer->getFieldsClass());
+    }
 }

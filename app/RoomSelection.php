@@ -46,9 +46,9 @@ class RoomSelection extends Model
      * @see HasFields#getFieldsClass
      * @return string
      */
-    protected function getFieldsClass()
+    public function getFieldsClass()
     {
-        return 'Customer';
+        return 'RoomSelection';
     }
 
     /**

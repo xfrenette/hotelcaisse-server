@@ -19,7 +19,7 @@ trait HasFields
      * Name of the class used in the field_values table.
      * @return string
      */
-    protected abstract function getFieldsClass();
+    abstract public function getFieldsClass();
 
     /**
      * Set the values of Fields for this instance. If the Field already has a value, it is updated, else it is inserted.

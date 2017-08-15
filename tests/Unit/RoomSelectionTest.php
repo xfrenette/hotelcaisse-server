@@ -44,4 +44,10 @@ class RoomSelectionTest extends TestCase
         $roomSelection->order()->associate($order);
         $this->assertEquals($expected, $roomSelection->toArray());
     }
+
+    public function testGetFieldsClass()
+    {
+        $roomSelection = new RoomSelection();
+        $this->assertEquals('RoomSelection', $roomSelection->getFieldsClass());
+    }
 }
