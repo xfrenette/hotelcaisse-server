@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\App;
 
 class DatabaseSeeder extends Seeder
 {
+    const SEEDABLE_ENVIRONMENTS = ['testing', 'local'];
+
     /**
      * Run the database seeds.
      *
@@ -12,8 +14,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        if (App::environment() !== 'testing') {
-            throw new Exception('Seeding is available only for "testing" environment. Add --env=testing.');
+        if (!in_array(App::environment(), self::SEEDABLE_ENVIRONMENTS)) {
+            throw new Exception('Seeding is not available for this environment. Add --env=[environment] if necessary.');
         }
 
         $this->call(UsersSeeder::class);
