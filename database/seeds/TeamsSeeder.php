@@ -2,6 +2,7 @@
 
 use App\Business;
 use App\Team;
+use App\User;
 use Illuminate\Database\Seeder;
 
 class TeamsSeeder extends Seeder
@@ -18,8 +19,15 @@ class TeamsSeeder extends Seeder
         }
 
         $business = Business::first();
-        $team = factory(\App\Team::class)->make();
+        $user = User::first();
+
+        $team = new Team([
+            'name' => 'Dev',
+            'slug' => 'dev',
+        ]);
+
         $team->business()->associate($business);
+        $team->owner()->associate($user);
         $team->save();
     }
 }

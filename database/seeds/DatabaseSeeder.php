@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             throw new Exception('Seeding is available only for "testing" environment. Add --env=testing.');
         }
 
+        $this->call(UsersSeeder::class);
         $this->call(BusinessesTableSeeder::class);
         $this->call(TeamsSeeder::class);
         $this->call(SampleDeviceSeeder::class);
