@@ -24,7 +24,7 @@ class SampleOrderSeeder extends Seeder
         $customerFields = $business->customerFields;
         $customerFields->each(function ($field) use (&$fieldValues, $faker) {
             $fieldValues[] = [
-                'field' => $field->id,
+                'fieldId' => $field->id,
                 'value' => $faker->word(),
             ];
         });
@@ -81,7 +81,7 @@ class SampleOrderSeeder extends Seeder
                     ->get()
                     ->map(function ($tax) use ($faker) {
                         return [
-                            'tax' => $tax->id,
+                            'id' => $tax->id,
                             'amount' => $faker->randomFloat(4, 0, 20),
                         ];
                     })->toArray();
@@ -99,7 +99,7 @@ class SampleOrderSeeder extends Seeder
             $fieldValues = [];
             $roomSelectionFields->each(function ($field) use (&$fieldValues, $faker) {
                 $fieldValues[] = [
-                    'field' => $field->id,
+                    'fieldId' => $field->id,
                     'value' => $faker->word(),
                 ];
             });
