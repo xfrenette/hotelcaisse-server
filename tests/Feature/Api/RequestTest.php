@@ -8,7 +8,6 @@ use App\Business;
 use App\Support\Facades\ApiAuth;
 use App\Team;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
@@ -36,10 +35,6 @@ class RequestTest extends TestCase
         Route::middleware(['api', 'api:request'])
             ->group(function () {
                 Route::any('/api/test', function () {
-                    return new ApiResponse();
-                });
-
-                Route::post('/api/businesstest/{team}', function (Request $request) {
                     return new ApiResponse();
                 });
 
@@ -89,22 +84,13 @@ class RequestTest extends TestCase
 
     public function testReturnsErrorIfInvalidTeam()
     {
-        $response = $this->json('POST', '/api/businesstest/invalid', ['test' => true]);
+        $response = $this->json('POST', '/api/auth/XX-invalid-XX', ['test' => true]);
         $response->assertStatus(404);
         $response->assertJson([
             'status' => 'error',
             'error' => [
                 'code' => ApiResponse::ERROR_NOT_FOUND,
             ]
-        ]);
-    }
-
-    public function testWorksWithValidTeam()
-    {
-        $uri = '/api/businesstest/' . $this->team->slug;
-        $response = $this->json('POST', $uri, ['test' => true]);
-        $response->assertJson([
-            'status' => 'ok',
         ]);
     }
 

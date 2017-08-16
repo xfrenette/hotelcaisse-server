@@ -176,6 +176,7 @@ return [
 
         /*
          * Application Service Providers...
+         * Must be after Spark
          */
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,

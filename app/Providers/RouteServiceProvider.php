@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Team;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Route;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -23,9 +25,21 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
-
         parent::boot();
+        $this->defineRouteBindings();
+    }
+
+    /**
+     * We re-bind the 'team' parameter (replace the one already set by Spark) to accept an id or a slug
+     */
+    public function defineRouteBindings()
+    {
+        Route::bind('team', function($value) {
+            return Team
+                ::where('slug', $value)
+                ->orWhere('id', $value)
+                ->firstOrFail();
+        });
     }
 
     /**

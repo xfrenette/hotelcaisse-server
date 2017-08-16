@@ -23,7 +23,7 @@ class DeviceController extends Controller
         $success = ApiAuth::attemptRegister($passcode, $team);
 
         if (!$success) {
-            $apiResponse->setError(ApiResponse::ERROR_AUTH_FAILED, 'passcode invalid for business');
+            $apiResponse->setError(ApiResponse::ERROR_AUTH_FAILED, 'passcode invalid for team.');
         }
 
         return $apiResponse;
