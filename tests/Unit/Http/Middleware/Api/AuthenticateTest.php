@@ -2,17 +2,17 @@
 
 namespace Tests\Unit\Http\Middleware\Api;
 
-use App\Api\Auth\ApiAuth;
+use App\Exceptions\Api\AuthenticationException;
 use App\Exceptions\Api\InvalidRequestException;
-use App\Exceptions\Api\InvalidTokenException;
 use App\Http\Middleware\Api\Authenticate;
 use App\Team;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
+use Tests\InteractsWithAPI;
 use Tests\TestCase;
 
 class AuthenticateTest extends TestCase
 {
+    use InteractsWithAPI;
+
     /**
      * @var Authenticate
      */
@@ -21,57 +21,30 @@ class AuthenticateTest extends TestCase
      * @var Team
      */
     protected $team;
+    protected $apiAuth;
 
     protected function setUp()
     {
         parent::setUp();
         $this->middleware = new Authenticate();
-        $this->team = factory(Team::class, 'withBusiness')->create();
+        $team = \Mockery::mock(Team::class)->makePartial();
+        $team->shouldReceive('canAccessApi')->andReturn(true);
+        $this->team = $team;
+
+        $this->apiAuth = $this->mockApiAuth();
+        $this->apiAuth->shouldReceive('regenerateToken')->andReturn();
     }
 
-    /**
-     * @param $json
-     * @param null $team
-     *
-     * @return Request
-     */
-    protected function mockRequest($json, $team = null)
+    protected function tearDown()
     {
-        $stub = $this->createMock(Request::class);
-
-        $jsonMap = [
-            ['token', null, array_key_exists('token', $json) ? $json['token'] : null],
-        ];
-
-        $routeMap = [
-            ['team', $team],
-        ];
-
-        $stub->expects($this->any())
-            ->method('json')
-            ->will($this->returnValueMap($jsonMap));
-
-        $stub->expects($this->any())
-            ->method('route')
-            ->will($this->returnValueMap($routeMap));
-
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $stub;
-    }
-
-    protected function mockApiAuth()
-    {
-        $stub = $this->createMock(ApiAuth::class);
-        $stub->method('loadSession')
-            ->will($this->returnValue(true));
-        App::instance('apiauth', $stub);
-        return $stub;
+        \Mockery::close();
+        parent::tearDown();
     }
 
     public function testThrowsIfNoToken()
     {
         $request = $this->mockRequest(['a' => 'b']);
-        $this->expectException(InvalidTokenException::class);
+        $this->expectException(AuthenticationException::class);
         $this->middleware->handle($request, function () {
             //
         });
@@ -86,10 +59,23 @@ class AuthenticateTest extends TestCase
         });
     }
 
-    public function testThrowsIfInvalidToken()
+    public function testThrowsIfLoadSessionFails()
     {
-        $request = $this->mockRequest(['token' => 'invalid'], $this->team);
-        $this->expectException(InvalidTokenException::class);
+        $this->apiAuth->shouldReceive('loadSession')->andReturn(false);
+        $request = $this->mockRequest(['token' => 'invalid'], new Team());
+        $this->expectException(AuthenticationException::class);
+        $this->middleware->handle($request, function () {
+            //
+        });
+    }
+
+    public function testThrowsIfTeamDoesntHaveAccessToApi()
+    {
+        $team = \Mockery::mock(Team::class)->makePartial();
+        $team->shouldReceive('canAccessApi')->andReturn(false);
+        $request = $this->mockRequest(['token' => 'test'], $team);
+
+        $this->expectException(AuthenticationException::class);
         $this->middleware->handle($request, function () {
             //
         });
@@ -97,8 +83,8 @@ class AuthenticateTest extends TestCase
 
     public function testCallsClosureIfValid()
     {
-        $this->mockApiAuth();
         $called = false;
+        $this->apiAuth->shouldReceive('loadSession')->andReturn(true);
         $request = $this->mockRequest(['token' => 'test'], $this->team);
         $this->middleware->handle($request, function () use (&$called) {
             $called = true;
@@ -108,9 +94,9 @@ class AuthenticateTest extends TestCase
 
     public function testRegeneratesTokenIfValid()
     {
-        $apiAuth = $this->mockApiAuth();
+        $this->apiAuth->shouldReceive('loadSession')->andReturn(true);
         $request = $this->mockRequest(['token' => 'test'], $this->team);
-        $apiAuth->expects($this->once())->method('regenerateToken');
+        $this->apiAuth->shouldReceive('regenerateToken')->byDefault()->once()->andReturn();
 
         $this->middleware->handle($request, function () {
             //

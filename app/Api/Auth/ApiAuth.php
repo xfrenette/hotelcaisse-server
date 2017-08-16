@@ -74,14 +74,16 @@ class ApiAuth
     }
 
     /**
-     * Tries to find a (not expired) ApiSession with the specified $token and associated to the $team (it could
-     * work with only the token, but we require the Team for (small) security reason : both information must be
-     * provided).
+     * Tries to find a (not expired) ApiSession with the specified $token and associated to the $team (it could work
+     * with only the token, but we require the Team for (small) security reason : both information must be provided).
      *
      * If an ApiSession is found, it is loaded and we are authenticated; the method returns true.
      * If it is not found, returns false.
      *
      * Calling this method will clear the currently loaded ApiSession.
+     *
+     * Note that this method does not check if the Team has access to the API (see Team->canAccessApi), this check must
+     * be done before.
      *
      * @param $token
      * @param Team $team
@@ -215,7 +217,7 @@ class ApiAuth
 
     /**
      * Finds in the DB the still valid DeviceApproval with the $passcode and $team. Returns it if found, else
-     * returns null.
+     * returns null. Note that this method does not check if the $team has access to the Api.
      *
      * @param string $passcode
      * @param \App\Team $team
@@ -234,7 +236,7 @@ class ApiAuth
     /**
      * If a DeviceApproval with the specified $passcode and $team exists, create an ApiSession from it and set it in
      * ApiAuth. The DeviceApproval is destroyed. Returns true if the DeviceApproval exists, else return false (wrong
-     * $passcode and/or $team).
+     * $passcode and/or $team). Note that this method does not check if the $team has access to the API.
      *
      * @param $passcode
      * @param \App\Team $team

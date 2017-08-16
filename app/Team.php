@@ -47,4 +47,16 @@ class Team extends SparkTeam
             ->join($devicesTN, "$deviceApprovalsTN.device_id", '=', "$devicesTN.id")
             ->where("$devicesTN.team_id", $this->id);
     }
+
+    /**
+     * Returns a Boolean if this Team is allowed to use the Api (ex: if the team has a still valid subscription, if the
+     * team has a specific group, etc.). If false is returned, authorization to the API should not be granted.
+     *
+     * @return bool
+     */
+    public function canAccessApi()
+    {
+        // TODO: for now, always return true
+        return true;
+    }
 }

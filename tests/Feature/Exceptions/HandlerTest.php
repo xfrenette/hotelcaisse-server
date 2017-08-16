@@ -4,9 +4,9 @@ namespace Tests\Feature\Exceptions;
 
 use App\Api\Http\ApiResponse;
 use App\Business;
+use App\Exceptions\Api\AuthenticationException;
 use App\Exceptions\Api\InvalidRegisterStateException;
 use App\Exceptions\Api\InvalidRequestException;
-use App\Exceptions\Api\InvalidTokenException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Validator;
@@ -28,7 +28,7 @@ class ExceptionsTest extends TestCase
     public function testApiInvalidTokenException()
     {
         Route::get('/api/test', function () {
-            throw new InvalidTokenException();
+            throw new AuthenticationException();
         });
 
         $response = $this->json('GET', '/api/test');

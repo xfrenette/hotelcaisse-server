@@ -4,7 +4,6 @@ namespace App\Exceptions;
 
 use App\Api\Http\ApiResponse;
 use Exception;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Validation\ValidationException;
@@ -67,10 +66,9 @@ class Handler extends ExceptionHandler
      * Convert an authentication exception into an unauthenticated response.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \Illuminate\Auth\AuthenticationException  $exception
      * @return \Illuminate\Http\Response
      */
-    protected function unauthenticated($request, AuthenticationException $exception)
+    protected function unauthenticated($request)
     {
         if ($request->expectsJson()) {
             return response()->json(['error' => 'Unauthenticated.'], 401);
@@ -88,7 +86,7 @@ class Handler extends ExceptionHandler
      */
     protected function renderAsApiResponse($request, Exception $exception)
     {
-        if ($exception instanceof Api\InvalidTokenException) {
+        if ($exception instanceof Api\AuthenticationException) {
             return $this->apiResponseError(401, ApiResponse::ERROR_AUTH_FAILED);
         }
 

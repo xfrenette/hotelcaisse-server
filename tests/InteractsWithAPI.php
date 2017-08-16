@@ -108,7 +108,6 @@ trait InteractsWithAPI
     protected function mockApiAuth()
     {
         $apiAuth = m::mock(ApiAuth::class)->makePartial();
-        /** @noinspection PhpMethodParametersCountMismatchInspection */
         $apiAuth->shouldReceive('check')->andReturn(true);
 
         App::instance('apiauth', $apiAuth);
@@ -121,12 +120,13 @@ trait InteractsWithAPI
      *
      * @return Request
      */
-    protected function mockRequest($data = [])
+    protected function mockRequest($data = [], $team = null)
     {
         $content = json_encode($data);
         $mock = m::mock(Request::class)->makePartial();
         $mock->shouldReceive('getContent')->andReturn($content);
         $mock->shouldReceive('expectsJson')->andReturn(true);
+        $mock->shouldReceive('route')->with('team')->andReturn($team);
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $mock;
