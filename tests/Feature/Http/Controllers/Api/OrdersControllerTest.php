@@ -86,7 +86,7 @@ class OrdersControllerTest extends TestCase
         $customerFields = $business->customerFields;
         $customerFields->each(function ($field) use (&$data, $faker) {
             $data['customer']['fieldValues'][] = [
-                'field' => $field->id,
+                'fieldId' => $field->id,
                 'value' => $faker->word(),
             ];
         });
@@ -113,7 +113,7 @@ class OrdersControllerTest extends TestCase
                 'product' => [
                     'name' => $faker->words(2, true),
                     'price' => $faker->randomFloat(2, 0.1, 10),
-                    'product_id' => $isCustom ? null : $products->random()->id,
+                    'productId' => $isCustom ? null : $products->random()->id,
                 ],
             ];
 
@@ -124,7 +124,7 @@ class OrdersControllerTest extends TestCase
                     ->get()
                     ->map(function ($tax) use ($faker) {
                         return [
-                            'tax' => $tax->id,
+                            'id' => $tax->id,
                             'amount' => $faker->randomFloat(4, 0, 20),
                         ];
                     })->toArray();
@@ -144,7 +144,7 @@ class OrdersControllerTest extends TestCase
             $fieldValues = [];
             $roomSelectionFields->each(function ($field) use (&$fieldValues, $faker) {
                 $fieldValues[] = [
-                    'field' => $field->id,
+                    'fieldId' => $field->id,
                     'value' => $faker->word(),
                 ];
             });
@@ -166,7 +166,7 @@ class OrdersControllerTest extends TestCase
             $data['transactions'][] = [
                 'uuid' => $faker->uuid(),
                 'amount' => $amount == 0 ? 1 : $amount,
-                'transactionMode' => $transactionModes->random()->id,
+                'transactionModeId' => $transactionModes->random()->id,
             ];
         }
 
@@ -180,6 +180,7 @@ class OrdersControllerTest extends TestCase
         if (is_null($device)) {
             $order = Order::first();
         } else {
+            /** @noinspection PhpUndefinedFieldInspection */
             $order = $device->team->business->orders()->first();
         }
 
@@ -288,7 +289,7 @@ class OrdersControllerTest extends TestCase
         $this->assertValidatesRequestData(
             [$this->controller, 'validateNew'],
             $data,
-            'data.customer.fieldValues.0.field',
+            'data.customer.fieldValues.0.fieldId',
             $values
         );
 
@@ -405,7 +406,7 @@ class OrdersControllerTest extends TestCase
         $this->assertValidatesRequestData(
             [$this->controller, 'validateNew'],
             $data,
-            'data.transactions.1.transactionMode',
+            'data.transactions.1.transactionModeId',
             $values
         );
     }
@@ -499,7 +500,7 @@ class OrdersControllerTest extends TestCase
         $this->assertValidatesRequestData(
             [$this->controller, 'validateNew'],
             $data,
-            'data.items.1.product.product_id',
+            'data.items.1.product.productId',
             $values,
             false
         );
@@ -525,7 +526,7 @@ class OrdersControllerTest extends TestCase
         $this->assertValidatesRequestData(
             [$this->controller, 'validateNew'],
             $data,
-            'data.items.1.product.taxes.1.tax',
+            'data.items.1.product.taxes.1.id',
             $values
         );
     }
@@ -628,7 +629,7 @@ class OrdersControllerTest extends TestCase
         // test roomSelections.*.fieldValues.*.field
         $data = $this->generateNewData();
         $values = [null, false, 0];
-        $this->assertValidatesRequestData([$this->controller, 'validateNew'], $data, 'data.roomSelections.1.fieldValues.0.field', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateNew'], $data, 'data.roomSelections.1.fieldValues.0.fieldId', $values);
 
         // test customer.fieldValues.*.value
         $data = $this->generateNewData();
@@ -708,18 +709,18 @@ class OrdersControllerTest extends TestCase
 
         $count = count(array_get($data, 'data.items'));
         $this->assertEquals($count, $order->items->count());
-        $item = $order->items[1];
-        $this->assertEquals(array_get($data, 'data.items.1.uuid'), $item->uuid);
-        $this->assertEquals(array_get($data, 'data.items.1.quantity'), $item->quantity);
+        $item = $order->items[2];
+        $this->assertEquals(array_get($data, 'data.items.2.uuid'), $item->uuid);
+        $this->assertEquals(array_get($data, 'data.items.2.quantity'), $item->quantity);
 
         // Check that an ItemProduct has been created
         $product = $item->product;
-        $this->assertEquals(array_get($data, 'data.items.1.product.name'), $product->name);
-        $this->assertEquals(array_get($data, 'data.items.1.product.price'), $product->price);
-        $this->assertEquals(array_get($data, 'data.items.1.product.product_id'), $product->product_id);
+        $this->assertEquals(array_get($data, 'data.items.2.product.name'), $product->name);
+        $this->assertEquals(array_get($data, 'data.items.2.product.price'), $product->price);
+        $this->assertEquals(array_get($data, 'data.items.2.product.productId'), $product->product_id);
 
-        // Check product_id null for last item (custom item)
-        $this->assertNull($order->items[2]->product->product_id);
+        // Check productId null for last item (custom item)
+        $this->assertNull($order->items[2]->product->productId);
     }
 
     public function testCreateOrderCreatesItemsProductTaxes()
@@ -733,7 +734,7 @@ class OrdersControllerTest extends TestCase
         $product = $order->items[1]->product;
         $taxes = $product->taxes;
         $this->assertEquals(count(array_get($data, 'data.items.1.product.taxes')), $taxes->count());
-        $this->assertEquals(array_get($data, 'data.items.1.product.taxes.1.tax'), $taxes[1]['tax_id']);
+        $this->assertEquals(array_get($data, 'data.items.1.product.taxes.1.id'), $taxes[1]['id']);
         $this->assertEquals(array_get($data, 'data.items.1.product.taxes.1.amount'), $taxes[1]['amount']);
     }
 
@@ -777,7 +778,7 @@ class OrdersControllerTest extends TestCase
         $transaction = $order->transactions[1];
         $this->assertEquals(array_get($data, 'data.transactions.1.uuid'), $transaction->uuid);
         $this->assertEquals(array_get($data, 'data.transactions.1.amount'), $transaction->amount);
-        $this->assertEquals(array_get($data, 'data.transactions.1.transactionMode'), $transaction->transactionMode->id);
+        $this->assertEquals(array_get($data, 'data.transactions.1.transactionModeId'), $transaction->transactionMode->id);
         $this->assertEquals($device->currentRegister->id, $transaction->register->id);
     }
 
@@ -877,7 +878,7 @@ class OrdersControllerTest extends TestCase
         // test customer.fieldValues.*.field
         $data = $this->generateEditData();
         $values = [null, false, 0];
-        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.customer.fieldValues.0.field', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.customer.fieldValues.0.fieldId', $values);
 
         // test customer.fieldValues.*.value
         $data = $this->generateEditData();
@@ -939,7 +940,7 @@ class OrdersControllerTest extends TestCase
     {
         $data = $this->generateEditData();
         $values = [null, 0, 'test'];
-        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.transactions.1.transactionMode', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.transactions.1.transactionModeId', $values);
     }
 
     public function testValidateEditReturnsErrorWithInvalidItems()
@@ -997,7 +998,7 @@ class OrdersControllerTest extends TestCase
     {
         $data = $this->generateEditData();
         $values = [-1, 'test'];
-        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.items.1.product.product_id', $values, false);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.items.1.product.productId', $values, false);
     }
 
     public function testValidateEditReturnsErrorWithInvalidItemsDataTaxes()
@@ -1011,7 +1012,7 @@ class OrdersControllerTest extends TestCase
     {
         $data = $this->generateEditData();
         $values = [null, -1, 'test'];
-        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.items.1.product.taxes.1.tax', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.items.1.product.taxes.1.id', $values);
     }
 
     public function testValidateEditReturnsErrorWithInvalidItemsDataTaxesAmount()
@@ -1082,7 +1083,7 @@ class OrdersControllerTest extends TestCase
         // test roomSelections.*.fieldValues.*.field
         $data = $this->generateEditData();
         $values = [null, false, 0];
-        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.roomSelections.1.fieldValues.0.field', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.roomSelections.1.fieldValues.0.fieldId', $values);
 
         // test customer.fieldValues.*.value
         $data = $this->generateEditData();

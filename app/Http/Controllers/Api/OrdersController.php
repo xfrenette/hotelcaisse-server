@@ -207,7 +207,7 @@ class OrdersController extends ApiController
             'note' => 'sometimes|string',
             'customer' => ($isNew ? 'bail|required' : 'sometimes') . '|array|min:1', // min:1 required
             'customer.fieldValues' => 'bail|required_with:customer|array|min:1',
-            'customer.fieldValues.*.field' => 'bail|required|exists:fields,id',
+            'customer.fieldValues.*.fieldId' => 'bail|required|exists:fields,id',
             'customer.fieldValues.*.value' => 'bail|required|string',
             'credits' => 'sometimes|array',
             'credits.*.uuid' => 'bail|required|string' . ($isNew ? '|unique:credits' : ''),
@@ -216,16 +216,16 @@ class OrdersController extends ApiController
             'transactions' => 'sometimes|array',
             'transactions.*.uuid' => 'bail|required|string|unique:transactions',
             'transactions.*.amount' => 'bail|required|numeric|not_in:0',
-            'transactions.*.transactionMode' => 'bail|required|exists:transaction_modes,id',
+            'transactions.*.transactionModeId' => 'bail|required|exists:transaction_modes,id',
             'items' => 'sometimes|array',
             'items.*.uuid' => 'bail|required|string|unique:items',
             'items.*.quantity' => 'bail|required|numeric|not_in:0',
             'items.*.product' => 'bail|required|array',
             'items.*.product.name' => 'bail|required|string',
             'items.*.product.price' => 'bail|required|numeric|min:0',
-            'items.*.product.product_id' => 'sometimes|nullable|exists:products,id',
+            'items.*.product.productId' => 'sometimes|nullable|exists:products,id',
             'items.*.product.taxes' => 'sometimes|array',
-            'items.*.product.taxes.*.tax' => 'bail|required|exists:taxes,id',
+            'items.*.product.taxes.*.id' => 'bail|required|exists:taxes,id',
             'items.*.product.taxes.*.amount' => 'bail|required|numeric|min:0|not_in:0',
             'roomSelections' => 'sometimes|array',
             'roomSelections.*.uuid' => 'bail|required|string' . ($isNew ? '|unique:room_selections' : ''),
@@ -233,7 +233,7 @@ class OrdersController extends ApiController
             // 'roomSelections.*.endDate' => // see special validation below
             'roomSelections.*.room' => 'bail|required|exists:rooms,id',
             'roomSelections.*.fieldValues' => 'bail|required|array|min:1',
-            'roomSelections.*.fieldValues.*.field' => 'bail|required|exists:fields,id',
+            'roomSelections.*.fieldValues.*.fieldId' => 'bail|required|exists:fields,id',
             'roomSelections.*.fieldValues.*.value' => 'bail|required|string',
         ];
 
@@ -415,7 +415,7 @@ class OrdersController extends ApiController
 
         foreach ($transactions as $transactionData) {
             $transaction = new Transaction($transactionData);
-            $transaction->transaction_mode_id = $transactionData['transactionMode'];
+            $transaction->transaction_mode_id = $transactionData['transactionModeId'];
             $transaction->register()->associate($register);
             $transaction->order()->associate($order);
             $transaction->save();

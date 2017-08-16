@@ -2,7 +2,6 @@
 
 namespace App\Support\Traits;
 
-use App\Field;
 use Illuminate\Support\Facades\DB;
 
 trait HasFields
@@ -24,8 +23,8 @@ trait HasFields
     /**
      * Set the values of Fields for this instance. If the Field already has a value, it is updated, else it is inserted.
      * If we do not want to update existing Fields (ex: we already removed them or the instance is new), we can pass
-     * false as a second parameter to skip a request. For each field, the $values array contains a array with 'field'
-     * key (a Field instance or an id) and a 'value' key for the value.
+     * false as a second parameter to skip a request. For each field, the $values array contains a array with 'fieldId'
+     * key (a Field id) and a 'value' key for the value.
      *
      * @param array $values
      * @param boolean $checkUpdates
@@ -34,8 +33,7 @@ trait HasFields
     {
         // Get only the ids of the fields to insert/update
         $fieldIds = array_map(function ($fieldData) {
-            $field = $fieldData['field'];
-            return $field instanceof Field ? $field->id : $field;
+            return $fieldData['fieldId'];
         }, $values);
 
         // Select existing fields
@@ -51,14 +49,14 @@ trait HasFields
         $inserts = [];
 
         foreach ($values as $fieldData) {
-            $field = $fieldData['field'];
-            $fieldId = $field instanceof Field ? $field->id : $field;
+            $fieldId = $fieldData['fieldId'];
 
             if ($existingFields->contains($fieldId)) {
                 // The field already exists, make an update
                 $updates[$fieldId] = $fieldData['value'];
             } else {
                 // The field doesn't exist yet, make an insert
+                /** @noinspection PhpUndefinedFieldInspection */
                 $inserts[] = [
                     'class' => $this->getFieldsClass(),
                     'field_id' => $fieldId,
@@ -75,6 +73,7 @@ trait HasFields
 
         if (count($updates)) {
             foreach ($updates as $fieldId => $value) {
+                /** @noinspection PhpUndefinedFieldInspection */
                 DB::table($this->fieldsTable)
                     ->where([
                         'class' => $this->getFieldsClass(),
@@ -95,7 +94,7 @@ trait HasFields
     public function getFieldValuesAttribute()
     {
         return $this->getFieldsQuery()
-            ->select(['field_id as field', 'value'])
+            ->select(['field_id as fieldId', 'value'])
             ->get()
             ->map(function ($item) {
                 return get_object_vars($item);
@@ -114,6 +113,7 @@ trait HasFields
 
     private function getFieldsQuery()
     {
+        /** @noinspection PhpUndefinedFieldInspection */
         return DB::table($this->fieldsTable)
             ->where([
                 'class' => $this->getFieldsClass(),

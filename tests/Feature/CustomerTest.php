@@ -46,8 +46,8 @@ class CustomerTest extends TestCase
     public function testSetFieldValuesCreatesFields()
     {
         $fields = [
-            ['field' => $this->field1, 'value' => 'test1'],
-            ['field' => $this->field2, 'value' => 'test2'],
+            ['fieldId' => $this->field1->id, 'value' => 'test1'],
+            ['fieldId' => $this->field2->id, 'value' => 'test2'],
         ];
 
         $this->customer->setFieldValues($fields);
@@ -56,7 +56,7 @@ class CustomerTest extends TestCase
 
         $expected = array_map(function ($field) {
             $obj = new \stdClass();
-            $obj->field_id = $field['field']->id;
+            $obj->field_id = $field['fieldId'];
             $obj->value = $field['value'];
             return $obj;
         }, $fields);
@@ -64,29 +64,15 @@ class CustomerTest extends TestCase
         $this->assertEquals($expected, $res->toArray());
     }
 
-    public function testSetFieldValuesAcceptsFieldId()
-    {
-        $fields = [
-            ['field' => $this->field1->id, 'value' => 'test1'],
-            ['field' => $this->field2->id, 'value' => 'test2'],
-        ];
-
-        $this->customer->setFieldValues($fields);
-
-        $res = $this->getFieldValues();
-
-        $this->assertEquals(2, $res->count());
-    }
-
     public function testSetFieldValuesUpdatesExistingFields()
     {
         $newValue = 'newValue';
 
-        $this->customer->setFieldValues([['field' => $this->field1, 'value' => 'oldValue']]);
+        $this->customer->setFieldValues([['fieldId' => $this->field1->id, 'value' => 'oldValue']]);
 
         $fields = [
-            ['field' => $this->field1, 'value' => $newValue],
-            ['field' => $this->field2, 'value' => 'test3'],
+            ['fieldId' => $this->field1->id, 'value' => $newValue],
+            ['fieldId' => $this->field2->id, 'value' => 'test3'],
         ];
 
         $this->customer->setFieldValues($fields);
@@ -95,7 +81,7 @@ class CustomerTest extends TestCase
 
         $expected = array_map(function ($field) {
             $obj = new \stdClass();
-            $obj->field_id = $field['field']->id;
+            $obj->field_id = $field['fieldId'];
             $obj->value = $field['value'];
             return $obj;
         }, $fields);
@@ -107,11 +93,11 @@ class CustomerTest extends TestCase
     {
         $newValue = 'newValue';
 
-        $this->customer->setFieldValues([['field' => $this->field1, 'value' => 'oldValue']]);
+        $this->customer->setFieldValues([['fieldId' => $this->field1->id, 'value' => 'oldValue']]);
 
         $fields = [
-            ['field' => $this->field1, 'value' => $newValue],
-            ['field' => $this->field2, 'value' => 'test3'],
+            ['fieldId' => $this->field1->id, 'value' => $newValue],
+            ['fieldId' => $this->field2->id, 'value' => 'test3'],
         ];
 
         $this->customer->setFieldValues($fields, false);
@@ -124,14 +110,14 @@ class CustomerTest extends TestCase
     public function testReplaceFieldValuesClearsOldValues()
     {
         $fields = [
-            ['field' => $this->field1, 'value' => 'oldValue'],
-            ['field' => $this->field2, 'value' => 'test3'],
+            ['fieldId' => $this->field1->id, 'value' => 'oldValue'],
+            ['fieldId' => $this->field2->id, 'value' => 'test3'],
         ];
 
         $this->customer->setFieldValues($fields);
 
         $fields = [
-            ['field' => $this->field1, 'value' => 'newValue'],
+            ['fieldId' => $this->field1->id, 'value' => 'newValue'],
         ];
 
         $this->customer->replaceFieldValues($fields);

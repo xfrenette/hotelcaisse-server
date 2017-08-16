@@ -83,8 +83,8 @@ in the request). The object has the following attributes:
 * `products.*.description` (string, optional) Description of the product
 * `products.*.price` (float) Unit price of the product
 * `products.*.taxes` (array, optional) List of tax amounts applied for a single unit
-* `products.*.taxes.tax` (number) Id of the tax (see `taxes.*.id)
-* `products.*.taxes.amount` (float) Effective (absolute, in money) amount of the tax for a single unit
+* `products.*.taxes.*.id` (number) Id of the tax (see `taxes.*.id)
+* `products.*.taxes.*.amount` (float) Effective (absolute, in money) amount of the tax for a single unit
 * `products.*.variants` (array) Array of ids of the variant products (see `products.*.id`)
 * `customerFields` (array) Fields for a new Customer
 * `customerFields.*.id` (number) Id of the field
@@ -209,7 +209,7 @@ case or if any validation error occurs, an error is returned and the request is 
 * `note`: (string, optional) Note for the Order 
 * `customer`: (array) Data for Customer (see next lines)
 * `customer.fieldValues`: (array) Field values (see next lines)
-* `customer.fieldValues.*.field`: (number) Id of the Field
+* `customer.fieldValues.*.fieldId`: (number) Id of the Field
 * `customer.fieldValues.*.value`: (string) Value for the Field
 * `credits`: (array, optional) Credits of the Order (see next lines)
 * `credits.*.uuid`: (string) Generated UUID for this credit
@@ -218,16 +218,16 @@ case or if any validation error occurs, an error is returned and the request is 
 * `transactions`: (array, optional) Transactions of the Order (see next lines)
 * `transactions.*.uuid`: (string) Generated UUID for this transaction
 * `transactions.*.amount`: (float, != 0) Amount of this transaction (positive means payment, negative means refund)
-* `transactions.*.transactionMode`: (numeric) Id of the TransactionMode used
+* `transactions.*.transactionModeId`: (numeric) Id of the TransactionMode used
 * `items`: (array, optional) Items of this Order (see next lines)
 * `items.*.uuid`: (string) Generated UUID for this Item
 * `items.*.quantity`: (float, != 0) Quantity of the product for this Item (negative is for refunded item)
 * `items.*.product`: (array) Information about the product (see next lines)
 * `items.*.product.name`: (string) Name of the product (must be a full name if a variant, including the parent's name)
 * `items.*.product.price`: (float, >= 0) Unit price (before taxes) this product was sold (positive, even if it is a refunded item)
-* `items.*.product.product_id`: (numeric, optional) Unless this is a custom product, id of the original Business' Product
+* `items.*.product.productId`: (numeric, optional) Unless this is a custom product, id of the original Business' Product
 * `items.*.product.taxes`: (array, optional) Taxes applied for a unit of the product
-* `items.*.product.taxes.*.tax_id`: (numeric) Id of the Tax
+* `items.*.product.taxes.*.id`: (numeric) Id of the Tax
 * `items.*.product.taxes.*.amount`: (float, > 0) Applied amount (absolute, no percentage) for a single unit
 * `roomSelections`: (array, optional) List of RoomSelections (see next lines)
 * `roomSelections.*.uuid`: (string) Generated UUID for this RoomSelections
@@ -235,7 +235,7 @@ case or if any validation error occurs, an error is returned and the request is 
 * `roomSelections.*.endDate`: (numeric) Timestamp (seconds) for the end date (must be at least 24 hours after startDate)
 * `roomSelections.*.room`: (numeric) Id of the Room
 * `roomSelections.*.fieldValues`: (array) Field values for the RoomSelection (see below)
-* `roomSelections.*.fieldValues.*.field`: (numeric) Id of the Field
+* `roomSelections.*.fieldValues.*.fieldId`: (numeric) Id of the Field
 * `roomSelections.*.fieldValues.*.value`: (string) Value for the Field
 
 ### Response `data`
@@ -259,7 +259,7 @@ Some attributes are "editable lists", others are "add-only lists".
 * `note`: (string, optional) Note for the Order 
 * `customer`: (array, optional) Data for Customer (see next lines)
 * `customer.fieldValues`: ("editable list", array) Field values (see next lines)
-* `customer.fieldValues.*.field`: (number) Id of the Field
+* `customer.fieldValues.*.fieldId`: (number) Id of the Field
 * `customer.fieldValues.*.value`: (string) Value for the Field
 * `credits`: ("editable list", array, optional) Credits of the Order (see next lines)
 * `credits.*.uuid`: (string) UUID of this credit (a new one if creating, an existing one if editing)
@@ -268,16 +268,16 @@ Some attributes are "editable lists", others are "add-only lists".
 * `transactions`: ("add-only list", array, optional) Transactions of the Order (see next lines)
 * `transactions.*.uuid`: (string) Generated UUID for this transaction
 * `transactions.*.amount`: (float, != 0) Amount of this transaction (positive means payment, negative means refund)
-* `transactions.*.transactionMode`: (numeric) Id of the TransactionMode used
+* `transactions.*.transactionModeId`: (numeric) Id of the TransactionMode used
 * `items`: ("add-only list", array, optional) Items of this Order (see next lines)
 * `items.*.uuid`: (string) Generated UUID for this Item
 * `items.*.quantity`: (float, != 0) Quantity of the product for this Item (negative is for refunded item)
 * `items.*.product`: (array) Information about the product (see next lines)
 * `items.*.product.name`: (string) Name of the product (must be a full name if a variant, including the parent's name)
 * `items.*.product.price`: (float, >= 0) Unit price (before taxes) this product was sold (positive, even if it is a refunded item)
-* `items.*.product.product_id`: (numeric, optional) Unless this is a custom product, id of the original Business' Product
+* `items.*.product.productId`: (numeric, optional) Unless this is a custom product, id of the original Business' Product
 * `items.*.product.taxes`: (array, optional) Taxes applied for a unit of the product
-* `items.*.product.taxes.*.tax_id`: (numeric) Id of the Tax
+* `items.*.product.taxes.*.id`: (numeric) Id of the Tax
 * `items.*.product.taxes.*.amount`: (float, > 0) Applied amount (absolute, no percentage) for a single unit
 * `roomSelections`: ("editable list", array, optional) List of RoomSelections (see next lines)
 * `roomSelections.*.uuid`: (string) UUID for this RoomSelections (a new one if creating, an existing one if editing)
@@ -285,7 +285,7 @@ Some attributes are "editable lists", others are "add-only lists".
 * `roomSelections.*.endDate`: (numeric) Timestamp (seconds) for the end date (must be at least 24 hours after startDate)
 * `roomSelections.*.room`: (numeric) Id of the Room
 * `roomSelections.*.fieldValues`: (array) Field values for the RoomSelection (see below)
-* `roomSelections.*.fieldValues.*.field`: (numeric) Id of the Field
+* `roomSelections.*.fieldValues.*.fieldId`: (numeric) Id of the Field
 * `roomSelections.*.fieldValues.*.value`: (string) Value for the Field
 
 ### Response `data`
@@ -310,7 +310,7 @@ Returns an array of Orders, where is is an object with the following attributes:
 * `*.note` (string) Note of the Order
 * `*.customer` (object) Customer info of the Order
 * `*.customer.fieldValues` (array) Field values
-* `*.customer.fieldValues.*.field` (number) Id of the Field
+* `*.customer.fieldValues.*.fieldId` (number) Id of the Field
 * `*.customer.fieldValues.*.value` (string) Value of the Field
 * `*.items` (array) Items of the Order
 * `*.items.*.uuid` (string) UUID of the Item
@@ -319,12 +319,12 @@ Returns an array of Orders, where is is an object with the following attributes:
 * `*.items.*.product.name` (string) Full name of the Item
 * `*.items.*.product.price` (float) Unit price of the Product
 * `*.items.*.product.taxes` (array) List of unit taxes
-* `*.items.*.product.taxes.*.tax_id` (number) Id of the Tax object
+* `*.items.*.product.taxes.*.id` (number) Id of the Tax object
 * `*.items.*.product.taxes.*.amount` (float) Unit amount of tax for this product
 * `*.transactions` (array) List of Transactions
 * `*.transactions.*.uuid` (string) UUID of the Transaction
 * `*.transactions.*.amount` (float) Amount of the Transaction (if negative, it is a refund)
-* `*.transactions.*.transactionMode` (number) Id of the TransactionMode
+* `*.transactions.*.transactionModeId` (number) Id of the TransactionMode
 * `*.credits` (array) List of Credits
 * `*.credits.*.uuid` (string) UUID of the Credit
 * `*.credits.*.note` (string) Note of the Credit
@@ -335,5 +335,5 @@ Returns an array of Orders, where is is an object with the following attributes:
 * `*.roomSelections.*.endDate` (number) Timestamp of the end date
 * `*.roomSelections.*.room` (number) Id of the Room
 * `*.roomSelections.fieldValues` (array) Field values
-* `*.roomSelections.fieldValues.*.field` (number) Id of the Field
+* `*.roomSelections.fieldValues.*.fieldId` (number) Id of the Field
 * `*.roomSelections.fieldValues.*.value` (string) Value of the Field

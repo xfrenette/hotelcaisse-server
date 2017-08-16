@@ -55,7 +55,7 @@ class ItemProduct extends Model
     public function getTaxesAttribute()
     {
         return DB::table($this->appliedTaxesTable)
-            ->select(['tax_id', 'amount'])
+            ->select(['tax_id as id', 'amount'])
             ->where([
                 'type' => 'ItemProduct',
                 'instance_id' => $this->id,
@@ -80,11 +80,28 @@ class ItemProduct extends Model
                 'type' => 'ItemProduct',
                 'amount' => $taxData['amount'],
                 'instance_id' => $selfID,
-                'tax_id' => $taxData['tax'],
+                'tax_id' => $taxData['id'],
             ];
         }, $taxes);
 
         DB::table($this->appliedTaxesTable)
             ->insert($inserts);
+    }
+
+    /**
+     * Rename `product_id` to `productId`
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        $array = parent::toArray();
+
+        if (array_key_exists('product_id', $array)) {
+            $array['productId'] = $array['product_id'];
+            unset($array['product_id']);
+        }
+
+        return $array;
     }
 }

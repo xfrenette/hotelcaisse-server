@@ -73,7 +73,7 @@ class Product extends Model
 
             $appliedAmount = $tax['type'] === 'absolute' ? $tax['amount'] : ($tax['amount'] / 100) * $price;
             $appliedTaxes->push([
-                'tax' => $tax['id'],
+                'id' => $tax['id'],
                 'amount' => $appliedAmount,
             ]);
         });
