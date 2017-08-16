@@ -4,6 +4,7 @@ use App\Business;
 use App\Team;
 use App\User;
 use Illuminate\Database\Seeder;
+use Laravel\Spark\Spark;
 
 class TeamsSeeder extends Seeder
 {
@@ -29,5 +30,7 @@ class TeamsSeeder extends Seeder
         $team->business()->associate($business);
         $team->owner()->associate($user);
         $team->save();
+
+        $team->users()->attach($team, ['role' => Spark::defaultRole()]);
     }
 }
