@@ -33,7 +33,7 @@ class RequestTest extends TestCase
         $this->team = factory(Team::class, 'withBusiness')->create();
         $this->business = $this->team->business;
 
-        Route::middleware('api')
+        Route::middleware(['api', 'api:request'])
             ->group(function () {
                 Route::any('/api/test', function () {
                     return new ApiResponse();
@@ -45,7 +45,7 @@ class RequestTest extends TestCase
 
                 Route::post('/api/auth/{team}', function () {
                     return new ApiResponse();
-                })->middleware('apiauth');
+                })->middleware('api:auth');
             });
     }
 
