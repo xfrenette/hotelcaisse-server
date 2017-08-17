@@ -23,4 +23,7 @@ Route
         // Devices
         Route::get('/devices', 'DevicesController@list')->name('devices.list');
         Route::get('/devices/add', 'DevicesController@add')->name('devices.add');
+        Route::put('/devices/store', 'DevicesController@store')->name('devices.store');
+        Route::get('/devices/{device}/code', 'DevicesController@code')->name('devices.device.code');
+        Route::get('/devices/{device}/revoke', 'DevicesController@revoke')->name('devices.device.revoke');
     });

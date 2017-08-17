@@ -3,7 +3,6 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 
 /**
  * A Device is an API client for a specific Business.
@@ -17,6 +16,14 @@ class Device extends Model
      * @var array
      */
     protected $fillable = ['name'];
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function apiSessions()
+    {
+        return $this->hasMany('App\ApiSession');
+    }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
@@ -63,9 +70,7 @@ class Device extends Model
      */
     public function logout()
     {
-        $apiSessionsTable = with(new ApiSession())->getTable();
-
-        DB::table($apiSessionsTable)->where('device_id', $this->id)->delete();
+        $this->apiSessions()->delete();
     }
 
     /**

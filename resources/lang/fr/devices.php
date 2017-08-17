@@ -14,6 +14,12 @@ return [
     ],
     'add' => [
         'title' => 'Enregistrer un nouvel appareil',
+        'fields' => [
+            'name' => 'Nom de l\'appareil',
+        ],
+    ],
+    'code' => [
+        'title' => 'Code d\'autorisation de l\'appareil',
         'instructions' => 'Dans l\'écran de votre appareil, saisissez le code suivant. '.
             'Ce code est valide pour quelques minutes seulement.',
     ],

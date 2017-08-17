@@ -25,8 +25,12 @@
                     <tr>
                         <td>{{ $device->name }}</td>
                         <td class="text-right">
-                            <button class="btn btn-default">{{ __('devices.list.actions.get_passcode') }}</button>
-                            <button class="btn btn-danger">{{ __('devices.list.actions.revoke') }}</button>
+                            <a href="{{ route('devices.device.code', ['device' => $device]) }}" class="btn btn-default">
+                                {{ __('devices.list.actions.get_passcode') }}
+                            </a>
+                            <a href="{{ route('devices.device.revoke', ['device' => $device]) }}" class="btn btn-danger">
+                                {{ __('devices.list.actions.revoke') }}
+                            </a>
                         </td>
                     </tr>
                 @endforeach
