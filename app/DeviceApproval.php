@@ -27,11 +27,62 @@ class DeviceApproval extends Model
     ];
 
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = ['passcode'];
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+        $this->touch();
+    }
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function device()
     {
         return $this->belongsTo('App\Device');
+    }
+
+    /**
+     * Sets the expires_at date $lifetime seconds in the future. If $lifetime is not set, uses the config
+     * `api.deviceApprovals.defaultLifetime`.
+     *
+     * @param integer|null $lifetime
+     */
+    public function touch($lifetime = null)
+    {
+        if (is_null($lifetime)) {
+            $lifetime = config('api.deviceApprovals.defaultLifetime');
+        }
+
+        $expiresAt = Carbon::now()->addSeconds($lifetime);
+        $this->until($expiresAt);
+    }
+
+    /**
+     * Simple utility function to set the the `expires_at` date
+     *
+     * @param $date
+     */
+    public function until($date)
+    {
+        $this->expires_at = $date;
+    }
+
+    /**
+     * Returns true if the $passcode matches the one of this DeviceApproval.
+     *
+     * @param $passcode
+     *
+     * @return bool
+     */
+    public function check($passcode)
+    {
+        return Hash::check($passcode, $this->passcode);
     }
 
     /**
@@ -70,5 +121,16 @@ class DeviceApproval extends Model
     public function setPasscodeAttribute($value)
     {
         $this->attributes['passcode'] = Hash::make($value);
+    }
+
+    /**
+     * Generates a passcode
+     *
+     * @return string
+     */
+    public static function generatePasscode()
+    {
+        $digits = 4;
+        return str_pad(rand(1, pow(10, $digits)-1), $digits, '0', STR_PAD_LEFT);
     }
 }

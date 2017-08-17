@@ -41,4 +41,19 @@ class DeviceApprovalTest extends TestCase
         $this->deviceApproval->passcode = '1234';
         $this->assertNotEquals('1234', $this->deviceApproval->passcode);
     }
+
+    public function testTouch()
+    {
+        // Use default value
+        $default = config('api.deviceApprovals.defaultLifetime');
+        $this->deviceApproval->touch();
+        $expiresAt = $this->deviceApproval->expires_at;
+        $this->assertEquals($default, $expiresAt->diffInSeconds(Carbon::now()));
+
+        // Use value
+        $value = 123;
+        $this->deviceApproval->touch($value);
+        $expiresAt = $this->deviceApproval->expires_at;
+        $this->assertEquals($value, $expiresAt->diffInSeconds(Carbon::now()));
+    }
 }
