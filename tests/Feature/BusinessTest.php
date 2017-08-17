@@ -73,15 +73,19 @@ class BusinessTest extends TestCase
     {
         $modifications = ['a', 'b'];
         $newVersion = $this->business->bumpVersion($modifications);
-        $savedModifications = DB::table('business_versions')
+        $inserted = DB::table('business_versions')
             ->where(['business_id' => $this->business->id, 'version' => $newVersion])
-            ->value('modifications');
-        $this->assertSame($modifications, explode(',', $savedModifications));
+            ->first();
+        $this->assertSame($modifications, explode(',', $inserted->modifications));
+        // Make sure the current time was used in the 'created_at' field
+        $date = Carbon::createFromFormat('Y-m-d H:i:s', $inserted->created_at);
+        $this->assertEquals(0, $date->diffInSeconds(Carbon::now()));
     }
 
     public function testBumpVersionUpdatesTheDB()
     {
         $newVersion = $this->business->bumpVersion();
+        $this->business->refresh();
         $this->assertEquals($newVersion, $this->business->version);
     }
 

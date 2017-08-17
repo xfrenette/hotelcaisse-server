@@ -288,7 +288,7 @@ class Business extends Model
         }
 
         DB::table($this->versionTable)->insert([
-            'created_at' => $createdAt->format('Y-m-d H:m:s'),
+            'created_at' => $createdAt->format('Y-m-d H:i:s'),
             'business_id' => $this->id,
             'version' => $number,
             'modifications' => implode(',', $modifications),
