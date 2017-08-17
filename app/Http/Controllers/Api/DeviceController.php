@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 
 class DeviceController extends Controller
 {
-    public function register(Request $request, Team $team)
+    public function link(Request $request, Team $team)
     {
         $passcode = $request->json('data.passcode');
 

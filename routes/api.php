@@ -24,7 +24,7 @@ Route::prefix('{team}')
     ->middleware('api:request')
     ->group(function () {
         // This route is not auth protected since it is equivalent to a 'login' method
-        Route::post('device/register', 'DeviceController@register')->name('device.register');
+        Route::post('device/link', 'DeviceController@link')->name('device.link');
 
         // The following routes are auth protected
         Route::middleware('api:auth')

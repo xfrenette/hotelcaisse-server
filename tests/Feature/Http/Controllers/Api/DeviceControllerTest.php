@@ -22,10 +22,10 @@ class DeviceControllerTest extends TestCase
         $this->business = factory(Business::class)->create();
     }
 
-    public function testRegisterReturnsErrorWithMissingCredentials()
+    public function testLinkReturnsErrorWithMissingCredentials()
     {
         $team = factory(Team::class, 'withBusiness')->create();
-        $response = $this->queryAPI('api.device.register', [], $team);
+        $response = $this->queryAPI('api.device.link', [], $team);
         $response->assertJson([
             'error' => [
                 'code' => ApiResponse::ERROR_CLIENT_ERROR,
@@ -33,7 +33,7 @@ class DeviceControllerTest extends TestCase
         ]);
     }
 
-    public function testRegisterReturnsErrorWithInvalidCredentials()
+    public function testLinkReturnsErrorWithInvalidCredentials()
     {
         $data = [
             'data' => [
@@ -41,7 +41,7 @@ class DeviceControllerTest extends TestCase
             ],
         ];
         $team = factory(Team::class, 'withBusiness')->create();
-        $response = $this->queryAPI('api.device.register', $data, $team);
+        $response = $this->queryAPI('api.device.link', $data, $team);
         $response->assertJson([
             'error' => [
                 'code' => ApiResponse::ERROR_AUTH_FAILED,
@@ -50,7 +50,7 @@ class DeviceControllerTest extends TestCase
         $this->assertNotContains('token', $response->json());
     }
 
-    public function testRegisterReturnsExpectedResponseWithValidCredentials()
+    public function testLinkReturnsExpectedResponseWithValidCredentials()
     {
         $passcode = '4321';
         $deviceApproval = factory(DeviceApproval::class, 'withDevice')->make();
@@ -63,13 +63,13 @@ class DeviceControllerTest extends TestCase
             ],
         ];
 
-        $response = $this->queryAPI('api.device.register', $data, $deviceApproval->device->team);
+        $response = $this->queryAPI('api.device.link', $data, $deviceApproval->device->team);
         $response->assertJson([
             'status' => 'ok',
         ]);
     }
 
-    public function testRegisterHasValidTokenWithValidCredentials()
+    public function testLinkHasValidTokenWithValidCredentials()
     {
         $passcode = '4321';
         $deviceApproval = factory(DeviceApproval::class, 'withDevice')->make();
@@ -82,7 +82,7 @@ class DeviceControllerTest extends TestCase
             ],
         ];
 
-        $response = $this->queryAPI('api.device.register', $data, $deviceApproval->device->team);
+        $response = $this->queryAPI('api.device.link', $data, $deviceApproval->device->team);
         $token = $response->json()['token'];
         ApiAuth::loadSession($token, $deviceApproval->device->team);
         $this->assertTrue(ApiAuth::check());
