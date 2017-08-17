@@ -7,7 +7,6 @@ use App\Business;
 use App\Device;
 use App\Team;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Hash;
 
 class ApiAuth
 {
@@ -229,7 +228,7 @@ class ApiAuth
 
         // Find the one with which the passcode matches
         return $candidates->first(function ($deviceApproval) use ($passcode) {
-            return Hash::check($passcode, $deviceApproval->passcode);
+            return $deviceApproval->check($passcode);
         });
     }
 
