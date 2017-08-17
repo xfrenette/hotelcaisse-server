@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+
 /*
 |--------------------------------------------------------------------------
 | Application Routes
@@ -13,4 +15,12 @@
 
 Route::get('/', 'WelcomeController@show');
 
-Route::get('/home', 'HomeController@show');
+Route
+    ::middleware('auth')
+    ->group(function () {
+        Route::get('/home', 'HomeController@show')->name('home');
+
+        // Devices
+        Route::get('/devices', 'DevicesController@list')->name('devices.list');
+        Route::get('/devices/add', 'DevicesController@add')->name('devices.add');
+    });
