@@ -61,7 +61,7 @@ class DeviceApproval extends Model
     public function scopeValid($query)
     {
         $tn = $this->getTable();
-        return $query->whereDate("$tn.expires_at", '>', Carbon::now());
+        return $query->where("$tn.expires_at", '>', Carbon::now());
     }
 
     /**
