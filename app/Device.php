@@ -19,6 +19,14 @@ class Device extends Model
     protected $fillable = ['name'];
 
     /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function approvals()
+    {
+        return $this->hasMany('App\DeviceApproval');
+    }
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function team()
@@ -58,5 +66,28 @@ class Device extends Model
         $apiSessionsTable = with(new ApiSession())->getTable();
 
         DB::table($apiSessionsTable)->where('device_id', $this->id)->delete();
+    }
+
+    /**
+     * Deletes all DeviceApprovals for this Device
+     */
+    public function clearApprovals()
+    {
+        $this->approvals()->delete();
+    }
+
+    /**
+     * Creates a new DeviceApproval with the specified $passcode for this Device
+     *
+     * @param string $passcode
+     * @return \App\DeviceApproval
+     */
+    public function createApproval($passcode)
+    {
+        $approval = new DeviceApproval(['passcode' => $passcode]);
+        $approval->device()->associate($this);
+        $approval->save();
+
+        return $approval;
     }
 }
