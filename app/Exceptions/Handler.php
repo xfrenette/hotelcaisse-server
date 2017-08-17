@@ -24,6 +24,10 @@ class Handler extends ExceptionHandler
         \Illuminate\Database\Eloquent\ModelNotFoundException::class,
         \Illuminate\Session\TokenMismatchException::class,
         \Illuminate\Validation\ValidationException::class,
+        \App\Exceptions\Api\AuthenticationException::class,
+        \App\Exceptions\Api\InvalidRegisterStateException::class,
+        \App\Exceptions\Api\InvalidRequestException::class,
+        \App\Exceptions\CrossBusinessAccessException::class,
     ];
 
     /**
