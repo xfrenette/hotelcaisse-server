@@ -41,6 +41,11 @@ trait InteractsWithAPI
         return $this->json('POST', $uri, $data);
     }
 
+    /**
+     * @param null $team
+     *
+     * @return Device
+     */
     protected function createDevice($team = null)
     {
         if (is_null($team)) {

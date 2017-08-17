@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 /**
  * A Device is an API client for a specific Business.
@@ -47,5 +48,15 @@ class Device extends Model
         }
 
         return $this->currentRegister->state === Register::STATE_OPENED;
+    }
+
+    /**
+     * Logouts this Device from any active session
+     */
+    public function logout()
+    {
+        $apiSessionsTable = with(new ApiSession())->getTable();
+
+        DB::table($apiSessionsTable)->where('device_id', $this->id)->delete();
     }
 }
