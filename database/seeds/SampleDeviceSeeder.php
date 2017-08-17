@@ -18,7 +18,9 @@ class SampleDeviceSeeder extends Seeder
         }
 
         $team = Team::first();
-        $device = new Device();
+        $device = new Device([
+            'name' => 'Test device',
+        ]);
 
         $device->team()->associate($team);
         $device->save();
