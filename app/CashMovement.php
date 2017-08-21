@@ -27,4 +27,15 @@ class CashMovement extends Model
     {
         return $this->belongsTo('App\Register');
     }
+
+    /**
+     * Add `createdAt` timestamp
+     * @return array
+     */
+    public function toArray()
+    {
+        return array_merge(parent::toArray(), [
+            'createdAt' => $this->created_at ? $this->created_at->getTimestamp() : null,
+        ]);
+    }
 }

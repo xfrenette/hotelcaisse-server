@@ -122,6 +122,7 @@ if the server judges it applicable, by comparing the `dataVersion` of the reques
 * `cashMovements.*.uuid` (string) UUID of the CashMovement
 * `cashMovements.*.note` (string) Note of the CashMovement
 * `cashMovements.*.amount` (float) Amount of the CashMovement
+* `cashMovements.*.createdAt` (integer) Timestamp of the creation date
 
 API methods
 ===

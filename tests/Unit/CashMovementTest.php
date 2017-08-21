@@ -4,16 +4,20 @@ namespace Tests\Unit;
 
 use App\CashMovement;
 use App\Register;
+use Carbon\Carbon;
 use Tests\TestCase;
 
 class CashMovementTest extends TestCase
 {
     public function testToArray()
     {
+        $date = Carbon::yesterday();
+
         $expected = [
             'uuid' => 'Test-uuid',
             'note' => 'Test note',
             'amount' => -12.34,
+            'createdAt' => $date->getTimestamp(),
         ];
 
         $register = new Register();
@@ -22,6 +26,7 @@ class CashMovementTest extends TestCase
         $cashMovement = new CashMovement($expected);
         $cashMovement->id = 456;
         $cashMovement->register()->associate($register);
+        $cashMovement->created_at = $date;
 
         $this->assertEquals($expected, $cashMovement->toArray());
     }
