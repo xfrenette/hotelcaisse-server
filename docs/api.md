@@ -126,11 +126,12 @@ if the server judges it applicable, by comparing the `dataVersion` of the reques
 API methods
 ===
 
-`POST /device/register`
+`POST /device/link`
 ---
 
-Registers the device to use the API for this team by sending the passcode generated in the admin. If correctly
-authenticated, the response will contain the token to use for the next request.
+Links a physical device to a Device already defined for the Team. This device will then be allowed access to the API.
+The Team owner can obtain the passcode from the admin. If correctly authenticated, the response will contain the token
+to use for the next request.
 
 ### Request `data`
 * `passcode`: (string) pass code generated in the admin for a new or existing device.
