@@ -18,12 +18,27 @@ class TransactionModesTableSeeder extends Seeder
         }
 
         $business = Business::first();
-        $modes = ['Cash', 'Mastercard', 'Visa', 'Debit'];
+        $modes = [
+            'Cash' => TransactionMode::TYPE_CASH,
+            'Mastercard',
+            'Visa',
+            'Debit'
+        ];
 
-        foreach ($modes as $modeName) {
+        foreach ($modes as $modeName => $type) {
+            if (is_int($modeName)) {
+                $modeName = $type;
+                $type = null;
+            }
+
             $mode = new TransactionMode();
             $mode->name = $modeName;
             $mode->business()->associate($business);
+
+            if (!is_null($type)) {
+                $mode->type = $type;
+            }
+
             $mode->save();
         }
     }

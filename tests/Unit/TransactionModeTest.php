@@ -17,6 +17,7 @@ class TransactionModeTest extends TestCase
         $expected = [
             'id' => 456,
             'name' => 'test-note',
+            'type' => 'cash',
         ];
 
         $transactionMode = new TransactionMode($expected);

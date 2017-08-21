@@ -15,9 +15,10 @@ class CreateTransactionModesTable extends Migration
     {
         Schema::create('transaction_modes', function (Blueprint $table) {
             $table->increments('id');
-            $table->timestamps();
             $table->string('name', 100);
+            $table->string('type', 100)->nullable();
             $table->integer('business_id')->unsigned();
+            $table->timestamps();
 
             $table->foreign('business_id')->references('id')->on('businesses');
         });
