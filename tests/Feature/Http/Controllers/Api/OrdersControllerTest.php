@@ -153,7 +153,7 @@ class OrdersControllerTest extends TestCase
                 'uuid' => $faker->uuid(),
                 'startDate' => $startDate->getTimestamp(),
                 'endDate' => $endDate->getTimestamp(),
-                'room' => $rooms->random()->id,
+                'roomId' => $rooms->random()->id,
                 'fieldValues' => $fieldValues,
             ];
         }
@@ -612,11 +612,11 @@ class OrdersControllerTest extends TestCase
         $this->controller->validateNew($request);
     }
 
-    public function testValidateNewReturnsErrorWithInvalidRoomSelectionsDataRoom()
+    public function testValidateNewReturnsErrorWithInvalidRoomSelectionsDataRoomId()
     {
         $data = $this->generateNewData();
         $values = [null, 'test', 0];
-        $this->assertValidatesRequestData([$this->controller, 'validateNew'], $data, 'data.roomSelections.1.room', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateNew'], $data, 'data.roomSelections.1.roomId', $values);
     }
 
     public function testValidateNewReturnsErrorWithInvalidRoomSelectionFields()
@@ -758,7 +758,7 @@ class OrdersControllerTest extends TestCase
             array_get($data, 'data.roomSelections.1.endDate'),
             $roomSelection->end_date->getTimestamp()
         );
-        $this->assertEquals(array_get($data, 'data.roomSelections.1.room'), $roomSelection->room->id);
+        $this->assertEquals(array_get($data, 'data.roomSelections.1.roomId'), $roomSelection->room->id);
 
         // Field values
         $count = count(array_get($data, 'data.roomSelections.1.fieldValues'));
@@ -1066,11 +1066,11 @@ class OrdersControllerTest extends TestCase
         $this->controller->validateEdit($request);
     }
 
-    public function testValidateEditReturnsErrorWithInvalidRoomSelectionsDataRoom()
+    public function testValidateEditReturnsErrorWithInvalidRoomSelectionsDataRoomId()
     {
         $data = $this->generateEditData();
         $values = [null, 'test', 0];
-        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.roomSelections.1.room', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.roomSelections.1.roomId', $values);
     }
 
     public function testValidateEditReturnsErrorWithInvalidRoomSelectionFields()
@@ -1293,7 +1293,7 @@ class OrdersControllerTest extends TestCase
                 'uuid' => $roomSelection->uuid,
                 'startDate' => $roomSelection->start_date->getTimestamp(),
                 'endDate' => $roomSelection->end_date->getTimestamp(),
-                'room' => $roomSelection->room_id,
+                'roomId' => $roomSelection->room_id,
                 'fieldValues' => $fieldValues,
             ];
 
@@ -1310,7 +1310,7 @@ class OrdersControllerTest extends TestCase
             'uuid' => 'test-uuid',
             'startDate' => $new[0]['startDate'] - 1000,
             'endDate' => $new[0]['endDate'] - 1000,
-            'room' => $new[0]['room'],
+            'roomId' => $new[0]['roomId'],
             'fieldValues' => $new[0]['fieldValues'], // just a simple copy if the first
         ]);
 

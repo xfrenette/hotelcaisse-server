@@ -231,7 +231,7 @@ class OrdersController extends ApiController
             'roomSelections.*.uuid' => 'bail|required|string' . ($isNew ? '|unique:room_selections' : ''),
             'roomSelections.*.startDate' => 'bail|required|integer|min:0',
             // 'roomSelections.*.endDate' => // see special validation below
-            'roomSelections.*.room' => 'bail|required|exists:rooms,id',
+            'roomSelections.*.roomId' => 'bail|required|exists:rooms,id',
             'roomSelections.*.fieldValues' => 'bail|required|array|min:1',
             'roomSelections.*.fieldValues.*.fieldId' => 'bail|required|exists:fields,id',
             'roomSelections.*.fieldValues.*.value' => 'bail|required|string',
@@ -394,7 +394,7 @@ class OrdersController extends ApiController
             $roomSelection->uuid = $roomSelectionData['uuid'];
             $roomSelection->start_date = Carbon::createFromTimestamp($roomSelectionData['startDate']);
             $roomSelection->end_date = Carbon::createFromTimestamp($roomSelectionData['endDate']);
-            $roomSelection->room_id = $roomSelectionData['room'];
+            $roomSelection->room_id = $roomSelectionData['roomId'];
             $roomSelection->order()->associate($order);
             $roomSelection->save();
 
@@ -547,7 +547,7 @@ class OrdersController extends ApiController
 
             $roomSelection->start_date = Carbon::createFromTimestamp($newData['startDate']);
             $roomSelection->end_date = Carbon::createFromTimestamp($newData['endDate']);
-            $roomSelection->room_id = $newData['room'];
+            $roomSelection->room_id = $newData['roomId'];
             $roomSelection->save();
             $roomSelection->replaceFieldValues($newData['fieldValues']);
         });
