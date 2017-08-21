@@ -61,13 +61,20 @@ class RegisterTest extends TestCase
 
         $expected = [
             'uuid' => 'test-uuid',
+            'state' => Register::STATE_OPENED,
             'cashMovements' => $cashMovements->toArray(),
+            'employee' => 'Test Employee',
+            'openingCash' => 100.36,
         ];
 
         $register = new Register($expected);
         $register->id = 456;
         $register->device_id = 123;
         $register->setRelation('cashMovements', $cashMovements);
+
+        $register->open($expected['employee'], $expected['openingCash']);
+
+        $expected['openedAt'] = $register->opened_at->getTimestamp();
 
         $this->assertEquals($expected, $register->toArray());
     }

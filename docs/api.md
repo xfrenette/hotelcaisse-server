@@ -118,6 +118,10 @@ Only in the response, contains the full data of the device's Register instance (
 if the server judges it applicable, by comparing the `dataVersion` of the request). Contains the following attributes:
 
 * `uuid` (string) UUID that was assigned when the Register was created by a client
+* `state` (0|1) Current state of the register (0 = closed, 1 = opened)
+* `employee` (string) Employee that opened the register
+* `openingCash` (float) Amount of cash at register opening
+* `openedAt` (integer) Timestamp when the Register was opened
 * `cashMovements` (array) List of CashMovements of this Register
 * `cashMovements.*.uuid` (string) UUID of the CashMovement
 * `cashMovements.*.note` (string) Note of the CashMovement

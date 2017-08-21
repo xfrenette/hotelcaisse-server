@@ -28,7 +28,7 @@ class Register extends Model
      *
      * @var array
      */
-    protected $visible = ['uuid', 'cashMovements'];
+    protected $visible = ['uuid', 'cashMovements', 'state', 'employee', 'opening_cash'];
 
     /**
      * The attributes that should be mutated to dates.
@@ -108,18 +108,14 @@ class Register extends Model
     }
 
     /**
-     * Redefines the toArray to rename `cash_movements` to `cashMovements`
+     * CamelCase attributes and add openedAt
      *
      * @return array
      */
     public function toArray()
     {
-        $array = parent::toArray();
-
-        if (array_key_exists('cash_movements', $array)) {
-            $array['cashMovements'] = $array['cash_movements'];
-            unset($array['cash_movements']);
-        }
+        $array = array_camel_case_keys(parent::toArray());
+        $array['openedAt'] = $this->opened_at ? $this->opened_at->getTimestamp() : null;
 
         return $array;
     }
