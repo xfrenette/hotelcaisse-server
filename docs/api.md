@@ -329,6 +329,7 @@ Returns an array of Orders, where is is an object with the following attributes:
 * `*.items` (array) Items of the Order
 * `*.items.*.uuid` (string) UUID of the Item
 * `*.items.*.quantity` (float) Quantity of the Item (if negative, the item is a refunded item)
+* `*.items.*.createdAt` (int) Timestamp of the creation date
 * `*.items.*.product` (object) Product info
 * `*.items.*.product.name` (string) Full name of the Item
 * `*.items.*.product.price` (float) Unit price of the Product

@@ -35,4 +35,15 @@ class Item extends Model
     {
         return $this->belongsTo('App\ItemProduct', 'item_product_id');
     }
+
+    /**
+     * Add `createdAt` timestamp
+     * @return array
+     */
+    public function toArray()
+    {
+        return array_merge(parent::toArray(), [
+            'createdAt' => $this->created_at ? $this->created_at->getTimestamp() : null,
+        ]);
+    }
 }
