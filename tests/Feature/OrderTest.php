@@ -60,5 +60,6 @@ class OrderTest extends TestCase
         // Check that sub-relations are loaded
         $this->assertTrue($order->items->first()->relationLoaded('product'));
         $this->assertTrue($order->transactions->first()->relationLoaded('transactionMode'));
+        $this->assertTrue($order->roomSelections->first()->relationLoaded('room'));
     }
 }

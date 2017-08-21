@@ -9,7 +9,7 @@ class Order extends Model
     /**
      * All relation names, used when loading all the relations
      */
-    const RELATIONS = ['customer', 'items.product', 'transactions.transactionMode', 'credits', 'roomSelections'];
+    const RELATIONS = ['customer', 'items.product', 'transactions.transactionMode', 'credits', 'roomSelections.room'];
 
     /**
      * The attributes that are mass assignable.

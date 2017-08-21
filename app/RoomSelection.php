@@ -21,7 +21,7 @@ class RoomSelection extends Model
      *
      * @var array
      */
-    protected $visible = ['uuid', 'fieldValues'];
+    protected $visible = ['uuid', 'fieldValues', 'room'];
 
     /**
      * The accessors to append to the model's array form.
@@ -77,7 +77,6 @@ class RoomSelection extends Model
         return array_merge(parent::toArray(), [
             'startDate' => $this->start_date ? $this->start_date->getTimestamp() : null,
             'endDate' => $this->end_date ? $this->end_date->getTimestamp() : null,
-            'room' => $this->room_id,
         ]);
     }
 }

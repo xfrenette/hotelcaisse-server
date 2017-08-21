@@ -240,10 +240,12 @@ case or if any validation error occurs, an error is returned and the request is 
 * `roomSelections.*.fieldValues.*.fieldId`: (numeric) Id of the Field
 * `roomSelections.*.fieldValues.*.value`: (string) Value for the Field
 
-**Note for `transactions.*.transactionModeId`**: the client does not have to worry if this id references a still
+**Notes**
+* `transactions.*.transactionModeId`: the client does not have to worry if this id references a still
     existing TransactionMode (at the time the request is sent), because, on the server, the TransactionModes are
     immutable: when a TransactionMode is modified, in fact a new one is created with a new id and the old one is kept
     archived.
+* `roomSelections.*.room`: same note as `transactions.*.transactionModeId`.
 
 ### Response `data`
 None returned
@@ -295,7 +297,9 @@ Some attributes are "editable lists", others are "add-only lists".
 * `roomSelections.*.fieldValues.*.fieldId`: (numeric) Id of the Field
 * `roomSelections.*.fieldValues.*.value`: (string) Value for the Field
 
-**Note for `transactions.*.transactionModeId`**: see note in `POST /orders/create`.
+**Notes**
+* `transactions.*.transactionModeId`: see note in `POST /orders/create`.
+* `roomSelections.*.room`: see note in `POST /orders/create`.
 
 ### Response `data`
 None returned
@@ -347,10 +351,14 @@ Returns an array of Orders, where is is an object with the following attributes:
 * `*.roomSelections.*.uuid` (string) UUID of the RoomSelections
 * `*.roomSelections.*.startDate` (number) Timestamp of the start date
 * `*.roomSelections.*.endDate` (number) Timestamp of the end date
-* `*.roomSelections.*.room` (number) Id of the Room
+* `*.roomSelections.*.room` (object) Room instance
+* `*.roomSelections.*.room.id` (number) Id of the Room
+* `*.roomSelections.*.room.name` (string) Name of the Room
 * `*.roomSelections.fieldValues` (array) Field values
 * `*.roomSelections.fieldValues.*.fieldId` (number) Id of the Field
 * `*.roomSelections.fieldValues.*.value` (string) Value of the Field
 
-**Note for `transactions.*.transactionMode`**: Since the TransactionMode used when the Order was created may not exist
-anymore, the whole instance is included for each transaction, instead of simply an id.
+**Notes**
+* `*.transactions.*.transactionMode`: Since the TransactionMode used when the Order was created may not exist
+    anymore, the whole instance is included for each transaction, instead of simply an id.
+* `*.roomSelections.*.room`: Same comment as `transactions.*.transactionMode`.

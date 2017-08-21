@@ -16,17 +16,18 @@ class RoomSelectionTest extends TestCase
             ['field' => 3, 'value' => 'test1'],
             ['field' => 4, 'value' => 'test2'],
         ];
+        $room = new Room([
+            'name' => 'test room',
+        ]);
+        $room->id = 2;
 
         $expected = [
             'fieldValues' => $fields,
             'uuid' => 'test-uuid',
             'startDate' => Carbon::now()->getTimestamp(),
             'endDate' => Carbon::now()->getTimestamp(),
-            'room' => 123,
+            'room' => $room->toArray(),
         ];
-
-        $room = new Room();
-        $room->id = $expected['room'];
 
         $order = new Order();
         $order->id = 456;
