@@ -12,10 +12,17 @@ class TransactionTest extends TestCase
 {
     public function testToArray()
     {
+
+        $transactionMode = new TransactionMode([
+            'name' => 'test-transaction-mode',
+            'type' => TransactionMode::TYPE_CASH,
+        ]);
+        $transactionMode->id = 2;
+
         $expected = [
             'uuid' => 'test-uuid',
             'amount' =>12.32,
-            'transactionMode' => 2,
+            'transactionMode' => $transactionMode->toArray(),
         ];
 
         $order = new Order();
@@ -23,9 +30,6 @@ class TransactionTest extends TestCase
 
         $register = new Register();
         $register->id = 456;
-
-        $transactionMode = new TransactionMode();
-        $transactionMode->id = $expected['transactionMode'];
 
         $transaction = new Transaction($expected);
         $transaction->id = 789;

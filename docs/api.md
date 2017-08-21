@@ -76,6 +76,7 @@ in the request). The object has the following attributes:
 * `transactionModes` (array) List of currently available transaction modes
 * `transactionModes.*.id` (number) Id of the transaction mode
 * `transactionModes.*.name` (string) Name of the transaction mode
+* `transactionModes.*.type` (string) Type of the transaction mode
 * `products` (array) Flat list (product variants are at the same level as their parent) of all the currently available
     products.
 * `products.*.id` (number) Id of the product
@@ -238,6 +239,11 @@ case or if any validation error occurs, an error is returned and the request is 
 * `roomSelections.*.fieldValues.*.fieldId`: (numeric) Id of the Field
 * `roomSelections.*.fieldValues.*.value`: (string) Value for the Field
 
+**Note for `transactions.*.transactionModeId`**: the client does not have to worry if this id references a still
+    existing TransactionMode (at the time the request is sent), because, on the server, the TransactionModes are
+    immutable: when a TransactionMode is modified, in fact a new one is created with a new id and the old one is kept
+    archived.
+
 ### Response `data`
 None returned
 
@@ -288,6 +294,8 @@ Some attributes are "editable lists", others are "add-only lists".
 * `roomSelections.*.fieldValues.*.fieldId`: (numeric) Id of the Field
 * `roomSelections.*.fieldValues.*.value`: (string) Value for the Field
 
+**Note for `transactions.*.transactionModeId`**: see note in `POST /orders/create`.
+
 ### Response `data`
 None returned
 
@@ -326,7 +334,10 @@ Returns an array of Orders, where is is an object with the following attributes:
 * `*.transactions` (array) List of Transactions
 * `*.transactions.*.uuid` (string) UUID of the Transaction
 * `*.transactions.*.amount` (float) Amount of the Transaction (if negative, it is a refund)
-* `*.transactions.*.transactionModeId` (number) Id of the TransactionMode
+* `*.transactions.*.transactionMode` (object) TransactionMode of this transactions
+* `*.transactions.*.transactionMode.id` (number) Id of the TransactionMode
+* `*.transactions.*.transactionMode.name` (string) Name of the TransactionMode
+* `*.transactions.*.transactionMode.type` (string|null) Type of the TransactionMode
 * `*.credits` (array) List of Credits
 * `*.credits.*.uuid` (string) UUID of the Credit
 * `*.credits.*.note` (string) Note of the Credit
@@ -339,3 +350,6 @@ Returns an array of Orders, where is is an object with the following attributes:
 * `*.roomSelections.fieldValues` (array) Field values
 * `*.roomSelections.fieldValues.*.fieldId` (number) Id of the Field
 * `*.roomSelections.fieldValues.*.value` (string) Value of the Field
+
+**Note for `transactions.*.transactionMode`**: Since the TransactionMode used when the Order was created may not exist
+anymore, the whole instance is included for each transaction, instead of simply an id.

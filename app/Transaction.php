@@ -18,7 +18,7 @@ class Transaction extends Model
      *
      * @var array
      */
-    protected $visible = ['uuid', 'amount'];
+    protected $visible = ['uuid', 'amount', 'transactionMode'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -45,14 +45,19 @@ class Transaction extends Model
     }
 
     /**
-     * Redefines the toArray to add transactionMode.
+     * Rename transaction_mode to transactionMode.
      *
      * @return array
      */
     public function toArray()
     {
-        return array_merge(parent::toArray(), [
-            'transactionMode' => $this->transaction_mode_id,
-        ]);
+        $array = parent::toArray();
+
+        if (array_key_exists('transaction_mode', $array)) {
+            $array['transactionMode'] = $array['transaction_mode'];
+            unset($array['transaction_mode']);
+        }
+
+        return $array;
     }
 }
