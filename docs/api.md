@@ -318,9 +318,11 @@ Returns an array of Orders, where is is an object with the following attributes:
 * `*.items.*.product` (object) Product info
 * `*.items.*.product.name` (string) Full name of the Item
 * `*.items.*.product.price` (float) Unit price of the Product
-* `*.items.*.product.taxes` (array) List of unit taxes
-* `*.items.*.product.taxes.*.id` (number) Id of the Tax object
-* `*.items.*.product.taxes.*.amount` (float) Unit amount of tax for this product
+* `*.items.*.product.taxes` (array) List of applied taxes for a unit.
+* `*.items.*.product.taxes.*.id` (number) Id of the Tax object that was used to calculate the amount. The Tax may no
+        longer exist when the Order is viewed.
+* `*.items.*.product.taxes.*.amount` (float) Unit amount of tax for this product. This is the money amount applied, not
+        percentage, if it was a percentage.
 * `*.transactions` (array) List of Transactions
 * `*.transactions.*.uuid` (string) UUID of the Transaction
 * `*.transactions.*.amount` (float) Amount of the Transaction (if negative, it is a refund)
