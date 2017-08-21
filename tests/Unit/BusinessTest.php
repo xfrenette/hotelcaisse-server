@@ -6,7 +6,6 @@ use App\Business;
 use App\Field;
 use App\Product;
 use App\Room;
-use App\Tax;
 use App\TransactionMode;
 use Tests\TestCase;
 
@@ -18,10 +17,6 @@ class BusinessTest extends TestCase
             'rooms' => [
                 ['id' => 256, 'name' => 'rm-1'],
                 ['id' => 257, 'name' => 'rm-2'],
-            ],
-            'taxes' => [
-                ['id' => 356, 'name' => 'tx-1'],
-                ['id' => 357, 'name' => 'tx-2'],
             ],
             'transactionModes' => [
                 ['id' => 456, 'name' => 'tm-1'],
@@ -64,7 +59,6 @@ class BusinessTest extends TestCase
         $business->id = 123;
 
         $rooms = collect([]);
-        $taxes = collect([]);
         $transactionModes = collect([]);
         $products = collect([]);
         $customerFields = collect([]);
@@ -77,15 +71,6 @@ class BusinessTest extends TestCase
             $field->method('toArray')
                 ->willReturn($roomData);
             $rooms->push($field);
-        }
-
-        foreach ($expected['taxes'] as $taxData) {
-            $tax = $this->getMockBuilder(Tax::class)
-                ->setMethods(['toArray'])
-                ->getMock();
-            $tax->method('toArray')
-                ->willReturn($taxData);
-            $taxes->push($tax);
         }
 
         foreach ($expected['transactionModes'] as $transactionModeData) {
@@ -125,7 +110,6 @@ class BusinessTest extends TestCase
         }
 
         $business->setRelation('rooms', $rooms);
-        $business->setRelation('taxes', $taxes);
         $business->setRelation('transactionModes', $transactionModes);
         $business->setRelation('products', $products);
         $business->setRelation('customerFields', $customerFields);
@@ -173,9 +157,6 @@ class BusinessTest extends TestCase
         $business->setVisibleFromModifications([Business::MODIFICATION_ROOMS]);
         $this->assertEquals(['rooms'], $business->getVisible());
 
-        $business->setVisibleFromModifications([Business::MODIFICATION_TAXES]);
-        $this->assertEquals(['taxes'], $business->getVisible());
-
         $business->setVisibleFromModifications([Business::MODIFICATION_TRANSACTION_MODES]);
         $this->assertEquals(['transactionModes'], $business->getVisible());
 
@@ -188,8 +169,11 @@ class BusinessTest extends TestCase
         $business->setVisibleFromModifications([Business::MODIFICATION_ROOM_SELECTION_FIELDS]);
         $this->assertEquals(['roomSelectionFields'], $business->getVisible());
 
-        $business->setVisibleFromModifications([Business::MODIFICATION_ROOMS, Business::MODIFICATION_TAXES]);
-        $this->assertEquals(['rooms', 'taxes'], $business->getVisible());
+        $business->setVisibleFromModifications([
+            Business::MODIFICATION_ROOMS,
+            Business::MODIFICATION_TRANSACTION_MODES
+        ]);
+        $this->assertEquals(['rooms', 'transactionModes'], $business->getVisible());
 
         // Test duplicates in function are not duplicate in $visible
         $business->setVisibleFromModifications([Business::MODIFICATION_ROOMS, Business::MODIFICATION_ROOMS]);

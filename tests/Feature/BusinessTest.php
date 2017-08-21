@@ -7,7 +7,6 @@ use App\Field;
 use App\Product;
 use App\ProductCategory;
 use App\Room;
-use App\Tax;
 use App\TransactionMode;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -188,7 +187,6 @@ class BusinessTest extends TestCase
         // Multiple related models all have an `id` and a `name` attribute we can check to see if present
         $simpleRelations = [
             'rooms' => Room::class,
-            'taxes' => Tax::class,
             'transactionModes' => TransactionMode::class,
             'products' => Product::class,
         ];

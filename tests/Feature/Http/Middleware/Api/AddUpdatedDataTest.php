@@ -38,7 +38,7 @@ class AddUpdatedDataTest extends TestCase
         $business = $device->team->business;
         $business->bumpVersion();
         $oldVersion = $business->version;
-        $business->bumpVersion([Business::MODIFICATION_TAXES, Business::MODIFICATION_ROOMS]);
+        $business->bumpVersion([Business::MODIFICATION_TRANSACTION_MODES, Business::MODIFICATION_ROOMS]);
 
         $request = $this->mockRequestWithVersion($oldVersion);
         $res = $this->middleware->handle($request, function () {
@@ -47,7 +47,7 @@ class AddUpdatedDataTest extends TestCase
 
         $data = $res->getData(true);
         $this->assertEquals($business->rooms->count(), count($data['business']['rooms']));
-        $this->assertEquals($business->taxes->count(), count($data['business']['taxes']));
+        $this->assertEquals($business->transactionModes->count(), count($data['business']['transactionModes']));
     }
 
     public function testHandleLoadsRegisterRelations()

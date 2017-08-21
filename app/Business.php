@@ -25,7 +25,6 @@ class Business extends Model
      */
     protected $visible = [
         'rooms',
-        'taxes',
         'transactionModes',
         'products',
         'customerFields',
@@ -335,12 +334,12 @@ class Business extends Model
     }
 
     /**
-     * Just a simple utility function that loads the following relations for this Business: rooms, taxes, products,
+     * Just a simple utility function that loads the following relations for this Business: rooms, products,
      * transactionModes, customerFields, roomSelectionFields
      */
     public function loadAllRelations()
     {
-        $this->load(['rooms', 'taxes', 'transactionModes', 'products', 'customerFields', 'roomSelectionFields']);
+        $this->load(['rooms', 'transactionModes', 'products', 'customerFields', 'roomSelectionFields']);
     }
 
     /**
@@ -353,7 +352,6 @@ class Business extends Model
     {
         $dict = [
             self::MODIFICATION_ROOMS => 'rooms',
-            self::MODIFICATION_TAXES => 'taxes',
             self::MODIFICATION_TRANSACTION_MODES => 'transactionModes',
             self::MODIFICATION_CATEGORIES => 'rootProductCategory',
             self::MODIFICATION_PRODUCTS => 'products',
