@@ -46,13 +46,15 @@ $factory->define(App\Business::class, function (Faker\Generator $faker) {
     ];
 });
 
-$factory->define(App\Device::class, function () {
+$factory->define(App\Device::class, function (Faker\Generator $faker) {
     return [
+        'name' => $faker->words(2, true),
     ];
 });
 
-$factory->defineAs(App\Device::class, 'withTeam', function () {
+$factory->defineAs(App\Device::class, 'withTeam', function (Faker\Generator $faker) {
     return [
+        'name' => $faker->words(2, true),
         'team_id' => function () {
             return factory(\App\Team::class, 'withBusiness')->create()->id;
         },
