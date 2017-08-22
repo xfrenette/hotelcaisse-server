@@ -2,7 +2,9 @@
 
 namespace Tests;
 
+use Illuminate\Validation\DatabasePresenceVerifier;
 use Illuminate\Validation\ValidationException;
+use Mockery as m;
 
 class FormRequestTestCase extends TestCase
 {
@@ -42,6 +44,47 @@ class FormRequestTestCase extends TestCase
                 // Do nothing
             }
         }
+    }
+
+    public function assertValidatesUniqueness($data, $attributeToValidate, $table, $field)
+    {
+        $unique = 'test-unique';
+        $nonUnique = 'test-non-unique';
+        $presenceVerifier = m::mock(DatabasePresenceVerifier::class);
+        $presenceVerifier->shouldReceive('setConnection')->andReturn();
+        $presenceVerifier
+            ->shouldReceive('getCount')
+            ->with($table, $field, $nonUnique, m::any(), m::any(), m::any())
+            ->andReturn(1);
+        $presenceVerifier
+            ->shouldReceive('getCount')
+            ->with($table, $field, $unique, m::any(), m::any(), m::any())
+            ->andReturn(0);
+
+        $validator = app('validator');
+        $oldPresenceVerifier = $validator->getPresenceVerifier();
+        $validator->setPresenceVerifier($presenceVerifier);
+
+        // Test that throws if non unique
+        array_set($data, $attributeToValidate, $nonUnique);
+        $request = $this->mockFormRequest($this->requestClassName, $data);
+        try {
+            $request->validate();
+            $this->fail('ValidationException not thrown for *non*-unique `' . $attributeToValidate . '`');
+        } catch (ValidationException $e) {
+            // Do nothing
+        }
+
+        // Test nothing thrown if unique
+        array_set($data, $attributeToValidate, $unique);
+        $request = $this->mockFormRequest($this->requestClassName, $data);
+        try {
+            $request->validate();
+        } catch (ValidationException $e) {
+            $this->fail('ValidationException thrown for *unique* `' . $attributeToValidate . '`');
+        }
+
+        $validator->setPresenceVerifier($oldPresenceVerifier);
     }
 
     public function assertValidatesValidData($data, $optionalAttributes = [])

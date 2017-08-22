@@ -142,7 +142,12 @@ trait InteractsWithAPI
     {
         $content = json_encode($data);
         $mock = m::mock($class)->makePartial();
-        $mock->setContainer(\app());
+
+        if (method_exists($mock, 'setContainer')) {
+            $mock->setContainer(\app());
+
+        }
+
         $mock->shouldReceive('getContent')->andReturn($content);
         $mock->shouldReceive('expectsJson')->andReturn(true);
         $mock->shouldReceive('route')->with('team')->andReturn($team);
