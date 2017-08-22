@@ -32,6 +32,10 @@ class CashMovementsController extends ApiController
             'amount' => $request->json('data.amount'),
         ]);
         $cashMovement->register()->associate($device->currentRegister);
+        $createdAt = $request->json('data.createdAt', false);
+        if ($createdAt && $createdAt <= Carbon::now()->getTimestamp()) {
+            $cashMovement->created_at = Carbon::createFromTimestamp($createdAt);
+        }
         $cashMovement->save();
 
         // Bump the version of the Business
@@ -91,6 +95,7 @@ class CashMovementsController extends ApiController
             'uuid' => 'bail|required|string|unique:cash_movements',
             'note' => 'bail|required|string',
             'amount' => 'bail|required|numeric|not_in:0',
+            'createdAt' => 'sometimes|required|numeric|min:0|not_in:0',
         ]);
     }
 

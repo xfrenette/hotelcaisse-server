@@ -35,6 +35,7 @@ class CashMovementsControllerTest extends TestCase
                 'uuid' => self::$faker->uuid(),
                 'note' => 'Test note',
                 'amount' => -12.34,
+                'createdAt' => 1503410614, // 08/22/2017 @ 2:03pm (UTC)
             ],
         ];
     }
