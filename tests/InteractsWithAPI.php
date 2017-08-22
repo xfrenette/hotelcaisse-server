@@ -122,13 +122,27 @@ trait InteractsWithAPI
 
     /**
      * @param array $data
+     * @param Team|null $team
      *
      * @return Request
      */
     protected function mockRequest($data = [], $team = null)
     {
+        return $this->mockFormRequest(Request::class, $data, $team);
+    }
+
+    /**
+     * @param string $class
+     * @param array $data
+     * @param Team|null $team
+     *
+     * @return \Illuminate\Foundation\Http\FormRequest
+     */
+    protected function mockFormRequest($class, $data, $team = null)
+    {
         $content = json_encode($data);
-        $mock = m::mock(Request::class)->makePartial();
+        $mock = m::mock($class)->makePartial();
+        $mock->setContainer(\app());
         $mock->shouldReceive('getContent')->andReturn($content);
         $mock->shouldReceive('expectsJson')->andReturn(true);
         $mock->shouldReceive('route')->with('team')->andReturn($team);
