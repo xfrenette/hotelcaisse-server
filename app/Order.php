@@ -82,18 +82,14 @@ class Order extends Model
     }
 
     /**
-     * Redefines the toArray to rename the room_selections key to roomSelections
+     * Camel case the keys and add the createdAt timestamp
      *
      * @return array
      */
     public function toArray()
     {
-        $array = parent::toArray();
-
-        if (array_key_exists('room_selections', $array)) {
-            $array['roomSelections'] = $array['room_selections'];
-            unset($array['room_selections']);
-        }
+        $array = array_camel_case_keys(parent::toArray());
+        $array['createdAt'] = $this->created_at ? $this->created_at->getTimestamp() : null;
 
         return $array;
     }

@@ -325,6 +325,7 @@ are the Orders following (by creation date) the `from`.
 Returns an array of Orders, where is is an object with the following attributes:
 
 * `*.uuid` (string) UUID of the Order
+* `*.createdAt` (integer) Timestamp of the creation date
 * `*.note` (string) Note of the Order
 * `*.customer` (object) Customer info of the Order
 * `*.customer.fieldValues` (array) Field values

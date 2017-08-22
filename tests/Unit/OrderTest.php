@@ -15,6 +15,7 @@ class OrderTest extends TestCase
 {
     public function testToArray()
     {
+        $date = Carbon::yesterday();
         $items = collect([]);
         $transactions = collect([]);
         $credits = collect([]);
@@ -34,6 +35,7 @@ class OrderTest extends TestCase
 
         $expected = [
             'uuid' => 'test-order-uuid',
+            'createdAt' => $date->getTimestamp(),
             'note' => 'test-note',
             'items' => $items->toArray(),
             'transactions' => $transactions->toArray(),
@@ -56,6 +58,7 @@ class OrderTest extends TestCase
 
         $order = new Order($expected);
         $order->id = 123;
+        $order->created_at = $date;
         $order->customer()->associate($customer);
         // Simulate loaded collections
         $order->setRelation('items', $items);
