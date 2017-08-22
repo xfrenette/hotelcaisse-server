@@ -79,6 +79,7 @@ in the request). The object has the following attributes:
 * `rooms` (array) List of currently available rooms
 * `rooms.*.id` (number) Id of the room
 * `rooms.*.name` (string) Name of the room
+* `rooms.*.archived` (false) If false, can be used for new RoomSelection (so will always be false)
 * `taxes` (array) List of taxes used in the system
 * `taxes.*.id` (number) Id of the tax
 * `taxes.*.name` (string) Name of the tax
@@ -385,11 +386,12 @@ Returns an array of Orders, where is is an object with the following attributes:
 * `*.roomSelections.*.room` (object) Room instance
 * `*.roomSelections.*.room.id` (number) Id of the Room
 * `*.roomSelections.*.room.name` (string) Name of the Room
+* `*.roomSelections.*.room.archived` (boolean) If true, this Room does not exist anymore (not valid for a new RoomSelection)
 * `*.roomSelections.fieldValues` (array) Field values
 * `*.roomSelections.fieldValues.*.fieldId` (number) Id of the Field
 * `*.roomSelections.fieldValues.*.value` (string) Value of the Field
 
 **Notes**
 * `*.transactions.*.transactionMode`: Since the TransactionMode used when the Order was created may not exist
-    anymore, the whole instance is included for each transaction, instead of simply an id.
+    anymore, the whole instance is included for each transaction, instead of simply an id (see its `archived` attribute).
 * `*.roomSelections.*.room`: Same comment as `transactions.*.transactionMode`.

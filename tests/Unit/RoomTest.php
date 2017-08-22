@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Business;
 use App\Room;
+use Carbon\Carbon;
 use Tests\TestCase;
 
 class RoomTest extends TestCase
@@ -17,6 +18,7 @@ class RoomTest extends TestCase
         $expected = [
             'id' => 456,
             'name' => 'test-note',
+            'archived' => false,
         ];
 
         $room = new Room($expected);
@@ -24,5 +26,9 @@ class RoomTest extends TestCase
         $room->business()->associate($business);
 
         $this->assertEquals($expected, $room->toArray());
+
+        // soft delete
+        $room->deleted_at = Carbon::yesterday();
+        $this->assertArraySubset(['archived' => true], $room->toArray());
     }
 }
