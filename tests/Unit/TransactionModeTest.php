@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Business;
 use App\TransactionMode;
+use Carbon\Carbon;
 use Tests\TestCase;
 
 class TransactionModeTest extends TestCase
@@ -18,6 +19,7 @@ class TransactionModeTest extends TestCase
             'id' => 456,
             'name' => 'test-note',
             'type' => 'cash',
+            'archived' => false,
         ];
 
         $transactionMode = new TransactionMode($expected);
@@ -25,5 +27,9 @@ class TransactionModeTest extends TestCase
         $transactionMode->business()->associate($business);
 
         $this->assertEquals($expected, $transactionMode->toArray());
+
+        // soft delete
+        $transactionMode->deleted_at = Carbon::yesterday();
+        $this->assertArraySubset(['archived' => true], $transactionMode->toArray());
     }
 }

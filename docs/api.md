@@ -86,6 +86,7 @@ in the request). The object has the following attributes:
 * `transactionModes.*.id` (number) Id of the transaction mode
 * `transactionModes.*.name` (string) Name of the transaction mode
 * `transactionModes.*.type` (string) Type of the transaction mode
+* `transactionModes.*.archived` (false) If false, can be used for new Transaction (so will always be false)
 * `products` (array) Flat list (product variants are at the same level as their parent) of all the currently available
     products.
 * `products.*.id` (number) Id of the product
@@ -370,6 +371,8 @@ Returns an array of Orders, where is is an object with the following attributes:
 * `*.transactions.*.transactionMode.id` (number) Id of the TransactionMode
 * `*.transactions.*.transactionMode.name` (string) Name of the TransactionMode
 * `*.transactions.*.transactionMode.type` (string|null) Type of the TransactionMode
+* `*.transactions.*.transactionMode.archived` (boolean) If true, this TransactionMode does not exist anymore (not valid
+    for a new Transaction)
 * `*.credits` (array) List of Credits
 * `*.credits.*.uuid` (string) UUID of the Credit
 * `*.credits.*.createdAt` (integer) Timestamp of the creation date

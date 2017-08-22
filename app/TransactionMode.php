@@ -30,7 +30,14 @@ class TransactionMode extends Model
      *
      * @var array
      */
-    protected $visible = ['id', 'name', 'type'];
+    protected $visible = ['id', 'name', 'type', 'archived'];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['archived'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -38,5 +45,13 @@ class TransactionMode extends Model
     public function business()
     {
         return $this->belongsTo('App\Business');
+    }
+
+    /**
+     * return boolean
+     */
+    public function getArchivedAttribute()
+    {
+        return $this->trashed();
     }
 }
