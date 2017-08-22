@@ -6,6 +6,7 @@ use App\Api\Http\ApiResponse;
 use App\Business;
 use App\Http\Controllers\Api\RegisterController;
 use App\Register;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Tests\InteractsWithAPI;
@@ -22,6 +23,7 @@ class RegisterControllerTest extends TestCase
             'uuid' => 'test-uuid',
             'employee' => 'Test Employee',
             'cashAmount' => 12.34,
+            'openedAt' => 1503410614, // 08/22/2017 @ 2:03pm (UTC)
         ],
     ];
 
@@ -33,6 +35,9 @@ class RegisterControllerTest extends TestCase
         ],
     ];
 
+    /**
+     * @var RegisterController
+     */
     protected $controller;
 
     protected function setUp()
@@ -69,13 +74,35 @@ class RegisterControllerTest extends TestCase
     public function testValidateOpenReturnsErrorIfInvalidEmployee()
     {
         $values = [null, '', ' ', 12];
-        $this->assertValidatesRequestData([$this->controller, 'validateOpen'], self::OPEN_DATA, 'data.employee', $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateOpen'],
+            self::OPEN_DATA,
+            'data.employee',
+            $values
+        );
     }
 
     public function testValidateOpenReturnsErrorIfInvalidCashAmount()
     {
         $values = [null, '', -5];
-        $this->assertValidatesRequestData([$this->controller, 'validateOpen'], self::OPEN_DATA, 'data.cashAmount', $values);
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateOpen'],
+            self::OPEN_DATA,
+            'data.cashAmount',
+            $values
+        );
+    }
+
+    public function testValidateOpenReturnsErrorIfInvalidOpenedAt()
+    {
+        $values = [null, '', ' ', 0, -6];
+        $this->assertValidatesRequestData(
+            [$this->controller, 'validateOpen'],
+            self::OPEN_DATA,
+            'data.openedAt',
+            $values,
+            false
+        );
     }
 
     public function testValidateOpenReturnsErrorIfRegisterAlreadyOpened()
@@ -90,6 +117,20 @@ class RegisterControllerTest extends TestCase
                 'code' => ApiResponse::ERROR_CLIENT_ERROR,
             ],
         ]);
+    }
+
+    public function testValidateOpenWorksWithValidData()
+    {
+        $data = self::OPEN_DATA;
+        $request = $this->mockRequest($data);
+        // Should not throw
+        $this->controller->validateOpen($request);
+
+        // Remove optional attributes
+        unset($data['openedAt']);
+        $request = $this->mockRequest($data);
+        // Should not throw
+        $this->controller->validateOpen($request);
     }
 
     public function testOpenBumpsBusinessVersionWithModifications()
@@ -109,28 +150,49 @@ class RegisterControllerTest extends TestCase
         );
     }
 
-    public function testOpenAssignsNewOpenedRegisterToDevice()
+    public function testOpenWithoutOpenedAt()
     {
         $device = $this->createDeviceWithRegister();
         $this->mockApiAuthDevice($device);
-
         $oldRegisterId = $device->currentRegister->id;
-
-        $this->queryAPI('api.register.open', self::OPEN_DATA);
+        $data = self::OPEN_DATA;
+        unset($data['data']['openedAt']);
+        $request = $this->mockRequest($data);
+        $now = Carbon::now();
+        $this->controller->open($request);
         $device->currentRegister->refresh();
         $this->assertTrue($device->currentRegister->opened);
         $this->assertNotEquals($oldRegisterId, $device->currentRegister->id);
+        $this->assertEquals(0, $now->diffInSeconds($device->currentRegister->opened_at));
     }
 
-    public function testOpenWorksWithValidData()
+    public function testOpenWithFutureOpenedAt()
     {
-        $device = $this->createDevice();
+        $device = $this->createDeviceWithRegister();
         $this->mockApiAuthDevice($device);
+        $data = self::OPEN_DATA;
+        $data['data']['openedAt'] = Carbon::now()->addSeconds(5)->getTimestamp();
+        $request = $this->mockRequest($data);
+        $now = Carbon::now();
+        $this->controller->open($request);
+        $device->currentRegister->refresh();
+        $this->assertTrue($device->currentRegister->opened);
+        $this->assertEquals(0, $now->diffInSeconds($device->currentRegister->opened_at));
+    }
 
-        $response = $this->queryAPI('api.register.open', self::OPEN_DATA);
-        $response->assertJson([
-            'status' => 'ok',
-        ]);
+    public function testOpenWithPastOpenedAt()
+    {
+        $nbSeconds = 55;
+        $device = $this->createDeviceWithRegister();
+        $this->mockApiAuthDevice($device);
+        $data = self::OPEN_DATA;
+        $data['data']['openedAt'] = Carbon::now()->subSeconds($nbSeconds)->getTimestamp();
+        $request = $this->mockRequest($data);
+        $now = Carbon::now();
+        $this->controller->open($request);
+        $device->currentRegister->refresh();
+        $this->assertTrue($device->currentRegister->opened);
+        $this->assertEquals($nbSeconds, $now->diffInSeconds($device->currentRegister->opened_at));
     }
 
     // ---------------------

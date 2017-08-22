@@ -7,6 +7,7 @@ use App\Business;
 use App\Exceptions\Api\InvalidRequestException;
 use App\Register;
 use App\Support\Facades\ApiAuth;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class RegisterController extends ApiController
@@ -23,7 +24,6 @@ class RegisterController extends ApiController
         $this->validateOpen($request);
         $this->validateRegisterNotOpened();
 
-        $apiResponse = new ApiResponse();
         $device = ApiAuth::getDevice();
         $business = ApiAuth::getBusiness();
 
@@ -32,6 +32,11 @@ class RegisterController extends ApiController
         ]);
         $register->device()->associate($device);
         $register->open($request->json('data.employee'), $request->json('data.cashAmount'));
+        if ($openedAt = $request->json('data.openedAt')) {
+            if ($openedAt <= Carbon::now()->getTimestamp()) {
+                $register->opened_at = Carbon::createFromTimestamp($openedAt);
+            }
+        }
         $register->save();
 
         $device->currentRegister()->associate($register);
@@ -39,7 +44,7 @@ class RegisterController extends ApiController
 
         $business->bumpVersion([Business::MODIFICATION_REGISTER]);
 
-        return $apiResponse;
+        return new ApiResponse();
     }
 
     /**
@@ -92,6 +97,7 @@ class RegisterController extends ApiController
             'uuid' => 'bail|required|string|unique:registers',
             'employee' => 'bail|required|string',
             'cashAmount' => 'bail|required|numeric|min:0',
+            'openedAt' => 'sometimes|required|numeric|min:0|not_in:0',
         ]);
     }
 

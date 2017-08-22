@@ -124,9 +124,9 @@ if the server judges it applicable, by comparing the `dataVersion` of the reques
 * `openedAt` (integer) Timestamp when the Register was opened
 * `cashMovements` (array) List of CashMovements of this Register
 * `cashMovements.*.uuid` (string) UUID of the CashMovement
+* `cashMovements.*.createdAt` (integer) Timestamp of the creation date
 * `cashMovements.*.note` (string) Note of the CashMovement
 * `cashMovements.*.amount` (float) Amount of the CashMovement
-* `cashMovements.*.createdAt` (integer) Timestamp of the creation date
 
 API methods
 ===
@@ -159,6 +159,9 @@ have a current register that is already opened, else an error will be returned a
 * `uuid`: (string) Client generated UUID for the new Register (must be unique)
 * `employee`: (string) Name of the employee opening the register
 * `cashAmount`: (float, >= 0) Amount of cash in the register at opening
+* `openedAt`: (optional, integer) Timestamp (seconds) when the register was opened. If not set, the server will use its
+    current time. Be sure the client has valid time. If the timestamp is in the future (from the server point of view),
+    it will default to the server's current time.
 
 ### Response `data`
 None returned
