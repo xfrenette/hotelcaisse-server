@@ -89,19 +89,12 @@ class ItemProduct extends Model
     }
 
     /**
-     * Rename `product_id` to `productId`
+     * Camel case keys
      *
      * @return array
      */
     public function toArray()
     {
-        $array = parent::toArray();
-
-        if (array_key_exists('product_id', $array)) {
-            $array['productId'] = $array['product_id'];
-            unset($array['product_id']);
-        }
-
-        return $array;
+        return array_camel_case_keys(parent::toArray());
     }
 }
