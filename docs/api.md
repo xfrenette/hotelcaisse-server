@@ -297,6 +297,7 @@ Some attributes are "editable lists", others are "add-only lists".
 * `transactions`: ("add-only list", array, optional) Transactions of the Order (see next lines)
 * `transactions.*.uuid`: (string) Generated UUID for this transaction
 * `transactions.*.amount`: (float, != 0) Amount of this transaction (positive means payment, negative means refund)
+* `transactions.*.createdAt`: (timestamp, optional) Timestamp of the creation date
 * `transactions.*.transactionModeId`: (numeric) Id of the TransactionMode used
 * `items`: ("add-only list", array, optional) Items of this Order (see next lines)
 * `items.*.uuid`: (string) Generated UUID for this Item

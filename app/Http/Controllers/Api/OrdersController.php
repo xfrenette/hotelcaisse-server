@@ -217,6 +217,7 @@ class OrdersController extends ApiController
             'transactions' => 'sometimes|array',
             'transactions.*.uuid' => 'bail|required|string|unique:transactions',
             'transactions.*.amount' => 'bail|required|numeric|not_in:0',
+            'transactions.*.createdAt' => 'sometimes|required|numeric|min:0|not_in:0',
             'transactions.*.transactionModeId' => 'bail|required|exists:transaction_modes,id',
             'items' => 'sometimes|array',
             'items.*.uuid' => 'bail|required|string|unique:items',
@@ -431,6 +432,10 @@ class OrdersController extends ApiController
             $transaction->transaction_mode_id = $transactionData['transactionModeId'];
             $transaction->register()->associate($register);
             $transaction->order()->associate($order);
+            $createdAt = array_get($transactionData, 'createdAt', false);
+            if ($createdAt && $createdAt <= Carbon::now()->getTimestamp()) {
+                $transaction->created_at = Carbon::createFromTimestamp($createdAt);
+            }
             $transaction->save();
         }
     }

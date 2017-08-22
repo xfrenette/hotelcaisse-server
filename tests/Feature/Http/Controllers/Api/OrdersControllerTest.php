@@ -169,6 +169,7 @@ class OrdersControllerTest extends TestCase
                 'uuid' => $faker->uuid(),
                 'amount' => $amount == 0 ? 1 : $amount,
                 'transactionModeId' => $transactionModes->random()->id,
+                'createdAt' => 1503410614, // 08/22/2017 @ 2:03pm (UTC)
             ];
         }
 
