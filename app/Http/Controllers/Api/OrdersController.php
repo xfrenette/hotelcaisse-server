@@ -222,6 +222,7 @@ class OrdersController extends ApiController
             'items' => 'sometimes|array',
             'items.*.uuid' => 'bail|required|string|unique:items',
             'items.*.quantity' => 'bail|required|numeric|not_in:0',
+            'items.*.createdAt' => 'sometimes|required|numeric|min:0|not_in:0',
             'items.*.product' => 'bail|required|array',
             'items.*.product.name' => 'bail|required|string',
             'items.*.product.price' => 'bail|required|numeric|min:0',
@@ -383,6 +384,10 @@ class OrdersController extends ApiController
             $itemProduct->save();
 
             $item->product()->associate($itemProduct);
+            $createdAt = array_get($itemData, 'createdAt', false);
+            if ($createdAt && $createdAt <= Carbon::now()->getTimestamp()) {
+                $item->created_at = Carbon::createFromTimestamp($createdAt);
+            }
             $item->save();
 
             $taxes = array_get($productData, 'taxes', []);

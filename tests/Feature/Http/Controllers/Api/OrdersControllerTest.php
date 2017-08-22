@@ -112,6 +112,7 @@ class OrdersControllerTest extends TestCase
             $itemData = [
                 'uuid' => $faker->uuid(),
                 'quantity' => $isCustom ? -2 : 2,
+                'createdAt' => 1503410614, // 08/22/2017 @ 2:03pm (UTC)
                 'product' => [
                     'name' => $faker->words(2, true),
                     'price' => $faker->randomFloat(2, 0.1, 10),

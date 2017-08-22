@@ -239,10 +239,12 @@ case or if any validation error occurs, an error is returned and the request is 
 * `transactions`: (array, optional) Transactions of the Order (see next lines)
 * `transactions.*.uuid`: (string) Generated UUID for this transaction
 * `transactions.*.amount`: (float, != 0) Amount of this transaction (positive means payment, negative means refund)
+* `transactions.*.createdAt`: (timestamp, optional) Timestamp of the creation date
 * `transactions.*.transactionModeId`: (numeric) Id of the TransactionMode used
 * `items`: (array, optional) Items of this Order (see next lines)
 * `items.*.uuid`: (string) Generated UUID for this Item
 * `items.*.quantity`: (float, != 0) Quantity of the product for this Item (negative is for refunded item)
+* `items.*.createdAt`: (timestamp, optional) Timestamp of the creation date
 * `items.*.product`: (array) Information about the product (see next lines)
 * `items.*.product.name`: (string) Name of the product (must be a full name if a variant, including the parent's name)
 * `items.*.product.price`: (float, >= 0) Unit price (before taxes) this product was sold (positive, even if it is a refunded item)
@@ -302,6 +304,7 @@ Some attributes are "editable lists", others are "add-only lists".
 * `items`: ("add-only list", array, optional) Items of this Order (see next lines)
 * `items.*.uuid`: (string) Generated UUID for this Item
 * `items.*.quantity`: (float, != 0) Quantity of the product for this Item (negative is for refunded item)
+* `items.*.createdAt`: (timestamp, optional) Timestamp of the creation date
 * `items.*.product`: (array) Information about the product (see next lines)
 * `items.*.product.name`: (string) Name of the product (must be a full name if a variant, including the parent's name)
 * `items.*.product.price`: (float, >= 0) Unit price (before taxes) this product was sold (positive, even if it is a refunded item)
