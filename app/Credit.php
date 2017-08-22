@@ -27,4 +27,15 @@ class Credit extends Model
     {
         return $this->belongsTo('App\Order');
     }
+
+    /**
+     * Add `createdAt` timestamp
+     * @return array
+     */
+    public function toArray()
+    {
+        return array_merge(parent::toArray(), [
+            'createdAt' => $this->created_at ? $this->created_at->getTimestamp() : null,
+        ]);
+    }
 }

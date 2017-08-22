@@ -353,6 +353,7 @@ Returns an array of Orders, where is is an object with the following attributes:
 * `*.credits.*.uuid` (string) UUID of the Credit
 * `*.credits.*.note` (string) Note of the Credit
 * `*.credits.*.amount` (float) Amount of the Credit
+* `*.credits.*.createdAt` (integer) Timestamp of the creation date
 * `*.roomSelections` (array) List of RoomSelections
 * `*.roomSelections.*.uuid` (string) UUID of the RoomSelections
 * `*.roomSelections.*.startDate` (number) Timestamp of the start date
