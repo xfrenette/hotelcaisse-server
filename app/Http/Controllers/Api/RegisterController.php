@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Api\Http\ApiResponse;
 use App\Business;
 use App\Exceptions\Api\InvalidRequestException;
+use App\Http\Requests\Api\RegisterOpen;
 use App\Register;
 use App\Support\Facades\ApiAuth;
 use Carbon\Carbon;
@@ -19,9 +20,8 @@ class RegisterController extends ApiController
      *
      * @return \App\Api\Http\ApiResponse
      */
-    public function open(Request $request)
+    public function open(RegisterOpen $request)
     {
-        $this->validateOpen($request);
         $this->validateRegisterNotOpened();
 
         $device = ApiAuth::getDevice();
@@ -83,22 +83,6 @@ class RegisterController extends ApiController
         $business->bumpVersion([Business::MODIFICATION_REGISTER]);
 
         return $apiResponse;
-    }
-
-    /**
-     * Validates the parameters for the 'open' controller method. Throws exception in case of validation error.
-     *
-     * @throws \Illuminate\Validation\ValidationException
-     * @param \Illuminate\Http\Request $request
-     */
-    public function validateOpen(Request $request)
-    {
-        $this->validate($request, [
-            'uuid' => 'bail|required|string|unique:registers',
-            'employee' => 'bail|required|string',
-            'cashAmount' => 'bail|required|numeric|min:0',
-            'openedAt' => 'sometimes|required|numeric|min:0|not_in:0',
-        ]);
     }
 
     /**
