@@ -32,10 +32,9 @@ class RegisterController extends ApiController
         ]);
         $register->device()->associate($device);
         $register->open($request->json('data.employee'), $request->json('data.cashAmount'));
-        if ($openedAt = $request->json('data.openedAt')) {
-            if ($openedAt <= Carbon::now()->getTimestamp()) {
-                $register->opened_at = Carbon::createFromTimestamp($openedAt);
-            }
+        $openedAt = $request->json('data.openedAt', false);
+        if ($openedAt && $openedAt <= Carbon::now()->getTimestamp()) {
+            $register->opened_at = Carbon::createFromTimestamp($openedAt);
         }
         $register->save();
 
@@ -77,6 +76,10 @@ class RegisterController extends ApiController
             $request->json('data.POSTRef'),
             $request->json('data.POSTAmount')
         );
+        $closedAt = $request->json('data.closedAt', false);
+        if ($closedAt && $closedAt <= Carbon::now()->getTimestamp()) {
+            $currentRegister->closed_at = Carbon::createFromTimestamp($closedAt);
+        }
         $currentRegister->save();
 
         // Bump the business version
@@ -98,6 +101,7 @@ class RegisterController extends ApiController
             'cashAmount' => 'bail|required|numeric|min:0',
             'POSTRef' => 'bail|required|string',
             'POSTAmount' => 'bail|required|numeric|min:0',
+            'closedAt' => 'sometimes|required|numeric|min:0|not_in:0',
         ]);
     }
 }

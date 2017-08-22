@@ -13,6 +13,15 @@ All request are POST with a Content-Type of `application/json` and a JSON body h
 Also, all API request are relative to a "team". This is determine by the URL. Ex:
 `https://{my-team-slug}.example.com/api`.
 
+`timestamp` attribute type
+---
+
+Some attributes in the request (not response) are of type `timestamp`. This is an integer which represents the number of
+seconds since Epoch. If optional, unless otherwise noted, the server will default to the current timestamp. Also, if the
+timestamp is in the future (from the server's point of view), the server will use the current timestamp instead. The
+server trusts that the client has the correct time and will use the timestamp provided without check (except for
+future).
+
 Response format
 ===
 
@@ -159,9 +168,7 @@ have a current register that is already opened, else an error will be returned a
 * `uuid`: (string) Client generated UUID for the new Register (must be unique)
 * `employee`: (string) Name of the employee opening the register
 * `cashAmount`: (float, >= 0) Amount of cash in the register at opening
-* `openedAt`: (optional, integer) Timestamp (seconds) when the register was opened. If not set, the server will use its
-    current time. Be sure the client has valid time. If the timestamp is in the future (from the server point of view),
-    it will default to the server's current time.
+* `openedAt`: (optional, timestamp) Timestamp when the register was opened
 
 ### Response `data`
 None returned
@@ -178,6 +185,7 @@ assigned with the same UUID, else an error will be returned and the call will be
 * `cashAmount`: (float, >= 0) Amount of cash in the register at opening
 * `POSTRef`: (string) Reference number of the Point Of Sale Terminal (POST) batch
 * `POSTAmount`: (float, >= 0) Amount of the POST batch
+* `closedAt`: (optional, timestamp) Timestamp when the register was closed
 
 ### Response `data`
 None returned

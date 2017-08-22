@@ -32,6 +32,7 @@ class RegisterControllerTest extends TestCase
             'cashAmount' => 12.34,
             'POSTRef' => 'Test POST ref',
             'POSTAmount' => 45.67,
+            'closedAt' => 1503410614, // 08/22/2017 @ 2:03pm (UTC)
         ],
     ];
 
