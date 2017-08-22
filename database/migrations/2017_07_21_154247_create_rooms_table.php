@@ -15,9 +15,10 @@ class CreateRoomsTable extends Migration
     {
         Schema::create('rooms', function (Blueprint $table) {
             $table->increments('id');
-            $table->timestamps();
             $table->string('name', 100);
             $table->integer('business_id')->unsigned();
+            $table->softDeletes();
+            $table->timestamps();
 
             $table->foreign('business_id')->references('id')->on('businesses');
         });
