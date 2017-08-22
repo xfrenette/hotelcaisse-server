@@ -100,6 +100,7 @@ class OrdersControllerTest extends TestCase
                 'uuid' => $faker->uuid(),
                 'note' => $faker->words(5, true),
                 'amount' => $amount == 0 ? 1 : $amount,
+                'createdAt' => 1503410614, // 08/22/2017 @ 2:03pm (UTC)
             ];
         }
 

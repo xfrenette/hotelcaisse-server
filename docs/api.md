@@ -235,6 +235,7 @@ case or if any validation error occurs, an error is returned and the request is 
 * `credits.*.uuid`: (string) Generated UUID for this credit
 * `credits.*.note`: (string) Note for this credit
 * `credits.*.amount`: (float, > 0) Amount for this credit
+* `credits.*.createdAt`: (timestamp, optional) Timestamp of the creation date
 * `transactions`: (array, optional) Transactions of the Order (see next lines)
 * `transactions.*.uuid`: (string) Generated UUID for this transaction
 * `transactions.*.amount`: (float, != 0) Amount of this transaction (positive means payment, negative means refund)
@@ -292,6 +293,7 @@ Some attributes are "editable lists", others are "add-only lists".
 * `credits.*.uuid`: (string) UUID of this credit (a new one if creating, an existing one if editing)
 * `credits.*.note`: (string) Note for this credit
 * `credits.*.amount`: (float, > 0) Amount for this credit
+* `credits.*.createdAt`: (timestamp, optional) Timestamp of the creation date (only used for new credits)
 * `transactions`: ("add-only list", array, optional) Transactions of the Order (see next lines)
 * `transactions.*.uuid`: (string) Generated UUID for this transaction
 * `transactions.*.amount`: (float, != 0) Amount of this transaction (positive means payment, negative means refund)

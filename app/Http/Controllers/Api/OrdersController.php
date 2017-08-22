@@ -213,6 +213,7 @@ class OrdersController extends ApiController
             'credits.*.uuid' => 'bail|required|string' . ($isNew ? '|unique:credits' : ''),
             'credits.*.note' => 'bail|required|string',
             'credits.*.amount' => 'bail|required|numeric|min:0|not_in:0',
+            'credits.*.createdAt' => 'sometimes|required|numeric|min:0|not_in:0',
             'transactions' => 'sometimes|array',
             'transactions.*.uuid' => 'bail|required|string|unique:transactions',
             'transactions.*.amount' => 'bail|required|numeric|not_in:0',
@@ -354,6 +355,10 @@ class OrdersController extends ApiController
         foreach ($credits as $creditData) {
             $credit = new Credit($creditData);
             $credit->order()->associate($order);
+            $createdAt = array_get($creditData, 'createdAt', false);
+            if ($createdAt && $createdAt <= Carbon::now()->getTimestamp()) {
+                $credit->created_at = Carbon::createFromTimestamp($createdAt);
+            }
             $credit->save();
         }
     }
