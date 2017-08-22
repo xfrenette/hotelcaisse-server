@@ -6,12 +6,14 @@ use App\Order;
 use App\Register;
 use App\Transaction;
 use App\TransactionMode;
+use Carbon\Carbon;
 use Tests\TestCase;
 
 class TransactionTest extends TestCase
 {
     public function testToArray()
     {
+        $date = Carbon::yesterday();
 
         $transactionMode = new TransactionMode([
             'name' => 'test-transaction-mode',
@@ -23,6 +25,7 @@ class TransactionTest extends TestCase
             'uuid' => 'test-uuid',
             'amount' =>12.32,
             'transactionMode' => $transactionMode->toArray(),
+            'createdAt' => $date->getTimestamp(),
         ];
 
         $order = new Order();
@@ -33,6 +36,7 @@ class TransactionTest extends TestCase
 
         $transaction = new Transaction($expected);
         $transaction->id = 789;
+        $transaction->created_at = $date;
         $transaction->transactionMode()->associate($transactionMode);
         $transaction->order()->associate($order);
         $transaction->register()->associate($register);

@@ -45,18 +45,14 @@ class Transaction extends Model
     }
 
     /**
-     * Rename transaction_mode to transactionMode.
+     * Camel case keys and add createdAt timestamp
      *
      * @return array
      */
     public function toArray()
     {
-        $array = parent::toArray();
-
-        if (array_key_exists('transaction_mode', $array)) {
-            $array['transactionMode'] = $array['transaction_mode'];
-            unset($array['transaction_mode']);
-        }
+        $array = array_camel_case_keys(parent::toArray());
+        $array['createdAt'] = $this->created_at ? $this->created_at->getTimestamp() : null;
 
         return $array;
     }

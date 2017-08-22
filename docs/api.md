@@ -333,8 +333,8 @@ Returns an array of Orders, where is is an object with the following attributes:
 * `*.customer.fieldValues.*.value` (string) Value of the Field
 * `*.items` (array) Items of the Order
 * `*.items.*.uuid` (string) UUID of the Item
-* `*.items.*.quantity` (float) Quantity of the Item (if negative, the item is a refunded item)
 * `*.items.*.createdAt` (int) Timestamp of the creation date
+* `*.items.*.quantity` (float) Quantity of the Item (if negative, the item is a refunded item)
 * `*.items.*.product` (object) Product info
 * `*.items.*.product.name` (string) Full name of the Item
 * `*.items.*.product.price` (float) Unit price of the Product
@@ -345,6 +345,7 @@ Returns an array of Orders, where is is an object with the following attributes:
         percentage, if it was a percentage.
 * `*.transactions` (array) List of Transactions
 * `*.transactions.*.uuid` (string) UUID of the Transaction
+* `*.transactions.*.createdAt` (integer) Timestamp of the creation date
 * `*.transactions.*.amount` (float) Amount of the Transaction (if negative, it is a refund)
 * `*.transactions.*.transactionMode` (object) TransactionMode of this transactions
 * `*.transactions.*.transactionMode.id` (number) Id of the TransactionMode
@@ -352,9 +353,9 @@ Returns an array of Orders, where is is an object with the following attributes:
 * `*.transactions.*.transactionMode.type` (string|null) Type of the TransactionMode
 * `*.credits` (array) List of Credits
 * `*.credits.*.uuid` (string) UUID of the Credit
+* `*.credits.*.createdAt` (integer) Timestamp of the creation date
 * `*.credits.*.note` (string) Note of the Credit
 * `*.credits.*.amount` (float) Amount of the Credit
-* `*.credits.*.createdAt` (integer) Timestamp of the creation date
 * `*.roomSelections` (array) List of RoomSelections
 * `*.roomSelections.*.uuid` (string) UUID of the RoomSelections
 * `*.roomSelections.*.startDate` (number) Timestamp of the start date
