@@ -237,6 +237,10 @@ class OrdersController extends ApiController
             'roomSelections.*.fieldValues.*.value' => 'bail|required|string',
         ];
 
+        if ($isNew) {
+            $rules['createdAt'] = 'sometimes|required|numeric|min:0|not_in:0';
+        }
+
         // Conditional validation for roomSelections.*.endDate to be 1 day after startDate
         $roomSelections = array_get($data, 'roomSelections', []);
 
@@ -275,6 +279,10 @@ class OrdersController extends ApiController
 
             $customer = $this->createCustomer($data, $business);
             $order->customer()->associate($customer);
+            $createdAt = array_get($data, 'createdAt', false);
+            if ($createdAt && $createdAt <= Carbon::now()->getTimestamp()) {
+                $order->created_at = Carbon::createFromTimestamp($createdAt);
+            }
             $order->save();
 
             $this->addOrderCredits($order, $data);

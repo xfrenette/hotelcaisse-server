@@ -62,6 +62,7 @@ class OrdersControllerTest extends TestCase
 
         $data = [
             'uuid' => $faker->uuid(),
+            'createdAt' => 1503410614, // 08/22/2017 @ 2:03pm (UTC)
             'note' => $faker->words(5, true),
             'customer' => [
                 'fieldValues' => [
