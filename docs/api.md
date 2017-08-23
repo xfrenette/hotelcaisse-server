@@ -97,7 +97,14 @@ in the request). The object has the following attributes:
 * `products.*.taxes` (array, optional) List of tax amounts applied for a single unit
 * `products.*.taxes.*.taxId` (number) Id of the tax that is applied (see `taxes.*.id)
 * `products.*.taxes.*.amount` (float) Effective (absolute, in money) amount of the tax for a single unit
-* `products.*.variants` (array) Array of ids of the variant products (see `products.*.id`)
+* `products.*.variants` (array) Array of variants, which are products
+* `products.*.variants.*.id` (number) Id of the variant
+* `products.*.variants.*.name` (string) Name of the variant
+* `products.*.variants.*.description` (string, optional) Description of the variant
+* `products.*.variants.*.price` (float) Unit price of the variant
+* `products.*.variants.*.taxes` (array, optional) List of tax amounts applied for a single unit
+* `products.*.variants.*.taxes.*.taxId` (number) Id of the tax that is applied (see `taxes.*.id)
+* `products.*.variants.*.taxes.*.amount` (float) Effective (absolute, in money) amount of the tax for a single unit
 * `customerFields` (array) Fields for a new Customer
 * `customerFields.*.id` (number) Id of the field
 * `customerFields.*.type` (string) Type of this field

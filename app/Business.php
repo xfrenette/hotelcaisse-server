@@ -86,11 +86,14 @@ class Business extends Model
     }
 
     /**
+     * Return all the products of this Business (but not their respective variants, only the
+     * 'root' products)
+     *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function products()
     {
-        return $this->hasMany('App\Product');
+        return $this->hasMany('App\Product')->whereNull('parent_id');
     }
 
     /**
@@ -339,7 +342,7 @@ class Business extends Model
      */
     public function loadAllRelations()
     {
-        $this->load(['rooms', 'transactionModes', 'products', 'customerFields', 'roomSelectionFields']);
+        $this->load(['rooms', 'transactionModes', 'products.variants', 'customerFields', 'roomSelectionFields']);
     }
 
     /**

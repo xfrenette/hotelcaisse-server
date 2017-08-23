@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Business;
 use App\Field;
-use App\Product;
 use App\ProductCategory;
 use App\Room;
 use App\TransactionMode;
@@ -26,6 +25,20 @@ class BusinessTest extends TestCase
     {
         parent::setUp();
         $this->business = factory(Business::class)->create();
+    }
+
+    // Uses seeded data
+    public function testProducts()
+    {
+        $business = Business::first();
+
+        // Test we only have top level products (not variants)
+        $count = DB::table('products')
+            ->where('business_id', $business->id)
+            ->whereNull('parent_id')
+            ->count();
+
+        $this->assertEquals($count, $business->products()->count());
     }
 
     public function testVersionReturnsNullIfNoVersion()
@@ -188,7 +201,6 @@ class BusinessTest extends TestCase
         $simpleRelations = [
             'rooms' => Room::class,
             'transactionModes' => TransactionMode::class,
-            'products' => Product::class,
         ];
 
         // For each $simpleRelations, check the count is the correct and that at least one has the same `name` attribute
@@ -202,6 +214,9 @@ class BusinessTest extends TestCase
             }, false);
             $this->assertEquals($sampleData['name'], $sampleModel->name);
         }
+
+        // Check we have the correct number of products
+        $this->assertCount($business->products()->count(), $array['products']);
 
         // Check the products are present with taxes and variants, where applicable
         $this->assertNotEmpty($array['products'][0]['taxes']);

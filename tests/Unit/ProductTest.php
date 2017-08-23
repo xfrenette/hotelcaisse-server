@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Business;
 use App\Product;
+use Mockery as m;
 use Tests\TestCase;
 
 class ProductTest extends TestCase
@@ -16,17 +17,19 @@ class ProductTest extends TestCase
             'description' => 'test description',
             'price' => 12.34,
             'taxes' => [
-                ['taxId' => 7878, 'amount' => 12.34],
-                ['taxId' => 2121, 'amount' => 14.68],
+                ['taxId' => 7878, 'amount' => 12.34, 'name' => 'Tax 1'],
+                ['taxId' => 2121, 'amount' => 14.68, 'name' => 'Tax 2'],
             ],
-            'variants' => [963, 852],
+            'variants' => [
+                ['id' => 963, 'name' => 'Test variant 1'],
+                ['id' => 852, 'name' => 'Test variant 2'],
+            ],
         ];
 
         $variants = collect();
-        foreach ($expected['variants'] as $variantId) {
+        foreach ($expected['variants'] as $variantData) {
             $variant = $this->makeMockedProductWithTaxes();
-            $variant->fill(['name' => 'Test name #'.$variantId]);
-            $variant->id = $variantId;
+            $variant->shouldReceive('toArray')->andReturn($variantData);
             $variants->push($variant);
         }
 
@@ -47,11 +50,8 @@ class ProductTest extends TestCase
 
     protected function makeMockedProductWithTaxes($taxes = [])
     {
-        $product = $this->getMockBuilder(Product::class)
-            ->setMethods(['getAppliedTaxesAttribute'])
-            ->getMock();
-        $product->method('getAppliedTaxesAttribute')
-            ->willReturn($taxes);
+        $product = m::mock(Product::class)->makePartial();
+        $product->shouldReceive('getAppliedTaxesAttribute')->andReturn($taxes);
 
         return $product;
     }

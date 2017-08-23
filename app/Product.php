@@ -21,7 +21,7 @@ class Product extends Model
      *
      * @var array
      */
-    protected $visible = ['id', 'name', 'price', 'description', 'appliedTaxes'];
+    protected $visible = ['id', 'name', 'price', 'description', 'appliedTaxes', 'variants'];
 
     /**
      * The accessors to append to the model's array form.
@@ -127,7 +127,7 @@ class Product extends Model
     }
 
     /**
-     * Redefined the toArray to rename `appliedTaxes` to `taxes`, and to make `variants` an array of ids.
+     * Redefined the toArray to rename `appliedTaxes` to `taxes`
      *
      * @return array
      */
@@ -139,8 +139,6 @@ class Product extends Model
             $array['taxes'] = $array['appliedTaxes'];
             unset($array['appliedTaxes']);
         }
-
-        $array['variants'] = $this->variants->pluck('id')->toArray();
 
         return $array;
     }
