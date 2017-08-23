@@ -95,7 +95,7 @@ in the request). The object has the following attributes:
 * `products.*.description` (string, optional) Description of the product
 * `products.*.price` (float) Unit price of the product
 * `products.*.taxes` (array, optional) List of tax amounts applied for a single unit
-* `products.*.taxes.*.id` (number) Id of the tax (see `taxes.*.id)
+* `products.*.taxes.*.taxId` (number) Id of the tax that is applied (see `taxes.*.id)
 * `products.*.taxes.*.amount` (float) Effective (absolute, in money) amount of the tax for a single unit
 * `products.*.variants` (array) Array of ids of the variant products (see `products.*.id`)
 * `customerFields` (array) Fields for a new Customer
@@ -252,7 +252,7 @@ case or if any validation error occurs, an error is returned and the request is 
 * `items.*.product.price`: (float, >= 0) Unit price (before taxes) this product was sold (positive, even if it is a refunded item)
 * `items.*.product.productId`: (numeric, optional) Unless this is a custom product, id of the original Business' Product
 * `items.*.product.taxes`: (array, optional) Taxes applied for a unit of the product
-* `items.*.product.taxes.*.id`: (numeric) Id of the Tax
+* `items.*.product.taxes.*.taxId`: (numeric) Id of the Tax that is applied
 * `items.*.product.taxes.*.amount`: (float, > 0) Applied amount (absolute, no percentage) for a single unit
 * `roomSelections`: (array, optional) List of RoomSelections (see next lines)
 * `roomSelections.*.uuid`: (string) Generated UUID for this RoomSelections
@@ -312,7 +312,7 @@ Some attributes are "editable lists", others are "add-only lists".
 * `items.*.product.price`: (float, >= 0) Unit price (before taxes) this product was sold (positive, even if it is a refunded item)
 * `items.*.product.productId`: (numeric, optional) Unless this is a custom product, id of the original Business' Product
 * `items.*.product.taxes`: (array, optional) Taxes applied for a unit of the product
-* `items.*.product.taxes.*.id`: (numeric) Id of the Tax
+* `items.*.product.taxes.*.taxId`: (numeric) Id of the Tax that is applied
 * `items.*.product.taxes.*.amount`: (float, > 0) Applied amount (absolute, no percentage) for a single unit
 * `roomSelections`: ("editable list", array, optional) List of RoomSelections (see next lines)
 * `roomSelections.*.uuid`: (string) UUID for this RoomSelections (a new one if creating, an existing one if editing)
@@ -360,8 +360,7 @@ Returns an array of Orders, where is is an object with the following attributes:
 * `*.items.*.product.name` (string) Full name of the Item
 * `*.items.*.product.price` (float) Unit price of the Product
 * `*.items.*.product.taxes` (array) List of applied taxes for a unit.
-* `*.items.*.product.taxes.*.id` (number) Id of the Tax object that was used to calculate the amount. The Tax may no
-        longer exist when the Order is viewed.
+* `*.items.*.product.taxes.*.taxId` (number) Id of the Tax that is applied
 * `*.items.*.product.taxes.*.amount` (float) Unit amount of tax for this product. This is the money amount applied, not
         percentage, if it was a percentage.
 * `*.transactions` (array) List of Transactions

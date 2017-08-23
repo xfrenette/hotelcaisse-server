@@ -73,7 +73,7 @@ class Product extends Model
 
             $appliedAmount = $tax['type'] === 'absolute' ? $tax['amount'] : ($tax['amount'] / 100) * $price;
             $appliedTaxes->push([
-                'id' => $tax['id'],
+                'taxId' => $tax['taxId'],
                 'amount' => $appliedAmount,
             ]);
         });
@@ -117,7 +117,7 @@ class Product extends Model
         // For each row, merge the redefined tax with the default values.
         $taxes = $query->get()->map(function ($tax) {
             return [
-                'id' => $tax->id,
+                'taxId' => $tax->id,
                 'type' => is_null($tax->new_type) ? $tax->type : $tax->new_type,
                 'amount' => is_null($tax->new_amount) ? $tax->amount : $tax->new_amount,
             ];

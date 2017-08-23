@@ -37,8 +37,8 @@ class ItemProductTest extends TestCase
         $tax2->save();
 
         $taxes = [
-            ['id' => $tax1->id, 'amount' => 12.34],
-            ['id' => $tax2->id, 'amount' => 45.67],
+            ['taxId' => $tax1->id, 'amount' => 12.34],
+            ['taxId' => $tax2->id, 'amount' => 45.67],
         ];
 
         $this->itemProduct->setTaxes($taxes);
@@ -51,6 +51,6 @@ class ItemProductTest extends TestCase
 
         $this->assertEquals(count($taxes), $res->count());
         $this->assertEquals($taxes[1]['amount'], $res[1]->amount);
-        $this->assertEquals($taxes[1]['id'], $res[1]->tax_id);
+        $this->assertEquals($taxes[1]['taxId'], $res[1]->tax_id);
     }
 }

@@ -228,7 +228,7 @@ class OrdersController extends ApiController
             'items.*.product.price' => 'bail|required|numeric|min:0',
             'items.*.product.productId' => 'sometimes|nullable|exists:products,id',
             'items.*.product.taxes' => 'sometimes|array',
-            'items.*.product.taxes.*.id' => 'bail|required|exists:taxes,id',
+            'items.*.product.taxes.*.taxId' => 'bail|required|exists:taxes,id',
             'items.*.product.taxes.*.amount' => 'bail|required|numeric|min:0|not_in:0',
             'roomSelections' => 'sometimes|array',
             'roomSelections.*.uuid' => 'bail|required|string' . ($isNew ? '|unique:room_selections' : ''),

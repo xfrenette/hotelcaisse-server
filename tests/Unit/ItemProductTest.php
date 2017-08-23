@@ -11,8 +11,8 @@ class ItemProductTest extends TestCase
     public function testToArray()
     {
         $taxes = [
-            ['tax_id' => 123, 'amount' => 12.34],
-            ['tax_id' => 345, 'amount' => 45.5687],
+            ['taxId' => 123, 'amount' => 12.34],
+            ['taxId' => 345, 'amount' => 45.5687],
         ];
 
         $expected = [

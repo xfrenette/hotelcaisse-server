@@ -63,7 +63,7 @@ class ProductTest extends TestCase
         $expectedAmount = ($tax->amount / 100) * $this->product->price;
         $res = $this->product->appliedTaxes;
         $this->assertEquals(1, $res->count());
-        $this->assertEquals($res[0], ['id' => $tax->id, 'amount' => $expectedAmount]);
+        $this->assertEquals($res[0], ['taxId' => $tax->id, 'amount' => $expectedAmount]);
     }
 
     public function testAppliedTaxesAppliesDefaultAbsolute()
@@ -75,7 +75,7 @@ class ProductTest extends TestCase
         $expectedAmount = $tax->amount;
         $res = $this->product->appliedTaxes;
         $this->assertEquals(1, $res->count());
-        $this->assertEquals($res[0], ['id' => $tax->id, 'amount' => $expectedAmount]);
+        $this->assertEquals($res[0], ['taxId' => $tax->id, 'amount' => $expectedAmount]);
     }
 
     public function testAppliedTaxesAppliesRedefinedPercentage()
@@ -90,7 +90,7 @@ class ProductTest extends TestCase
         $expectedAmount = ($newAmount / 100) * $this->product->price;
         $res = $this->product->appliedTaxes;
         $this->assertEquals(1, $res->count());
-        $this->assertEquals($res[0], ['id' => $tax->id, 'amount' => $expectedAmount]);
+        $this->assertEquals($res[0], ['taxId' => $tax->id, 'amount' => $expectedAmount]);
     }
 
     public function testAppliedTaxesAppliesRedefinedAbsolute()
@@ -105,7 +105,7 @@ class ProductTest extends TestCase
         $expectedAmount = $newAmount;
         $res = $this->product->appliedTaxes;
         $this->assertEquals(1, $res->count());
-        $this->assertEquals($res[0], ['id' => $tax->id, 'amount' => $expectedAmount]);
+        $this->assertEquals($res[0], ['taxId' => $tax->id, 'amount' => $expectedAmount]);
     }
 
     public function testAppliedTaxesIncludesDefaultTaxes()
@@ -115,7 +115,7 @@ class ProductTest extends TestCase
         $tax->save();
 
         $res = $this->product->appliedTaxes;
-        $this->assertEquals($res[0], ['id' => $tax->id, 'amount' => $tax->amount]);
+        $this->assertEquals($res[0], ['taxId' => $tax->id, 'amount' => $tax->amount]);
     }
 
     public function testAppliedTaxesIncludesRedefinedNonDefaultTaxes()
@@ -128,7 +128,7 @@ class ProductTest extends TestCase
         $this->insertRedefinedTax($this->product, $tax, $amount);
 
         $res = $this->product->appliedTaxes;
-        $this->assertEquals($res[0], ['id' => $tax->id, 'amount' => $amount]);
+        $this->assertEquals($res[0], ['taxId' => $tax->id, 'amount' => $amount]);
     }
 
     public function testAppliedTaxesDoesNotIncludeNonRedefinedNonDefault()

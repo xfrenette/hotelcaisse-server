@@ -48,14 +48,14 @@ class ItemProduct extends Model
     }
 
     /**
-     * Returns a Collection of array with `tax_id` and `amount` keys
+     * Returns a Collection of array with `taxId` and `amount` keys
      *
      * @return \Illuminate\Support\Collection
      */
     public function getTaxesAttribute()
     {
         return DB::table($this->appliedTaxesTable)
-            ->select(['tax_id as id', 'amount'])
+            ->select(['tax_id as taxId', 'amount'])
             ->where([
                 'type' => 'ItemProduct',
                 'instance_id' => $this->id,
@@ -69,7 +69,7 @@ class ItemProduct extends Model
      * Defines the 'applied taxes' to a single unit of this ItemProduct. $taxes is an array where each element is an
      * array with 'tax_id' key (reference to a Tax) and 'amount' (absolute amount, float).
      *
-     * @param array $taxes With keys `tax`(integer, tax id) and `amount` (float, absolute amount)
+     * @param array $taxes With keys `taxId`(integer, tax id) and `amount` (float, absolute amount)
      */
     public function setTaxes($taxes)
     {
@@ -80,7 +80,7 @@ class ItemProduct extends Model
                 'type' => 'ItemProduct',
                 'amount' => $taxData['amount'],
                 'instance_id' => $selfID,
-                'tax_id' => $taxData['id'],
+                'tax_id' => $taxData['taxId'],
             ];
         }, $taxes);
 

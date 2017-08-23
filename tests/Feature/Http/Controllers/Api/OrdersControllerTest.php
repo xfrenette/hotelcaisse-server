@@ -127,7 +127,7 @@ class OrdersControllerTest extends TestCase
                     ->get()
                     ->map(function ($tax) use ($faker) {
                         return [
-                            'id' => $tax->id,
+                            'taxId' => $tax->id,
                             'amount' => $faker->randomFloat(4, 0, 20),
                         ];
                     })->toArray();
@@ -530,7 +530,7 @@ class OrdersControllerTest extends TestCase
         $this->assertValidatesRequestData(
             [$this->controller, 'validateNew'],
             $data,
-            'data.items.1.product.taxes.1.id',
+            'data.items.1.product.taxes.1.taxId',
             $values
         );
     }
@@ -738,7 +738,7 @@ class OrdersControllerTest extends TestCase
         $product = $order->items[1]->product;
         $taxes = $product->taxes;
         $this->assertEquals(count(array_get($data, 'data.items.1.product.taxes')), $taxes->count());
-        $this->assertEquals(array_get($data, 'data.items.1.product.taxes.1.id'), $taxes[1]['id']);
+        $this->assertEquals(array_get($data, 'data.items.1.product.taxes.1.taxId'), $taxes[1]['taxId']);
         $this->assertEquals(array_get($data, 'data.items.1.product.taxes.1.amount'), $taxes[1]['amount']);
     }
 
@@ -1016,7 +1016,7 @@ class OrdersControllerTest extends TestCase
     {
         $data = $this->generateEditData();
         $values = [null, -1, 'test'];
-        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.items.1.product.taxes.1.id', $values);
+        $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.items.1.product.taxes.1.taxId', $values);
     }
 
     public function testValidateEditReturnsErrorWithInvalidItemsDataTaxesAmount()
