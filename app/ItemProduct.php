@@ -48,17 +48,21 @@ class ItemProduct extends Model
     }
 
     /**
-     * Returns a Collection of array with `taxId` and `amount` keys
+     * Returns a Collection of array with `taxId` `name` (Tax name) and `amount` keys
      *
      * @return \Illuminate\Support\Collection
      */
     public function getTaxesAttribute()
     {
-        return DB::table($this->appliedTaxesTable)
-            ->select(['tax_id as taxId', 'amount'])
+        $att = $this->appliedTaxesTable;
+        $tt = with(new Tax())->getTable();
+
+        return DB::table($att)
+            ->select(["$att.tax_id as taxId", "$att.amount as amount", "$tt.name as name"])
+            ->join($tt, "$att.tax_id", '=', "$tt.id")
             ->where([
-                'type' => 'ItemProduct',
-                'instance_id' => $this->id,
+                "$att.type" => 'ItemProduct',
+                "$att.instance_id" => $this->id,
             ])->get()
             ->map(function ($row) {
                 return get_object_vars($row);

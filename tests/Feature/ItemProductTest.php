@@ -53,4 +53,16 @@ class ItemProductTest extends TestCase
         $this->assertEquals($taxes[1]['amount'], $res[1]->amount);
         $this->assertEquals($taxes[1]['taxId'], $res[1]->tax_id);
     }
+
+    // Uses seeded data
+    public function testGetTaxesAttribute()
+    {
+        $firstApplied = DB::table('applied_taxes')->where('type', 'ItemProduct')->first();
+        $tax = Tax::find($firstApplied->tax_id);
+        $itemProduct = ItemProduct::find($firstApplied->instance_id);
+        $taxes = $itemProduct->taxes;
+        $this->assertEquals($firstApplied->amount, $taxes[0]['amount']);
+        $this->assertEquals($firstApplied->tax_id, $taxes[0]['taxId']);
+        $this->assertEquals($tax->name, $taxes[0]['name']);
+    }
 }
