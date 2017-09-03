@@ -27,7 +27,7 @@ class DeviceDataController extends ApiController
         $register = $device->currentRegister;
 
         if ($register) {
-            $register->load('cashMovements');
+            $register->loadAllRelations();
         }
 
         $response->setDeviceRegister($register);
