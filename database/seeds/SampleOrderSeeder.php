@@ -23,9 +23,19 @@ class SampleOrderSeeder extends Seeder
         $fieldValues = [];
         $customerFields = $business->customerFields;
         $customerFields->each(function ($field) use (&$fieldValues, $faker) {
+            if ($field->type === 'NumberField') {
+                $value = $faker->randomNumber(1);
+            } elseif ($field->type === 'EmailField') {
+                $value = $faker->email;
+            } elseif ($field->role === 'customer.name') {
+                $value = $faker->firstName . ' ' . $faker->lastName;
+            } else {
+                $value = $faker->word();
+            }
+
             $fieldValues[] = [
                 'fieldId' => $field->id,
-                'value' => $faker->word(),
+                'value' => $value,
             ];
         });
 
@@ -98,9 +108,17 @@ class SampleOrderSeeder extends Seeder
             $startDate->sub(new \DateInterval('PT' . $faker->numberBetween(25, 200) . 'H'));
             $fieldValues = [];
             $roomSelectionFields->each(function ($field) use (&$fieldValues, $faker) {
+                if ($field->type === 'NumberField') {
+                    $value = $faker->randomNumber(1);
+                } elseif ($field->type === 'EmailField') {
+                    $value = $faker->email;
+                } else {
+                    $value = $faker->word();
+                }
+
                 $fieldValues[] = [
                     'fieldId' => $field->id,
-                    'value' => $faker->word(),
+                    'value' =>  $value,
                 ];
             });
 

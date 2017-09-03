@@ -20,10 +20,17 @@ class BusinessCustomerFieldsSeeder extends Seeder
 
         $business = Business::first();
 
-        for ($i = 0; $i < 4; $i++) {
-            $field = factory(Field::class)->make();
-            $field->save();
+        // Customer name
+        $field = factory(Field::class)->make();
+        $field->type = 'NameField';
+        $field->role = 'customer.name';
+        $field->required = true;
+        $field->save();
+        $business->customerFields()->attach($field);
 
+        // Other fields
+        for ($i = 0; $i < 4; $i++) {
+            $field = factory(Field::class)->create();
             $business->customerFields()->attach($field);
         }
     }
