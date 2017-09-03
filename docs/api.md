@@ -38,7 +38,9 @@ All response will be JSON object with the following attributes :
     updated data. It may be a partial Business object, containing only updated attributes (ex: only `rooms` and
     `transactionModes`) or a full Business instance. See "business attribute" section below.
 * `deviceRegister`: (object) If the server determines that the device needs an up to date Register instance (the Register
-    of the device), this object will contain the (full) Register. See "deviceRegister attribute" below.
+    of the device), this object will contain the (full) Register. See "deviceRegister attribute" 
+    below. Note that `null` is a valid value: it means the device currently doesn't have an 
+    active Register (ex: this is a new device).
 * `token`: (string) if the device is correctly authenticated, contains the token to send in the next request. It can be
     different than the one used in the current request, so always use in your requests the one received in the last
     response. Note that if you make a request and an error is returned, the error will probably not have a `token`. For
@@ -80,9 +82,6 @@ in the request). The object has the following attributes:
 * `rooms.*.id` (number) Id of the room
 * `rooms.*.name` (string) Name of the room
 * `rooms.*.archived` (false) If false, can be used for new RoomSelection (so will always be false)
-* `taxes` (array) List of taxes used in the system
-* `taxes.*.id` (number) Id of the tax
-* `taxes.*.name` (string) Name of the tax
 * `transactionModes` (array) List of currently available transaction modes
 * `transactionModes.*.id` (number) Id of the transaction mode
 * `transactionModes.*.name` (string) Name of the transaction mode
@@ -96,6 +95,7 @@ in the request). The object has the following attributes:
 * `products.*.price` (float) Unit price of the product
 * `products.*.taxes` (array, optional) List of tax amounts applied for a single unit
 * `products.*.taxes.*.taxId` (number) Id of the tax that is applied (see `taxes.*.id)
+* `products.*.taxes.*.name` (string) Name of the applied tax
 * `products.*.taxes.*.amount` (float) Effective (absolute, in money) amount of the tax for a single unit
 * `products.*.variants` (array) Array of variants, which are products
 * `products.*.variants.*.id` (number) Id of the variant
@@ -364,6 +364,7 @@ Returns an array of Orders, where is is an object with the following attributes:
 * `*.items.*.createdAt` (int) Timestamp of the creation date
 * `*.items.*.quantity` (float) Quantity of the Item (if negative, the item is a refunded item)
 * `*.items.*.product` (object) Product info
+* `*.items.*.product.id` (number) Id of the original referenced Product. Null if a custom product.
 * `*.items.*.product.name` (string) Full name of the Item
 * `*.items.*.product.price` (float) Unit price of the Product
 * `*.items.*.product.taxes` (array) List of applied taxes for a unit.
