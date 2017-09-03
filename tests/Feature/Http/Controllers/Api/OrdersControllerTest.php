@@ -299,7 +299,7 @@ class OrdersControllerTest extends TestCase
 
         // test customer.fieldValues.*.value
         $data = $this->generateNewData();
-        $values = [null, false, 2];
+        $values = [];
         $this->assertValidatesRequestData(
             [$this->controller, 'validateNew'],
             $data,
@@ -637,7 +637,7 @@ class OrdersControllerTest extends TestCase
 
         // test customer.fieldValues.*.value
         $data = $this->generateNewData();
-        $values = [null, false, 2];
+        $values = [];
         $this->assertValidatesRequestData([$this->controller, 'validateNew'], $data, 'data.roomSelections.1.fieldValues.0.value', $values);
     }
 
@@ -886,7 +886,7 @@ class OrdersControllerTest extends TestCase
 
         // test customer.fieldValues.*.value
         $data = $this->generateEditData();
-        $values = [null, false, 2];
+        $values = [];
         $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.customer.fieldValues.0.value', $values);
     }
 
@@ -1091,7 +1091,7 @@ class OrdersControllerTest extends TestCase
 
         // test customer.fieldValues.*.value
         $data = $this->generateEditData();
-        $values = [null, false, 2];
+        $values = [];
         $this->assertValidatesRequestData([$this->controller, 'validateEdit'], $data, 'data.roomSelections.1.fieldValues.0.value', $values);
     }
 

@@ -239,7 +239,7 @@ case or if any validation error occurs, an error is returned and the request is 
 * `customer`: (array) Data for Customer (see next lines)
 * `customer.fieldValues`: (array) Field values (see next lines)
 * `customer.fieldValues.*.fieldId`: (number) Id of the Field
-* `customer.fieldValues.*.value`: (string) Value for the Field
+* `customer.fieldValues.*.value`: (string|number) Value for the Field
 * `credits`: (array, optional) Credits of the Order (see next lines)
 * `credits.*.uuid`: (string) Generated UUID for this credit
 * `credits.*.note`: (string) Note for this credit
@@ -268,7 +268,7 @@ case or if any validation error occurs, an error is returned and the request is 
 * `roomSelections.*.roomId`: (numeric) Id of the Room
 * `roomSelections.*.fieldValues`: (array) Field values for the RoomSelection (see below)
 * `roomSelections.*.fieldValues.*.fieldId`: (numeric) Id of the Field
-* `roomSelections.*.fieldValues.*.value`: (string) Value for the Field
+* `roomSelections.*.fieldValues.*.value`: (string|number) Value for the Field
 
 **Notes**
 * `transactions.*.transactionModeId`: the client does not have to worry if this id references a still
@@ -299,7 +299,7 @@ Some attributes are "editable lists", others are "add-only lists".
 * `customer`: (array, optional) Data for Customer (see next lines)
 * `customer.fieldValues`: ("editable list", array) Field values (see next lines)
 * `customer.fieldValues.*.fieldId`: (number) Id of the Field
-* `customer.fieldValues.*.value`: (string) Value for the Field
+* `customer.fieldValues.*.value`: (string|number) Value for the Field
 * `credits`: ("editable list", array, optional) Credits of the Order (see next lines)
 * `credits.*.uuid`: (string) UUID of this credit (a new one if creating, an existing one if editing)
 * `credits.*.note`: (string) Note for this credit
@@ -328,7 +328,7 @@ Some attributes are "editable lists", others are "add-only lists".
 * `roomSelections.*.roomId`: (numeric) Id of the Room
 * `roomSelections.*.fieldValues`: (array) Field values for the RoomSelection (see below)
 * `roomSelections.*.fieldValues.*.fieldId`: (numeric) Id of the Field
-* `roomSelections.*.fieldValues.*.value`: (string) Value for the Field
+* `roomSelections.*.fieldValues.*.value`: (string|number) Value for the Field
 
 **Notes**
 * `transactions.*.transactionModeId`: see note in `POST /orders/create`.
@@ -358,7 +358,7 @@ Returns an array of Orders, where is is an object with the following attributes:
 * `*.customer` (object) Customer info of the Order
 * `*.customer.fieldValues` (array) Field values
 * `*.customer.fieldValues.*.fieldId` (number) Id of the Field
-* `*.customer.fieldValues.*.value` (string) Value of the Field
+* `*.customer.fieldValues.*.value` (string|number) Value of the Field
 * `*.items` (array) Items of the Order
 * `*.items.*.uuid` (string) UUID of the Item
 * `*.items.*.createdAt` (int) Timestamp of the creation date

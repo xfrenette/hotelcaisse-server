@@ -208,7 +208,7 @@ class OrdersController extends ApiController
             'customer' => ($isNew ? 'bail|required' : 'sometimes') . '|array|min:1', // min:1 required
             'customer.fieldValues' => 'bail|required_with:customer|array|min:1',
             'customer.fieldValues.*.fieldId' => 'bail|required|exists:fields,id',
-            'customer.fieldValues.*.value' => 'bail|required|string',
+            'customer.fieldValues.*.value' => 'present',
             'credits' => 'sometimes|array',
             'credits.*.uuid' => 'bail|required|string' . ($isNew ? '|unique:credits' : ''),
             'credits.*.note' => 'bail|required|string',
@@ -237,7 +237,7 @@ class OrdersController extends ApiController
             'roomSelections.*.roomId' => 'bail|required|exists:rooms,id',
             'roomSelections.*.fieldValues' => 'bail|required|array|min:1',
             'roomSelections.*.fieldValues.*.fieldId' => 'bail|required|exists:fields,id',
-            'roomSelections.*.fieldValues.*.value' => 'bail|required|string',
+            'roomSelections.*.fieldValues.*.value' => 'present',
         ];
 
         if ($isNew) {
