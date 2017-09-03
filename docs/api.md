@@ -265,7 +265,7 @@ case or if any validation error occurs, an error is returned and the request is 
 * `roomSelections.*.uuid`: (string) Generated UUID for this RoomSelections
 * `roomSelections.*.startDate`: (numeric) Timestamp (seconds) for the start date
 * `roomSelections.*.endDate`: (numeric) Timestamp (seconds) for the end date (must be at least 24 hours after startDate)
-* `roomSelections.*.room`: (numeric) Id of the Room
+* `roomSelections.*.roomId`: (numeric) Id of the Room
 * `roomSelections.*.fieldValues`: (array) Field values for the RoomSelection (see below)
 * `roomSelections.*.fieldValues.*.fieldId`: (numeric) Id of the Field
 * `roomSelections.*.fieldValues.*.value`: (string) Value for the Field
@@ -325,7 +325,7 @@ Some attributes are "editable lists", others are "add-only lists".
 * `roomSelections.*.uuid`: (string) UUID for this RoomSelections (a new one if creating, an existing one if editing)
 * `roomSelections.*.startDate`: (numeric) Timestamp (seconds) for the start date
 * `roomSelections.*.endDate`: (numeric) Timestamp (seconds) for the end date (must be at least 24 hours after startDate)
-* `roomSelections.*.room`: (numeric) Id of the Room
+* `roomSelections.*.roomId`: (numeric) Id of the Room
 * `roomSelections.*.fieldValues`: (array) Field values for the RoomSelection (see below)
 * `roomSelections.*.fieldValues.*.fieldId`: (numeric) Id of the Field
 * `roomSelections.*.fieldValues.*.value`: (string) Value for the Field
