@@ -2,6 +2,7 @@
 
 namespace App\Support\Traits;
 
+use App\Field;
 use Illuminate\Support\Facades\DB;
 
 trait HasFields
@@ -61,7 +62,7 @@ trait HasFields
                     'class' => $this->getFieldsClass(),
                     'field_id' => $fieldId,
                     'instance_id' => $this->id,
-                    'value' => $fieldData['value'],
+                    'value' => strval($fieldData['value']),
                 ];
             }
         }
@@ -80,24 +81,32 @@ trait HasFields
                         'field_id' => $fieldId,
                         'instance_id' => $this->id,
                     ])
-                    ->update(['value' => $value]);
+                    ->update(['value' => strval($value)]);
             }
         }
     }
 
     /**
      * Return a Collection of all the field values where each entry is an array with a `field` key (Field id) and a
-     * `value` key
+     * `value` key. Values for numeric fields are converted to number
      *
      * @return \Illuminate\Support\Collection
      */
     public function getFieldValuesAttribute()
     {
+        $vt = $this->fieldsTable;
+        $ft = with(new Field())->getTable();
+
         return $this->getFieldsQuery()
-            ->select(['field_id as fieldId', 'value'])
+            ->select(["$vt.field_id as field_id", "$vt.value as value", "$ft.type as type"])
+            ->join($ft, "$ft.id", '=', "$vt.field_id")
             ->get()
             ->map(function ($item) {
-                return get_object_vars($item);
+                $isNumber = $item->type === 'NumberField';
+                return [
+                    'fieldId' => $item->field_id,
+                    'value' => $isNumber ? floatval($item->value) : $item->value,
+                ];
             });
     }
 
@@ -113,11 +122,13 @@ trait HasFields
 
     private function getFieldsQuery()
     {
+        $t = $this->fieldsTable;
+
         /** @noinspection PhpUndefinedFieldInspection */
-        return DB::table($this->fieldsTable)
+        return DB::table($t)
             ->where([
-                'class' => $this->getFieldsClass(),
-                'instance_id' => $this->id,
+                "$t.class" => $this->getFieldsClass(),
+                "$t.instance_id" => $this->id,
             ]);
     }
 }

@@ -397,7 +397,7 @@ Returns an array of Orders, where is is an object with the following attributes:
 * `*.roomSelections.*.room.archived` (boolean) If true, this Room does not exist anymore (not valid for a new RoomSelection)
 * `*.roomSelections.fieldValues` (array) Field values
 * `*.roomSelections.fieldValues.*.fieldId` (number) Id of the Field
-* `*.roomSelections.fieldValues.*.value` (string) Value of the Field
+* `*.roomSelections.fieldValues.*.value` (string|number) Value of the Field
 
 **Notes**
 * `*.transactions.*.transactionMode`: Since the TransactionMode used when the Order was created may not exist

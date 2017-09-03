@@ -28,8 +28,12 @@ class CustomerTest extends TestCase
         parent::setUp();
         $this->customer = factory(Customer::class, 'withBusiness')->create();
         $this->business = $this->customer->business;
-        $this->field1 = factory(Field::class)->create();
-        $this->field2 = factory(Field::class)->create();
+        $this->field1 = factory(Field::class)->make();
+        $this->field1->type = 'TextField';
+        $this->field1->save();
+        $this->field2 = factory(Field::class)->make();
+        $this->field2->type = 'NumberField';
+        $this->field2->save();
     }
 
     protected function getFieldValues()
@@ -46,8 +50,8 @@ class CustomerTest extends TestCase
     public function testSetFieldValuesCreatesFields()
     {
         $fields = [
-            ['fieldId' => $this->field1->id, 'value' => 'test1'],
-            ['fieldId' => $this->field2->id, 'value' => 'test2'],
+            ['fieldId' => $this->field1->id, 'value' => 'test2'],
+            ['fieldId' => $this->field2->id, 'value' => 123],
         ];
 
         $this->customer->setFieldValues($fields);
@@ -57,7 +61,7 @@ class CustomerTest extends TestCase
         $expected = array_map(function ($field) {
             $obj = new \stdClass();
             $obj->field_id = $field['fieldId'];
-            $obj->value = $field['value'];
+            $obj->value = strval($field['value']);
             return $obj;
         }, $fields);
 
@@ -66,13 +70,13 @@ class CustomerTest extends TestCase
 
     public function testSetFieldValuesUpdatesExistingFields()
     {
-        $newValue = 'newValue';
+        $newValue = 'test';
 
         $this->customer->setFieldValues([['fieldId' => $this->field1->id, 'value' => 'oldValue']]);
 
         $fields = [
             ['fieldId' => $this->field1->id, 'value' => $newValue],
-            ['fieldId' => $this->field2->id, 'value' => 'test3'],
+            ['fieldId' => $this->field2->id, 'value' => 123],
         ];
 
         $this->customer->setFieldValues($fields);
@@ -82,7 +86,7 @@ class CustomerTest extends TestCase
         $expected = array_map(function ($field) {
             $obj = new \stdClass();
             $obj->field_id = $field['fieldId'];
-            $obj->value = $field['value'];
+            $obj->value = strval($field['value']);
             return $obj;
         }, $fields);
 
@@ -97,7 +101,7 @@ class CustomerTest extends TestCase
 
         $fields = [
             ['fieldId' => $this->field1->id, 'value' => $newValue],
-            ['fieldId' => $this->field2->id, 'value' => 'test3'],
+            ['fieldId' => $this->field2->id, 'value' => 789],
         ];
 
         $this->customer->setFieldValues($fields, false);
@@ -111,7 +115,7 @@ class CustomerTest extends TestCase
     {
         $fields = [
             ['fieldId' => $this->field1->id, 'value' => 'oldValue'],
-            ['fieldId' => $this->field2->id, 'value' => 'test3'],
+            ['fieldId' => $this->field2->id, 'value' => 321],
         ];
 
         $this->customer->setFieldValues($fields);
@@ -125,5 +129,16 @@ class CustomerTest extends TestCase
         $res = $this->getFieldValues();
 
         $this->assertEquals(1, $res->count());
+    }
+
+    public function testGetFieldValuesAttributeConvertsType()
+    {
+        $fields = [
+            ['fieldId' => $this->field2->id, 'value' => 123],
+        ];
+
+        $this->customer->setFieldValues($fields);
+        $res = $this->customer->fieldValues;
+        $this->assertInternalType('float', $res[0]['value']);
     }
 }
