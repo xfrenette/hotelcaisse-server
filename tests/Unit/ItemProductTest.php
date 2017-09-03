@@ -16,13 +16,14 @@ class ItemProductTest extends TestCase
         ];
 
         $expected = [
+            'id' => 963,
             'taxes' => $taxes,
             'name' => 'test-name',
             'price' => 123.87,
         ];
 
         $product = new Product();
-        $product->id = 963;
+        $product->id = $expected['id'];
 
         $itemProduct = $this->getMockBuilder(ItemProduct::class)
             ->setMethods(['getTaxesAttribute'])

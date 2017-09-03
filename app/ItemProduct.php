@@ -93,12 +93,15 @@ class ItemProduct extends Model
     }
 
     /**
-     * Camel case keys
+     * Camel case keys and add product_id as `id`
      *
      * @return array
      */
     public function toArray()
     {
-        return array_camel_case_keys(parent::toArray());
+        $array = array_camel_case_keys(parent::toArray());
+        $array['id'] = $this->product_id;
+
+        return $array;
     }
 }
