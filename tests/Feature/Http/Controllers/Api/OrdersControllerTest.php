@@ -88,7 +88,7 @@ class OrdersControllerTest extends TestCase
         $customerFields->each(function ($field) use (&$data, $faker) {
             $data['customer']['fieldValues'][] = [
                 'fieldId' => $field->id,
-                'value' => $faker->word(),
+                'value' => $faker->randomElement([1, 'text']),
             ];
         });
 
@@ -148,7 +148,7 @@ class OrdersControllerTest extends TestCase
             $roomSelectionFields->each(function ($field) use (&$fieldValues, $faker) {
                 $fieldValues[] = [
                     'fieldId' => $field->id,
-                    'value' => $faker->word(),
+                    'value' => $faker->randomElement([1, 'text value']),
                 ];
             });
 
