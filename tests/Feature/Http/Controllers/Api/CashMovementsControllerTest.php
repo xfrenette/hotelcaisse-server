@@ -44,6 +44,7 @@ class CashMovementsControllerTest extends TestCase
                 'uuid' => self::$faker->uuid(),
                 'note' => 'Test note',
                 'amount' => -12.34,
+                'createdAt' => 1503410614, // 08/22/2017 @ 2:03pm (UTC)
             ],
         ];
     }
@@ -80,6 +81,7 @@ class CashMovementsControllerTest extends TestCase
         $cashMovement = CashMovement::where('register_id', $device->currentRegister->id)->first();
         $this->assertEquals($data['data']['note'], $cashMovement->note);
         $this->assertEquals($data['data']['amount'], $cashMovement->amount);
+        $this->assertEquals($data['data']['createdAt'], $cashMovement->created_at->getTimestamp());
     }
 
     public function testAddBumpsBusinessVersionWithModifications()
