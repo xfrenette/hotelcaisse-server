@@ -19,4 +19,12 @@ class Field extends Model
      * @var array
      */
     protected $visible = ['id', 'type', 'label', 'role', 'required', 'defaultValue', 'values'];
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'values' => 'array',
+    ];
 }

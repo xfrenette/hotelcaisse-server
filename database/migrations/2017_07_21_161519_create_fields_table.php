@@ -21,7 +21,7 @@ class CreateFieldsTable extends Migration
             $table->string('role', 100)->nullable();
             $table->boolean('required')->default(false);
             $table->string('defaultValue', 255)->nullable();
-            $table->string('values', 255)->nullable();
+            $table->json('values')->nullable();
         });
     }
 
