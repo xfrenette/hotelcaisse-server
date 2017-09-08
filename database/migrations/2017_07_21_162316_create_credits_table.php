@@ -18,7 +18,7 @@ class CreateCreditsTable extends Migration
             $table->timestamps();
             $table->uuid('uuid');
             $table->string('note', 255);
-            $table->float('amount');
+            $table->float('amount', 11, 5);
             $table->integer('order_id')->unsigned();
 
             $table->foreign('order_id')->references('id')->on('orders');

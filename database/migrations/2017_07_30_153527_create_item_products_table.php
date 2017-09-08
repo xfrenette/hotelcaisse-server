@@ -17,7 +17,7 @@ class CreateItemProductsTable extends Migration
             $table->increments('id');
             $table->timestamps();
             $table->string('name', 200);
-            $table->float('price');
+            $table->float('price', 11, 5);
             // Reference to the original product. If null, it means it is a custom product
             $table->integer('product_id')->unsigned()->nullable();
 

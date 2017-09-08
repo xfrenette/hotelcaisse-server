@@ -18,7 +18,7 @@ class CreateProductsTable extends Migration
             $table->timestamps();
             $table->string('name', 100);
             $table->string('description', 255)->nullable();
-            $table->float('price');
+            $table->float('price', 11, 5)->default(0);
             $table->integer('parent_id')->unsigned()->nullable();
             $table->integer('business_id')->unsigned();
 

@@ -17,7 +17,7 @@ class CreateTransactionsTable extends Migration
             $table->increments('id');
             $table->timestamps();
             $table->uuid('uuid');
-            $table->float('amount');
+            $table->float('amount', 8, 3);
             $table->integer('register_id')->unsigned();
             $table->integer('transaction_mode_id')->unsigned();
             $table->integer('order_id')->unsigned();
