@@ -85,7 +85,7 @@ class Product extends Model
     }
 
     /**
-     * Returns a collection of all the taxes applicable on this product. It includes default taxes (redefined or note)
+     * Returns a collection of all the taxes applicable on this product. It includes default taxes (redefined or not)
      * and non-default taxes that are redefined for this product. For each tax, returns the name, the amount and the
      * type ('percentage' or 'absolute').
      *
