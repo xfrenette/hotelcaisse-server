@@ -380,6 +380,8 @@ class OrdersController extends ApiController
             $item->order()->associate($order);
 
             $productData = array_get($itemData, 'product');
+            $productData['product_id'] = array_get($productData, 'productId', null);
+            unset($productData['productId']);
             $itemProduct = new ItemProduct($productData);
             $itemProduct->save();
 

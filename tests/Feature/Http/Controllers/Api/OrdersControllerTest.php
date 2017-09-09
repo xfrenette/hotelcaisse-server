@@ -108,6 +108,7 @@ class OrdersControllerTest extends TestCase
         $products = $business->products;
         for ($i = 0; $i < 3; $i++) {
             $isCustom = $i === 2;
+            $productId = $isCustom ? null : $products->random()->id;
 
             $itemData = [
                 'uuid' => $faker->uuid(),
@@ -116,7 +117,7 @@ class OrdersControllerTest extends TestCase
                 'product' => [
                     'name' => $faker->words(2, true),
                     'price' => $faker->randomFloat(2, 0.1, 10),
-                    'productId' => $isCustom ? null : $products->random()->id,
+                    'productId' => $productId,
                 ],
             ];
 
@@ -713,15 +714,15 @@ class OrdersControllerTest extends TestCase
 
         $count = count(array_get($data, 'data.items'));
         $this->assertEquals($count, $order->items->count());
-        $item = $order->items[2];
-        $this->assertEquals(array_get($data, 'data.items.2.uuid'), $item->uuid);
-        $this->assertEquals(array_get($data, 'data.items.2.quantity'), $item->quantity);
+        $item = $order->items[1];
+        $this->assertEquals(array_get($data, 'data.items.1.uuid'), $item->uuid);
+        $this->assertEquals(array_get($data, 'data.items.1.quantity'), $item->quantity);
 
         // Check that an ItemProduct has been created
         $product = $item->product;
-        $this->assertEquals(array_get($data, 'data.items.2.product.name'), $product->name);
-        $this->assertEquals(array_get($data, 'data.items.2.product.price'), $product->price);
-        $this->assertEquals(array_get($data, 'data.items.2.product.productId'), $product->product_id);
+        $this->assertEquals(array_get($data, 'data.items.1.product.name'), $product->name);
+        $this->assertEquals(array_get($data, 'data.items.1.product.price'), $product->price);
+        $this->assertEquals(array_get($data, 'data.items.1.product.productId'), $product->product_id);
 
         // Check productId null for last item (custom item)
         $this->assertNull($order->items[2]->product->productId);
