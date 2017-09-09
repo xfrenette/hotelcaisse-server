@@ -152,4 +152,38 @@ class ProductTest extends TestCase
 
         $this->assertEquals(0, $res->count());
     }
+
+    /**
+     * Test for a bug we had where if a Product redefines all taxes, another product that was not
+     * returning thoses taxes if it didn't redefine them
+     */
+    public function testAppliedTaxesWorkIfOtherProductRedefinesAllTaxes()
+    {
+        $tax1 = $this->createTax();
+        $tax1->type = 'absolute';
+        $tax1->save();
+
+        $tax2 = $this->createTax(false);
+        $tax2->type = 'absolute';
+        $tax2->save();
+
+        // Other business tax
+        $otherBusiness = factory(Business::class)->create();
+        $tax3 = factory(Tax::class)->make();
+        $tax3->business()->associate($otherBusiness);
+        $tax3->save();
+
+        $otherProduct = Product::make([ 'name' => 'test' ]);
+        $otherProduct->business()->associate($this->business);
+        $otherProduct->save();
+
+        $this->insertRedefinedTax($otherProduct, $tax1, 1);
+        $this->insertRedefinedTax($otherProduct, $tax2, 2);
+
+        $taxes = $this->product->appliedTaxes;
+        $this->assertEquals($taxes->count(), 1);
+
+        $otherTaxes = $otherProduct->appliedTaxes;
+        $this->assertEquals($otherTaxes->count(), 2);
+    }
 }

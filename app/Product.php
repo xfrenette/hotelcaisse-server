@@ -96,25 +96,43 @@ class Product extends Model
         $tt = with(new Tax())->getTable();
         $ptt = $this->productTaxTable;
 
-        // Get an array containing each default tax and each redefined tax. Non-default taxes that are not redefined
-        // will not be included.
-        $query = DB::table($tt)
+        /*
+         * We want to build an array containing each default tax and each redefined tax. Non-default
+         * taxes that are not redefined will not be included. We do this with a sub-query
+         * $query will be the following :
+         * select
+         *   `taxes`.`id` as `id`,
+         *   `taxes`.`amount` as `amount`,
+         *   `taxes`.`type` as `type`,
+         *   `redefined_product_tax`.`amount` as `new_amount`,
+         *   `redefined_product_tax`.`type` as `new_type`
+         * from
+         *   # Select only the redefined taxes of this product (may return nothing)
+         *   (select * from `product_tax` where `product_id` = 2) as `redefined_product_tax`
+         *   # joins the Tax columns. The `right join` will add any tax not redefined
+         *   right join `taxes` on `redefined_product_tax`.`tax_id` = `taxes`.`id`
+         * where
+         *   # This `where` will eliminate taxes that were not redefined and that don't apply to all
+         *   (`redefined_product_tax`.`product_id` is not null or `taxes`.`applies_to_all` = 1)
+         *   and `taxes`.`business_id` = ?
+         */
+        $redefinedProductTaxQuery = DB::table($ptt)
+            ->where('product_id', $this->id);
+
+        $query = DB::table(DB::raw("({$redefinedProductTaxQuery->toSql()}) as redefined_product_tax"))
             ->select(
                 "$tt.id as id",
                 "$tt.amount as amount",
                 "$tt.type as type",
-                "$ptt.amount as new_amount",
-                "$ptt.type as new_type"
+                'redefined_product_tax.amount as new_amount',
+                'redefined_product_tax.type as new_type'
             )
-            ->leftJoin($ptt, "$ptt.tax_id", '=', "$tt.id")
+            ->rightJoin($tt, 'redefined_product_tax.tax_id', '=', "$tt.id")
+            ->mergeBindings($redefinedProductTaxQuery)
             ->where("$tt.business_id", $this->business->id)
-            ->where(function ($query) use ($ptt) {
-                $query->where("$ptt.product_id", $this->id)
-                    ->orWhereNull("$ptt.product_id");
-            })
-            ->where(function ($query) use ($ptt, $tt) {
-                $query->whereNotNull("$ptt.product_id")
-                    ->orWhere("$tt.applies_to_all", true);
+            ->where(function ($query) use ($tt) {
+                $query->where("$tt.applies_to_all", 1)
+                    ->orWhereNotNull('redefined_product_tax.product_id');
             });
 
         // For each row, merge the redefined tax with the default values.
