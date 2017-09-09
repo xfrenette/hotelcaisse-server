@@ -17,7 +17,7 @@ class HIRDLTaxesSeeder extends Seeder
             ->business;
 
         $taxesDef = [
-            'TPS' => 0.05,
+            'TPS' => 5,
             'TVQ' => 9.975,
         ];
 
