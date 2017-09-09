@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\App;
 
 class DatabaseSeeder extends Seeder
 {
-    const SEEDABLE_ENVIRONMENTS = ['testing', 'local'];
+    const SEEDABLE_ENVIRONMENTS = ['testing'];
 
     /**
      * Run the database seeds.
