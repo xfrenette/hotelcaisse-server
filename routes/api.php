@@ -37,5 +37,6 @@ Route::prefix('{team}')
                 Route::post('orders/edit', 'OrdersController@edit')->name('orders.edit');
                 Route::post('orders', 'OrdersController@list')->name('orders.list');
                 Route::post('deviceData', 'DeviceDataController@handle')->name('deviceData');
+                Route::post('ping', 'PingController@handle')->name('ping');
             });
     });
