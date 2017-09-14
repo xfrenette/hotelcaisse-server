@@ -30,19 +30,19 @@ class HIRDLProductsSeeder extends Seeder
                 'category' => '__root__',
                 'variants' => [
                     [
-                        'name' => 'Membre',
-                        'price' => 24.33,
-                        'taxes' => [
-                            'TPS' => 4.5*.05,
-                            'TVQ' => 4.5*.09975
-                        ],
-                    ],
-                    [
                         'name' => 'Non-membre',
                         'price' => 28.67,
                         'taxes' => [
                             'TPS' => 8.89*.05,
                             'TVQ' => 8.89*.09975
+                        ],
+                    ],
+                    [
+                        'name' => 'Membre',
+                        'price' => 24.33,
+                        'taxes' => [
+                            'TPS' => 4.5*.05,
+                            'TVQ' => 4.5*.09975
                         ],
                     ],
                 ],
@@ -52,8 +52,8 @@ class HIRDLProductsSeeder extends Seeder
                 'category' => '__root__',
                 'description' => 'Une ou deux personnes',
                 'variants' => [
-                    ['name' => 'Membre', 'price' => 54.36 ],
                     ['name' => 'Non-membre', 'price' => 60.88 ],
+                    ['name' => 'Membre', 'price' => 54.36 ],
                 ],
             ],
             [
@@ -61,22 +61,14 @@ class HIRDLProductsSeeder extends Seeder
                 'category' => '__root__',
                 'description' => 'Un ou deux adultes + enfants (0-17 ans)',
                 'variants' => [
-                    ['name' => 'Membre', 'price' => 75.67 ],
                     ['name' => 'Non-membre', 'price' => 83.23 ],
+                    ['name' => 'Membre', 'price' => 75.67 ],
                 ],
             ],
             [
-                'name' => 'Adulte supplémentaire',
+                'name' => 'Adulte suppl.',
                 'category' => 0,
                 'variants' => [
-                    [
-                        'name' => 'Membre',
-                        'price' => 24.33,
-                        'taxes' => [
-                            'TPS' => 4.5*.05,
-                            'TVQ' => 4.5*.09975
-                        ],
-                    ],
                     [
                         'name' => 'Non-membre',
                         'price' => 28.67,
@@ -85,20 +77,20 @@ class HIRDLProductsSeeder extends Seeder
                             'TVQ' => 8.89*.09975
                         ],
                     ],
+                    [
+                        'name' => 'Membre',
+                        'price' => 24.33,
+                        'taxes' => [
+                            'TPS' => 4.5*.05,
+                            'TVQ' => 4.5*.09975
+                        ],
+                    ],
                 ],
             ],
             [
-                'name' => 'Enfant supplémentaire (7-17 ans)',
+                'name' => 'Enfant suppl. (7-17 ans)',
                 'category' => 0,
                 'variants' => [
-                    [
-                        'name' => 'Membre',
-                        'price' => 13.04,
-                        'taxes' => [
-                            'TPS' => 3.04*.05,
-                            'TVQ' => 3.04*.09975
-                        ],
-                    ],
                     [
                         'name' => 'Non-membre',
                         'price' => 14.78,
@@ -107,10 +99,18 @@ class HIRDLProductsSeeder extends Seeder
                             'TVQ' => 4.78*.09975,
                         ],
                     ],
+                    [
+                        'name' => 'Membre',
+                        'price' => 13.04,
+                        'taxes' => [
+                            'TPS' => 3.04*.05,
+                            'TVQ' => 3.04*.09975
+                        ],
+                    ],
                 ],
             ],
             [
-                'name' => 'Enfant supplémentaire (0-6 ans)',
+                'name' => 'Enfant suppl. (0-6 ans)',
                 'category' => 0,
                 'price' => 0,
             ],
@@ -118,8 +118,8 @@ class HIRDLProductsSeeder extends Seeder
                 'name' => 'Souper',
                 'category' => 1,
                 'variants' => [
-                    ['name' => 'Membre', 'price' => 9.785 ],
                     ['name' => 'Non-membre', 'price' => 10.87 ],
+                    ['name' => 'Membre', 'price' => 9.785 ],
                 ],
             ],
             [
