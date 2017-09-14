@@ -77,6 +77,7 @@ class Product extends Model
             $appliedAmount = round($appliedAmount, 7);
             $appliedTaxes->push([
                 'taxId' => $tax['taxId'],
+                'name' => $tax['name'],
                 'amount' => $appliedAmount,
             ]);
         });
@@ -122,6 +123,7 @@ class Product extends Model
         $query = DB::table(DB::raw("({$redefinedProductTaxQuery->toSql()}) as redefined_product_tax"))
             ->select(
                 "$tt.id as id",
+                "$tt.name as name",
                 "$tt.amount as amount",
                 "$tt.type as type",
                 'redefined_product_tax.amount as new_amount',
@@ -139,6 +141,7 @@ class Product extends Model
         $taxes = $query->get()->map(function ($tax) {
             return [
                 'taxId' => $tax->id,
+                'name' => $tax->name,
                 'type' => is_null($tax->new_type) ? $tax->type : $tax->new_type,
                 'amount' => is_null($tax->new_amount) ? $tax->amount : $tax->new_amount,
             ];
