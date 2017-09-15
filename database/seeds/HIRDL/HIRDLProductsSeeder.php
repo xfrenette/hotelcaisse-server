@@ -33,16 +33,16 @@ class HIRDLProductsSeeder extends Seeder
                         'name' => 'Non-membre',
                         'price' => 28.67,
                         'taxes' => [
-                            'TPS' => 8.89*.05,
-                            'TVQ' => 8.89*.09975
+                            'TPS' => 0.44,
+                            'TVQ' => 0.89,
                         ],
                     ],
                     [
                         'name' => 'Membre',
                         'price' => 24.33,
                         'taxes' => [
-                            'TPS' => 4.5*.05,
-                            'TVQ' => 4.5*.09975
+                            'TPS' => 0.22,
+                            'TVQ' => 0.45,
                         ],
                     ],
                 ],
@@ -52,7 +52,7 @@ class HIRDLProductsSeeder extends Seeder
                 'category' => '__root__',
                 'description' => 'Une ou deux personnes',
                 'variants' => [
-                    ['name' => 'Non-membre', 'price' => 60.88 ],
+                    ['name' => 'Non-membre', 'price' => 60.89 ],
                     ['name' => 'Membre', 'price' => 54.36 ],
                 ],
             ],
@@ -61,7 +61,7 @@ class HIRDLProductsSeeder extends Seeder
                 'category' => '__root__',
                 'description' => 'Un ou deux adultes + enfants (0-17 ans)',
                 'variants' => [
-                    ['name' => 'Non-membre', 'price' => 83.23 ],
+                    ['name' => 'Non-membre', 'price' => 83.24 ],
                     ['name' => 'Membre', 'price' => 75.67 ],
                 ],
             ],
@@ -73,16 +73,16 @@ class HIRDLProductsSeeder extends Seeder
                         'name' => 'Non-membre',
                         'price' => 28.67,
                         'taxes' => [
-                            'TPS' => 8.89*.05,
-                            'TVQ' => 8.89*.09975
+                            'TPS' => 0.44,
+                            'TVQ' => 0.89,
                         ],
                     ],
                     [
                         'name' => 'Membre',
                         'price' => 24.33,
                         'taxes' => [
-                            'TPS' => 4.5*.05,
-                            'TVQ' => 4.5*.09975
+                            'TPS' => 0.22,
+                            'TVQ' => 0.45,
                         ],
                     ],
                 ],
@@ -103,8 +103,8 @@ class HIRDLProductsSeeder extends Seeder
                         'name' => 'Membre',
                         'price' => 13.04,
                         'taxes' => [
-                            'TPS' => 3.04*.05,
-                            'TVQ' => 3.04*.09975
+                            'TPS' => 0.15,
+                            'TVQ' => 0.31,
                         ],
                     ],
                 ],
@@ -118,8 +118,22 @@ class HIRDLProductsSeeder extends Seeder
                 'name' => 'Souper',
                 'category' => 1,
                 'variants' => [
-                    ['name' => 'Non-membre', 'price' => 10.87 ],
-                    ['name' => 'Membre', 'price' => 9.785 ],
+                    [
+                        'name' => 'Non-membre',
+                        'price' => 10.88,
+                        'taxes' => [
+                            'TPS' => 0.54,
+                            'TVQ' => 1.08,
+                        ],
+                    ],
+                    [
+                        'name' => 'Membre',
+                        'price' => 9.79,
+                        'taxes' => [
+                            'TPS' => 0.49,
+                            'TVQ' => 0.97,
+                        ],
+                    ],
                 ],
             ],
             [

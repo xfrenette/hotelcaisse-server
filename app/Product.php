@@ -74,7 +74,12 @@ class Product extends Model
             $appliedAmount = $tax['type'] === 'absolute' ? $tax['amount'] : ($tax['amount'] * $price) / 100;
             // To prevent too much decimals because of rounding errors, we limit the number of
             // decimals
-            $appliedAmount = round($appliedAmount, 7);
+            // $appliedAmount = round($appliedAmount, 7);
+
+            // We temporarily round product price to 2 decimals until a better config is defined
+            $appliedAmount = round($appliedAmount, 2);
+            // End temporarily
+
             $appliedTaxes->push([
                 'taxId' => $tax['taxId'],
                 'name' => $tax['name'],
