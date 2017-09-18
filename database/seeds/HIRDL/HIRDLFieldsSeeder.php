@@ -66,7 +66,7 @@ class HIRDLFieldsSeeder extends Seeder
             ],
             [
                 'label' => 'Dernière auberge visitée',
-                'type' => 'TextField',
+                'type' => 'NameField',
                 'required' => false,
             ],
         ];
