@@ -23,6 +23,14 @@ class Team extends SparkTeam
     }
 
     /**
+     * Get all of the registers for this team.
+     */
+    public function registers()
+    {
+        return $this->hasManyThrough('App\Register', 'App\Device');
+    }
+
+    /**
      * Returns a query builder that returns all the device approval for devices of this Team.
      *
      * @return \Illuminate\Database\Query\Builder
