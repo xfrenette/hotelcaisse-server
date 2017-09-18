@@ -112,5 +112,17 @@ class Device extends Model
         return array_camel_case_keys(parent::toArray());
     }
 
-
+    /**
+     * Returns true if the $modifications array contains at least one Device data (or Register)
+     * specific modification.
+     *
+     * @param array $modifications
+     *
+     * @return bool
+     */
+    public static function containsRelatedModifications($modifications)
+    {
+        // For now, only checks for Register modification
+        return Register::containsRelatedModifications($modifications);
+    }
 }
