@@ -18,6 +18,13 @@ class Device extends Model
     protected $fillable = ['name'];
 
     /**
+     * The attributes that should be visible in serialization.
+     *
+     * @var array
+     */
+    protected $visible = ['currentRegister'];
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function apiSessions()
@@ -95,4 +102,15 @@ class Device extends Model
 
         return $approval;
     }
+
+    /**
+     * Camel case attributes
+     * @return array
+     */
+    public function toArray()
+    {
+        return array_camel_case_keys(parent::toArray());
+    }
+
+
 }
