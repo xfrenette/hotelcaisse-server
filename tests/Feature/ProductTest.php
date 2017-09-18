@@ -60,7 +60,7 @@ class ProductTest extends TestCase
         $tax->type = 'percentage';
         $tax->save();
 
-        $expectedAmount = ($tax->amount / 100) * $this->product->price;
+        $expectedAmount = round(($tax->amount / 100) * $this->product->price, 2);
         $res = $this->product->appliedTaxes;
         $this->assertEquals(1, $res->count());
         $this->assertEquals(
@@ -93,7 +93,7 @@ class ProductTest extends TestCase
         $newAmount = $tax->amount + 1;
         $this->insertRedefinedTax($this->product, $tax, $newAmount);
 
-        $expectedAmount = ($newAmount / 100) * $this->product->price;
+        $expectedAmount = round(($newAmount / 100) * $this->product->price, 2);
         $res = $this->product->appliedTaxes;
         $this->assertEquals(1, $res->count());
         $this->assertEquals(

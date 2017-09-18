@@ -37,10 +37,9 @@ All response will be JSON object with the following attributes :
     of an outdated `dataVersion` or explicitly requested, see `POST /api/business`), this object will contain the
     updated data. It may be a partial Business object, containing only updated attributes (ex: only `rooms` and
     `transactionModes`) or a full Business instance. See "business attribute" section below.
-* `deviceRegister`: (object) If the server determines that the device needs an up to date Register instance (the Register
-    of the device), this object will contain the (full) Register. See "deviceRegister attribute" 
-    below. Note that `null` is a valid value: it means the device currently doesn't have an 
-    active Register (ex: this is a new device).
+* `device`: (object) If the server determines that the device needs up to date Device instance 
+    containing all the data for the current device), this object will contain the (full) Device. See 
+    "device attribute" below.
 * `token`: (string) if the device is correctly authenticated, contains the token to send in the next request. It can be
     different than the one used in the current request, so always use in your requests the one received in the last
     response. Note that if you make a request and an error is returned, the error will probably not have a `token`. For
@@ -129,22 +128,25 @@ in the request). The object has the following attributes:
 * `products` (array) List of ids of the products of this category (see `products.*.id`)
 * `categories` (array, optional) List of `category` (recursion) that are sub-categories of this category.
 
-`deviceRegister` attribute
+`device` attribute
 ---
 
-Only in the response, contains the full data of the device's Register instance (only present if explicitly requested or
-if the server judges it applicable, by comparing the `dataVersion` of the request). Contains the following attributes:
+Only in the response, contains the full data of the Device instance (only present if explicitly 
+requested or if the server judges it applicable, by comparing the `dataVersion` of the request). 
+Contains the following attributes:
 
-* `uuid` (string) UUID that was assigned when the Register was created by a client
-* `state` (0|1) Current state of the register (0 = closed, 1 = opened)
-* `employee` (string) Employee that opened the register
-* `openingCash` (float) Amount of cash at register opening
-* `openedAt` (integer) Timestamp when the Register was opened
-* `cashMovements` (array) List of CashMovements of this Register
-* `cashMovements.*.uuid` (string) UUID of the CashMovement
-* `cashMovements.*.createdAt` (integer) Timestamp of the creation date
-* `cashMovements.*.note` (string) Note of the CashMovement
-* `cashMovements.*.amount` (float) Amount of the CashMovement
+* `currentRegister` (object|null) If the device has a current register, contains the Register 
+    instance (see next lines). Else, is null (which means the device has no current register).
+* `currentRegister.uuid` (string) UUID that was assigned when the Register was created by a client
+* `currentRegister.state` (0|1) Current state of the register (0 = closed, 1 = opened)
+* `currentRegister.employee` (string) Employee that opened the register
+* `currentRegister.openingCash` (float) Amount of cash at register opening
+* `currentRegister.openedAt` (integer) Timestamp when the Register was opened
+* `currentRegister.cashMovements` (array) List of CashMovements of this Register
+* `currentRegister.cashMovements.*.uuid` (string) UUID of the CashMovement
+* `currentRegister.cashMovements.*.createdAt` (integer) Timestamp of the creation date
+* `currentRegister.cashMovements.*.note` (string) Note of the CashMovement
+* `currentRegister.cashMovements.*.amount` (float) Amount of the CashMovement
 
 API methods
 ===

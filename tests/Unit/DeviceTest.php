@@ -25,4 +25,18 @@ class DeviceTest extends TestCase
 
         $this->assertEquals($expected, $device->toArray());
     }
+
+    public function testToArrayWithoutRegister()
+    {
+
+        $device = new Device();
+        $device->name = 'test name';
+        $device->id = 1;
+
+        $expected = [
+            'currentRegister' => null,
+        ];
+
+        $this->assertEquals($expected, $device->toArray());
+    }
 }

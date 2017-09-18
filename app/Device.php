@@ -104,12 +104,30 @@ class Device extends Model
     }
 
     /**
-     * Camel case attributes
+     * Camel case attributes. If no currentRegister, explicitly set it to null
      * @return array
      */
     public function toArray()
     {
-        return array_camel_case_keys(parent::toArray());
+        $array = array_camel_case_keys(parent::toArray());
+
+        if (!array_key_exists('currentRegister', $array) && $this->currentRegister()->count() === 0) {
+            $array['currentRegister'] = null;
+        }
+
+        return $array;
+    }
+
+    /**
+     * Loads all relations required by toArray() to return a complete object
+     */
+    public function loadToArrayRelations()
+    {
+        $this->load('currentRegister');
+
+        if ($this->currentRegister) {
+            $this->currentRegister->loadAllRelations();
+        }
     }
 
     /**

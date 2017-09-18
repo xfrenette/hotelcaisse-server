@@ -2,7 +2,7 @@
 
 namespace App\Api\Http;
 
-use App\Register;
+use App\Device;
 use Illuminate\Http\JsonResponse;
 use JsonSerializable;
 
@@ -45,19 +45,11 @@ class ApiResponse extends JsonResponse implements JsonSerializable
     protected $business = null;
 
     /**
-     * New version of the Register the device must use. Note that, contrary to other attributes, null is a valid values.
-     * For this reason, a `$deviceRegisterSet` boolean exists to indicate if a `null` value means the "valid" null or
-     * the "not set" null. See `unsetDeviceRegister()`.
+     * New version of the Device and all its data (with its current register).
      *
-     * @var \App\Register
+     * @var \App\Device
      */
-    protected $deviceRegister = null;
-
-    /**
-     * See comment for `$deviceRegister`
-     * @var bool
-     */
-    protected $deviceRegisterSet = false;
+    protected $device = null;
 
     /**
      * @param integer $status
@@ -169,33 +161,22 @@ class ApiResponse extends JsonResponse implements JsonSerializable
     }
 
     /**
-     * Sets the deviceRegister. Null is a valid value. To unset, call `unsetDeviceRegister()`. Updates the data.
+     * Sets the device. Updates the data.
      *
-     * @param \App\Register $register
+     * @param \App\Device $device
      */
-    public function setDeviceRegister(Register $register = null)
+    public function setDevice(Device $device = null)
     {
-        $this->deviceRegisterSet = true;
-        $this->deviceRegister = $register;
+        $this->device = $device;
         $this->updateData();
     }
 
     /**
-     * Unsets the deviceRegister (since null is a valid value, calling `setDeviceRegister(null)` would not unset it).
-     * Updates the data.
+     * @return \App\Device
      */
-    public function unsetDeviceRegister()
+    public function getDevice()
     {
-        $this->deviceRegisterSet = false;
-        $this->updateData();
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasDeviceRegister()
-    {
-        return $this->deviceRegisterSet;
+        return $this->device;
     }
 
     /**
@@ -247,8 +228,8 @@ class ApiResponse extends JsonResponse implements JsonSerializable
             $data['business'] = $this->business->toArray();
         }
 
-        if ($this->deviceRegisterSet) {
-            $data['deviceRegister'] = isset($this->deviceRegister) ? $this->deviceRegister->toArray() : null;
+        if (!is_null($this->device)) {
+            $data['device'] = $this->device->toArray();
         }
 
         return $data;

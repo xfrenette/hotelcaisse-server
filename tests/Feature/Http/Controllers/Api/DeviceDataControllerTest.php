@@ -31,34 +31,20 @@ class DeviceDataControllerTest extends TestCase
         ]);
     }
 
-    public function testHandleSetsDeviceRegister()
+    public function testHandleSetsDevice()
     {
         $device = $this->createDeviceWithOpenedRegister();
         $this->logDevice($device);
 
         $response = $this->queryAPI('api.deviceData');
 
-        $register = $device->currentRegister;
-        // Make sure the cashMovements relation is loaded before generating expected result
-        $register->load('cashMovements');
-        $expected = $register->toArray();
+        // Make sure the relations are loaded before generating expected result
+        $device->load('currentRegister.cashMovements');
+        $expected = $device->toArray();
 
         $response->assertJson([
             'status' => 'ok',
-            'deviceRegister' => $expected,
-        ]);
-    }
-
-    public function testHandleSetsNullDeviceRegisterWhenNull()
-    {
-        $device = $this->createDevice();
-        $this->mockApiAuthDevice($device);
-
-        $response = $this->queryAPI('api.deviceData');
-
-        $response->assertJson([
-            'status' => 'ok',
-            'deviceRegister' => null,
+            'device' => $expected,
         ]);
     }
 }

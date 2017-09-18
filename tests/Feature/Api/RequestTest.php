@@ -165,7 +165,7 @@ class RequestTest extends TestCase
         $response = $this->json('POST', $uri, $data);
         $response->assertJsonStructure([
             'business' => ['rooms'],
-            'deviceRegister',
+            'device' => ['currentRegister'],
         ]);
     }
 }

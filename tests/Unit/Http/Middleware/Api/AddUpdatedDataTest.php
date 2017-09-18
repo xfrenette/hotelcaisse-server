@@ -4,6 +4,7 @@ namespace Tests\Unit\Http\Middleware\Api;
 
 use App\Api\Http\ApiResponse;
 use App\Business;
+use App\Device;
 use App\Http\Middleware\Api\AddUpdatedData;
 use App\Register;
 use Tests\InteractsWithAPI;
@@ -56,7 +57,7 @@ class AddUpdatedDataTest extends TestCase
             return new ApiResponse();
         });
         $this->assertArrayNotHasKey('business', $res->getData(true));
-        $this->assertArrayNotHasKey('deviceRegister', $res->getData(true));
+        $this->assertArrayNotHasKey('device', $res->getData(true));
     }
 
     public function testHandleDoesNothingIfLatestVersion()
@@ -72,7 +73,7 @@ class AddUpdatedDataTest extends TestCase
         });
 
         $this->assertArrayNotHasKey('business', $res->getData(true));
-        $this->assertArrayNotHasKey('deviceRegister', $res->getData(true));
+        $this->assertArrayNotHasKey('device', $res->getData(true));
     }
 
     public function testHandleDoesNothingIfNoVersion()
@@ -88,7 +89,7 @@ class AddUpdatedDataTest extends TestCase
         });
 
         $this->assertArrayNotHasKey('business', $res->getData(true));
-        $this->assertArrayNotHasKey('deviceRegister', $res->getData(true));
+        $this->assertArrayNotHasKey('device', $res->getData(true));
     }
 
     public function testHandleAddsOnlyBusinessWhenOnlyBusinessModifications()
@@ -107,10 +108,10 @@ class AddUpdatedDataTest extends TestCase
         });
 
         $this->assertArrayHasKey('business', $res->getData(true));
-        $this->assertArrayNotHasKey('deviceRegister', $res->getData(true));
+        $this->assertArrayNotHasKey('device', $res->getData(true));
     }
 
-    public function testHandleAddsOnlyRegisterWhenOnlyRegisterModifications()
+    public function testHandleAddsOnlyDeviceWhenOnlyDeviceModifications()
     {
         $requestVersion = 'v3';
         $businessVersion = 'v4';
@@ -126,19 +127,19 @@ class AddUpdatedDataTest extends TestCase
         });
 
         $this->assertArrayNotHasKey('business', $res->getData(true));
-        $this->assertArrayHasKey('deviceRegister', $res->getData(true));
+        $this->assertArrayHasKey('device', $res->getData(true));
     }
 
     public function testHandleDoesntChangeIfAlreadyPresent()
     {
         $businessData = ['test-business' => true];
-        $registerData = ['test-register' => true];
+        $deviceData = ['test-device' => true];
 
         $existingBusiness = \Mockery::mock(Business::class)->makePartial();
         $existingBusiness->shouldReceive('toArray')->andReturn($businessData);
 
-        $existingRegister = \Mockery::mock(Register::class)->makePartial();
-        $existingRegister->shouldReceive('toArray')->andReturn($registerData);
+        $existingDevice = \Mockery::mock(Device::class)->makePartial();
+        $existingDevice->shouldReceive('toArray')->andReturn($deviceData);
 
         $device = $this->mockDevice();
         $device->setRelation('currentRegister', new Register());
@@ -151,18 +152,18 @@ class AddUpdatedDataTest extends TestCase
         $apiAuth->shouldReceive('getDevice')->andReturn($device);
         $apiAuth->shouldReceive('getBusiness')->andReturn($business);
 
-        $res = $this->middleware->handle($request, function () use ($existingBusiness, $existingRegister) {
+        $res = $this->middleware->handle($request, function () use ($existingBusiness, $existingDevice) {
             $response = new ApiResponse();
             /** @noinspection PhpParamsInspection */
             $response->setBusiness($existingBusiness);
-            $response->setDeviceRegister($existingRegister);
+            $response->setDevice($existingDevice);
             return $response;
         });
 
         $data = $res->getData(true);
         $this->assertArraySubset([
             'business' => $businessData,
-            'deviceRegister' => $registerData,
+            'device' => $deviceData,
         ], $data);
     }
 }

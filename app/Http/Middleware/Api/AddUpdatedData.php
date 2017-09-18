@@ -4,12 +4,12 @@ namespace App\Http\Middleware\Api;
 
 use App\Api\Http\ApiResponse;
 use App\Business;
-use App\Register;
+use App\Device;
 use App\Support\Facades\ApiAuth;
 use Closure;
 
 /**
- * Middleware that checks if updates to the data (business or deviceRegister) should be added to the response. Does
+ * Middleware that checks if updates to the data (business or device) should be added to the response. Does
  * nothing if the device is not authenticated.
  *
  * Class AddUpdatedData
@@ -52,7 +52,7 @@ class AddUpdatedData
         if (!is_null($requestVersion) && $requestVersion !== $initialVersion) {
             $diff = $business->getVersionDiff($requestVersion);
             $this->setResponseBusiness($response, $diff, $business);
-            $this->setResponseDeviceRegister($response, $diff, $device->currentRegister);
+            $this->setResponseDevice($response, $diff, $device);
         }
 
         return $response;
@@ -84,29 +84,26 @@ class AddUpdatedData
     }
 
     /**
-     * Sets the `deviceRegister` attribute in the $response based on the $diff. Only set it if the $diff contains
-     * Register modifications and if `deviceRegister` is not already set in the $response. Note that `null` is a valid
-     * $register value.
+     * Sets the `device` attribute in the $response based on the $diff. Only set it if the $diff contains
+     * Device modifications and if `device` is not already set in the $response.
      *
      * @param \App\Api\Http\ApiResponse $response
      * @param array $diff
-     * @param \App\Register|null $register
+     * @param \App\Device $device
      */
-    public function setResponseDeviceRegister(ApiResponse &$response, $diff, $register)
+    public function setResponseDevice(ApiResponse &$response, $diff, Device $device)
     {
-        if (!Register::containsRelatedModifications($diff)) {
+        if (!Device::containsRelatedModifications($diff)) {
             return;
         }
 
-        // Does nothing if response already has deviceRegister
-        if ($response->hasDeviceRegister()) {
+        // Does nothing if response already has device
+        if (!is_null($response->getDevice())) {
             return;
         }
 
-        if (!is_null($register)) {
-            $register->loadAllRelations();
-        }
+        $device->loadToArrayRelations();
 
-        $response->setDeviceRegister($register);
+        $response->setDevice($device);
     }
 }

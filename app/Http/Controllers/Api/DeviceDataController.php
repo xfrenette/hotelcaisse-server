@@ -23,14 +23,9 @@ class DeviceDataController extends ApiController
         $business->loadAllRelations();
         $response->setBusiness($business);
 
-        // Add deviceRegister (can be null)
-        $register = $device->currentRegister;
-
-        if ($register) {
-            $register->loadAllRelations();
-        }
-
-        $response->setDeviceRegister($register);
+        // Add device
+        $device->loadToArrayRelations();
+        $response->setDevice($device);
 
         return $response;
     }

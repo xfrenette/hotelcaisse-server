@@ -50,11 +50,12 @@ class AddUpdatedDataTest extends TestCase
         $this->assertEquals($business->transactionModes->count(), count($data['business']['transactionModes']));
     }
 
-    public function testHandleLoadsRegisterRelations()
+    public function testHandleLoadsDeviceRelations()
     {
         $device = $this->createDeviceWithOpenedRegister();
-        $register = $device->currentRegister;
         $this->logDevice($device);
+
+        //$device->setRelations([]);
 
         $business = $device->team->business;
         $business->bumpVersion();
@@ -62,30 +63,11 @@ class AddUpdatedDataTest extends TestCase
         $business->bumpVersion([Business::MODIFICATION_REGISTER]);
 
         $request = $this->mockRequestWithVersion($oldVersion);
-        $res = $this->middleware->handle($request, function () {
+        $this->middleware->handle($request, function () {
             return new ApiResponse();
         });
 
-        $data = $res->getData(true);
-        $this->assertEquals($register->cashMovements->count(), count($data['deviceRegister']['cashMovements']));
-    }
-
-    public function testHandleWorksWithNoRegister()
-    {
-        $device = $this->createDevice();
-        $this->logDevice($device);
-
-        $business = $device->team->business;
-        $business->bumpVersion();
-        $oldVersion = $business->version;
-        $business->bumpVersion([Business::MODIFICATION_REGISTER]);
-
-        $request = $this->mockRequestWithVersion($oldVersion);
-        $res = $this->middleware->handle($request, function () {
-            return new ApiResponse();
-        });
-
-        $data = $res->getData(true);
-        $this->assertNull($data['deviceRegister']);
+        $this->assertTrue($device->relationLoaded('currentRegister'));
+        $this->assertTrue($device->currentRegister->relationLoaded('cashMovements'));
     }
 }
