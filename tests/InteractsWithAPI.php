@@ -62,6 +62,7 @@ trait InteractsWithAPI
     protected function mockDevice()
     {
         $device = \Mockery::mock(Device::class)->makePartial();
+        $device->shouldReceive('getNextRegisterNumberAttribute')->andReturn(1);
         return $device;
     }
 

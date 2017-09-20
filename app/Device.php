@@ -22,7 +22,14 @@ class Device extends Model
      *
      * @var array
      */
-    protected $visible = ['currentRegister'];
+    protected $visible = ['currentRegister', 'nextRegisterNumber'];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['nextRegisterNumber'];
 
     /**
      * Default values for attributes

@@ -19,8 +19,11 @@ class DeviceTest extends TestCase
         $device->id = 1;
         $device->currentRegister()->associate($register);
 
+        $nextRegisterNumber = $device->nextRegisterNumber;
+
         $expected = [
             'currentRegister' => $register->toArray(),
+            'nextRegisterNumber' => $nextRegisterNumber,
         ];
 
         $this->assertEquals($expected, $device->toArray());
@@ -37,6 +40,6 @@ class DeviceTest extends TestCase
             'currentRegister' => null,
         ];
 
-        $this->assertEquals($expected, $device->toArray());
+        $this->assertArraySubset($expected, $device->toArray());
     }
 }
