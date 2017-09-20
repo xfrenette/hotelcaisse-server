@@ -49,8 +49,8 @@ class AddUpdatedData
         $requestVersion = $request->json('dataVersion');
 
         // If the same version, we do nothing
-        if (!is_null($requestVersion) && $requestVersion !== $initialVersion) {
-            $diff = $business->getVersionDiff($requestVersion);
+        if (is_null($requestVersion) || $requestVersion !== $initialVersion) {
+            $diff = is_null($requestVersion) ? null : $business->getVersionDiff($requestVersion);
             $this->setResponseBusiness($response, $diff, $business);
             $this->setResponseDevice($response, $diff, $device);
         }
@@ -59,16 +59,16 @@ class AddUpdatedData
     }
 
     /**
-     * Sets the `business` attribute in the $response based on the $diff. Only set it if the $diff contains Business
-     * modifications and if `business` is not already set in the $response.
+     * Sets the `business` attribute in the $response based on the $diff. Only set it if the $diff is null or if it
+     * contains Business modifications and if `business` is not already set in the $response.
      *
      * @param \App\Api\Http\ApiResponse $response
-     * @param array $diff
+     * @param {array|null} $diff
      * @param \App\Business $business
      */
     protected function setResponseBusiness(ApiResponse &$response, $diff, Business $business)
     {
-        if (!Business::containsRelatedModifications($diff)) {
+        if (!is_null($diff) && !Business::containsRelatedModifications($diff)) {
             return;
         }
 
@@ -78,22 +78,24 @@ class AddUpdatedData
         }
 
         $partialBusiness = clone $business;
-        $partialBusiness->setVisibleFromModifications($diff);
+        if (!is_null($diff)) {
+            $partialBusiness->setVisibleFromModifications($diff);
+        }
         $partialBusiness->loadAllRelations();
         $response->setBusiness($partialBusiness);
     }
 
     /**
-     * Sets the `device` attribute in the $response based on the $diff. Only set it if the $diff contains
-     * Device modifications and if `device` is not already set in the $response.
+     * Sets the `device` attribute in the $response based on the $diff. Only set it if the $diff is null or if it
+     * contains Device modifications and if `device` is not already set in the $response.
      *
      * @param \App\Api\Http\ApiResponse $response
-     * @param array $diff
+     * @param {array|null} $diff
      * @param \App\Device $device
      */
     public function setResponseDevice(ApiResponse &$response, $diff, Device $device)
     {
-        if (!Device::containsRelatedModifications($diff)) {
+        if (!is_null($diff) && !Device::containsRelatedModifications($diff)) {
             return;
         }
 
@@ -103,7 +105,6 @@ class AddUpdatedData
         }
 
         $device->loadToArrayRelations();
-
         $response->setDevice($device);
     }
 }

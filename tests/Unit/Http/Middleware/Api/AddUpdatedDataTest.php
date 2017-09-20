@@ -76,22 +76,6 @@ class AddUpdatedDataTest extends TestCase
         $this->assertArrayNotHasKey('device', $res->getData(true));
     }
 
-    public function testHandleDoesNothingIfNoVersion()
-    {
-        $version = 'v4';
-        $request = $this->mockRequest();
-        $business = $this->mockBusinessWithVersion($version);
-        $apiAuth = $this->mockApiAuth();
-        $apiAuth->shouldReceive('getBusiness')->andReturn($business);
-
-        $res = $this->middleware->handle($request, function () {
-            return new ApiResponse();
-        });
-
-        $this->assertArrayNotHasKey('business', $res->getData(true));
-        $this->assertArrayNotHasKey('device', $res->getData(true));
-    }
-
     public function testHandleAddsOnlyBusinessWhenOnlyBusinessModifications()
     {
         $requestVersion = 'v3';
@@ -109,6 +93,23 @@ class AddUpdatedDataTest extends TestCase
 
         $this->assertArrayHasKey('business', $res->getData(true));
         $this->assertArrayNotHasKey('device', $res->getData(true));
+    }
+
+    public function testHandleAddsDataWithNullRequestVersion()
+    {
+        $request = $this->mockRequest();
+        $business = $this->mockBusinessWithVersion('v4', [Business::MODIFICATION_CATEGORIES]);
+        $device = $this->mockDevice();
+        $apiAuth = $this->mockApiAuth();
+        $apiAuth->shouldReceive('getDevice')->andReturn($device);
+        $apiAuth->shouldReceive('getBusiness')->andReturn($business);
+
+        $res = $this->middleware->handle($request, function () {
+            return new ApiResponse();
+        });
+
+        $this->assertEquals($business, $res->getBusiness());
+        $this->assertEquals($device, $res->getDevice());
     }
 
     public function testHandleAddsOnlyDeviceWhenOnlyDeviceModifications()
