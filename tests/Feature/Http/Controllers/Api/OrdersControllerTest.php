@@ -1166,7 +1166,9 @@ class OrdersControllerTest extends TestCase
 
         $new = $old->slice(1, 2)->values();
         $editedElement = $new[0];
-        $editedElement['value'] = $editedElement['value'] + 1;
+        $editedElement['value'] = is_string($editedElement['value'])
+            ? $editedElement['value'] . 'new'
+            : $editedElement['value'] + 1;
         $new[0] = $editedElement;
         $data = [
             'customer' => [
