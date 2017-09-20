@@ -43,13 +43,13 @@ class Kernel extends HttpKernel
             // The following middleware is authentication related, but put here since it must execute when registering
             // a device (which does not use 'apiauth' middleware).
             \App\Http\Middleware\Api\AddAuthToken::class,
+            \App\Http\Middleware\Api\AddDataVersion::class,
+            \App\Http\Middleware\Api\AddUpdatedData::class,
         ],
 
         // All middlewares related to authentication or which require an authenticated device
         'api:auth' => [
             \App\Http\Middleware\Api\Authenticate::class,
-            \App\Http\Middleware\Api\AddDataVersion::class,
-            \App\Http\Middleware\Api\AddUpdatedData::class,
         ],
     ];
 
