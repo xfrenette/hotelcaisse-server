@@ -55,19 +55,17 @@ class AddUpdatedDataTest extends TestCase
         $device = $this->createDeviceWithOpenedRegister();
         $this->logDevice($device);
 
-        //$device->setRelations([]);
-
         $business = $device->team->business;
         $business->bumpVersion();
         $oldVersion = $business->version;
         $business->bumpVersion([Business::MODIFICATION_REGISTER]);
 
         $request = $this->mockRequestWithVersion($oldVersion);
-        $this->middleware->handle($request, function () {
+        $response = $this->middleware->handle($request, function () {
             return new ApiResponse();
         });
 
-        $this->assertTrue($device->relationLoaded('currentRegister'));
-        $this->assertTrue($device->currentRegister->relationLoaded('cashMovements'));
+        $this->assertTrue($response->getDevice()->relationLoaded('currentRegister'));
+        $this->assertTrue($response->getDevice()->currentRegister->relationLoaded('cashMovements'));
     }
 }

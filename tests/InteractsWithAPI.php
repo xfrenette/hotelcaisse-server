@@ -110,10 +110,12 @@ trait InteractsWithAPI
         return $apiSession;
     }
 
-    protected function mockApiAuth()
+    protected function mockApiAuth($setCheck = true)
     {
         $apiAuth = m::mock(ApiAuth::class)->makePartial();
-        $apiAuth->shouldReceive('check')->andReturn(true);
+        if ($setCheck) {
+            $apiAuth->shouldReceive('check')->andReturn(true);
+        }
 
         App::instance('apiauth', $apiAuth);
 

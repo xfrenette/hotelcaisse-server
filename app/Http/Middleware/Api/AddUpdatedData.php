@@ -18,7 +18,8 @@ use Closure;
 class AddUpdatedData
 {
     /**
-     * Handle an incoming request.
+     * Handle an incoming request. The middleware might be executed after a request logs in the device, so we do our
+     * check for authentication after the main request.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
@@ -26,31 +27,33 @@ class AddUpdatedData
      */
     public function handle($request, Closure $next)
     {
-        // Does nothing if not authenticated
-        if (!ApiAuth::check()) {
-            return $next($request);
-        }
-
-        $device = ApiAuth::getDevice();
-        $business = ApiAuth::getBusiness();
-
         // Before executing the request (which can modify the Business version), we retrieve the current version of
-        // Business.
-        $initialVersion = $business->version;
+        // Business. If we are not auth, we leave it to null.
+        $initialVersion = ApiAuth::check() ? ApiAuth::getBusiness()->version : null;
 
         // Execute the request
         $response = $next($request);
+
+        // Does nothing if not authenticated, even after the main request
+        if (!ApiAuth::check()) {
+            return $response;
+        }
 
         // Does nothing if $response is not ApiResponse
         if (!($response instanceof ApiResponse)) {
             return $response;
         }
 
+        $device = ApiAuth::getDevice();
+        $business = ApiAuth::getBusiness();
+
         $requestVersion = $request->json('dataVersion');
 
-        // If the same version, we do nothing
-        if (is_null($requestVersion) || $requestVersion !== $initialVersion) {
-            $diff = is_null($requestVersion) ? null : $business->getVersionDiff($requestVersion);
+        if (is_null($requestVersion) || is_null($initialVersion)) {
+            $this->setResponseBusiness($response, null, $business);
+            $this->setResponseDevice($response, null, $device);
+        } elseif ($requestVersion !== $initialVersion) {
+            $diff = $business->getVersionDiff($requestVersion);
             $this->setResponseBusiness($response, $diff, $business);
             $this->setResponseDevice($response, $diff, $device);
         }
@@ -103,8 +106,8 @@ class AddUpdatedData
         if (!is_null($response->getDevice())) {
             return;
         }
-
-        $device->loadToArrayRelations();
-        $response->setDevice($device);
+        $partialDevice = clone $device;
+        $partialDevice->loadToArrayRelations();
+        $response->setDevice($partialDevice);
     }
 }

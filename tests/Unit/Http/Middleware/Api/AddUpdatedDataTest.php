@@ -3,6 +3,7 @@
 namespace Tests\Unit\Http\Middleware\Api;
 
 use App\Api\Http\ApiResponse;
+use App\ApiSession;
 use App\Business;
 use App\Device;
 use App\Http\Middleware\Api\AddUpdatedData;
@@ -60,6 +61,25 @@ class AddUpdatedDataTest extends TestCase
         $this->assertArrayNotHasKey('device', $res->getData(true));
     }
 
+    public function testAddsDataIfAuthDuringRequest()
+    {
+        $request = $this->mockRequest();
+        $apiAuth = $this->mockApiAuth(false);
+
+        $res = $this->middleware->handle($request, function () use(&$apiAuth) {
+            $business = $this->mockBusinessWithVersion('v1', [Business::MODIFICATION_CATEGORIES]);
+            $device = $this->mockDevice();
+            $apiAuth->setApiSession(new ApiSession());
+            $apiAuth->shouldReceive('getDevice')->andReturn($device);
+            $apiAuth->shouldReceive('getBusiness')->andReturn($business);
+
+            return new ApiResponse();
+        });
+
+        $this->assertArrayHasKey('business', $res->getData(true));
+        $this->assertArrayHasKey('device', $res->getData(true));
+    }
+
     public function testHandleDoesNothingIfLatestVersion()
     {
         $version = 'v4';
@@ -108,8 +128,10 @@ class AddUpdatedDataTest extends TestCase
             return new ApiResponse();
         });
 
-        $this->assertEquals($business, $res->getBusiness());
-        $this->assertEquals($device, $res->getDevice());
+        $this->assertArrayHasKey('business', $res->getData(true));
+        $this->assertArrayHasKey('device', $res->getData(true));
+        $this->assertEquals($business->toArray(), $res->getData(true)['business']);
+        $this->assertEquals($device->toArray(), $res->getData(true)['device']);
     }
 
     public function testHandleAddsOnlyDeviceWhenOnlyDeviceModifications()
