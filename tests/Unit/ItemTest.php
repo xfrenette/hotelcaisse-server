@@ -37,4 +37,10 @@ class ItemTest extends TestCase
 
         $this->assertEquals($expected, $item->toArray());
     }
+
+    public function testCasts()
+    {
+        $item = new Item(['quantity' => '1.23']);
+        $this->assertInternalType('float', $item->quantity);
+    }
 }

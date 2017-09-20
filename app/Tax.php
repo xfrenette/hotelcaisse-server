@@ -24,6 +24,15 @@ class Tax extends Model
     protected $visible = ['id', 'name'];
 
     /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'amount' => 'float',
+    ];
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function business()

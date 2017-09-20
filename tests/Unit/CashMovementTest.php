@@ -30,4 +30,10 @@ class CashMovementTest extends TestCase
 
         $this->assertEquals($expected, $cashMovement->toArray());
     }
+
+    public function testCasts()
+    {
+        $cm = new CashMovement(['amount' => '1.23']);
+        $this->assertInternalType('float', $cm->amount);
+    }
 }

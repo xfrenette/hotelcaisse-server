@@ -21,6 +21,15 @@ class Credit extends Model
     protected $visible = ['uuid', 'note', 'amount'];
 
     /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'amount' => 'float',
+    ];
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function order()

@@ -17,7 +17,7 @@ class CreateItemsTable extends Migration
             $table->increments('id');
             $table->timestamps();
             $table->uuid('uuid');
-            $table->float('quantity', 10, 4);
+            $table->decimal('quantity', 10, 4);
             $table->integer('order_id')->unsigned();
 
             $table->foreign('order_id')->references('id')->on('orders');

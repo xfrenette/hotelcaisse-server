@@ -16,7 +16,7 @@ class CreateProductTaxTable extends Migration
         Schema::create('product_tax', function (Blueprint $table) {
             $table->increments('id');
             $table->timestamps();
-            $table->float('amount', 11, 5);
+            $table->decimal('amount', 11, 5);
             $table->enum('type', ['percentage', 'absolute'])->default('percentage');
             $table->integer('product_id')->unsigned();
             $table->integer('tax_id')->unsigned();

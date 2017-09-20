@@ -20,11 +20,11 @@ class CreateRegistersTable extends Migration
             $table->smallInteger('state', false, false)->nullable();
             $table->string('employee', 100)->nullable();
             $table->timestamp('opened_at')->nullable();
-            $table->float('opening_cash', 8, 3)->nullable();
+            $table->decimal('opening_cash', 8, 3)->nullable();
             $table->timestamp('closed_at')->nullable();
-            $table->float('closing_cash', 8, 3)->nullable();
+            $table->decimal('closing_cash', 8, 3)->nullable();
             $table->string('post_ref', 30)->nullable();
-            $table->float('post_amount', 8, 3)->nullable();
+            $table->decimal('post_amount', 8, 3)->nullable();
             $table->integer('device_id')->unsigned();
 
             $table->foreign('device_id')->references('id')->on('devices');

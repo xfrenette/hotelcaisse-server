@@ -67,6 +67,7 @@ class ProductTest extends TestCase
             $res[0],
             ['taxId' => $tax->id, 'name' => $tax->name, 'amount' => $expectedAmount]
         );
+        $this->assertInternalType('float', $res[0]['amount']);
     }
 
     public function testAppliedTaxesAppliesDefaultAbsolute()
@@ -82,6 +83,7 @@ class ProductTest extends TestCase
             $res[0],
             ['taxId' => $tax->id, 'name' => $tax->name, 'amount' => $expectedAmount]
         );
+        $this->assertInternalType('float', $res[0]['amount']);
     }
 
     public function testAppliedTaxesAppliesRedefinedPercentage()
@@ -100,6 +102,7 @@ class ProductTest extends TestCase
             $res[0],
             ['taxId' => $tax->id, 'name' => $tax->name, 'amount' => $expectedAmount]
         );
+        $this->assertInternalType('float', $res[0]['amount']);
     }
 
     public function testAppliedTaxesAppliesRedefinedAbsolute()
@@ -118,6 +121,7 @@ class ProductTest extends TestCase
             $res[0],
             ['taxId' => $tax->id, 'name' => $tax->name, 'amount' => $expectedAmount]
         );
+        $this->assertInternalType('float', $res[0]['amount']);
     }
 
     public function testAppliedTaxesIncludesDefaultTaxes()
@@ -131,6 +135,7 @@ class ProductTest extends TestCase
             $res[0],
             ['taxId' => $tax->id, 'name' => $tax->name, 'amount' => $tax->amount]
         );
+        $this->assertInternalType('float', $res[0]['amount']);
     }
 
     public function testAppliedTaxesIncludesRedefinedNonDefaultTaxes()
@@ -147,6 +152,7 @@ class ProductTest extends TestCase
             $res[0],
             ['taxId' => $tax->id, 'name' => $tax->name, 'amount' => $amount]
         );
+        $this->assertInternalType('float', $res[0]['amount']);
     }
 
     public function testAppliedTaxesDoesNotIncludeNonRedefinedNonDefault()

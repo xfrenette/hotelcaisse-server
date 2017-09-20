@@ -21,6 +21,15 @@ class Item extends Model
     protected $visible = ['uuid', 'quantity', 'product'];
 
     /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'quantity' => 'float',
+    ];
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function order()

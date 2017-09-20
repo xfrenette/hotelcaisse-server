@@ -18,7 +18,7 @@ class CreateTaxesTable extends Migration
             $table->increments('id');
             $table->timestamps();
             $table->string('name', 200);
-            $table->float('amount', 11, 5);
+            $table->decimal('amount', 11, 5);
             $table->enum('type', [Tax::TYPE_PERCENTAGE, Tax::TYPE_ABSOLUTE])->default(Tax::TYPE_PERCENTAGE);
             $table->boolean('applies_to_all')->default(true);
             $table->integer('business_id')->unsigned();

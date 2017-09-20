@@ -30,4 +30,10 @@ class CreditTest extends TestCase
 
         $this->assertEquals($expected, $credit->toArray());
     }
+
+    public function testCasts()
+    {
+        $credit = new Credit(['amount' => '1.23']);
+        $this->assertInternalType('float', $credit->amount);
+    }
 }

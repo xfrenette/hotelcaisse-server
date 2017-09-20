@@ -40,6 +40,15 @@ class ItemProduct extends Model
     protected $appends = ['taxes'];
 
     /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'price' => 'float',
+    ];
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function product()

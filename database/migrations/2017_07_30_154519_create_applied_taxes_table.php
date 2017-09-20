@@ -15,7 +15,7 @@ class CreateAppliedTaxesTable extends Migration
     {
         Schema::create('applied_taxes', function (Blueprint $table) {
             $table->increments('id');
-            $table->float('amount', 11, 5);
+            $table->decimal('amount', 11, 5);
             $table->enum('type', ['ItemProduct'])->default('ItemProduct');
             // If type='ItemProduct', references item_products->id
             $table->integer('instance_id')->unsigned();

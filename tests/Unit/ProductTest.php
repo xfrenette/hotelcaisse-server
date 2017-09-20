@@ -48,6 +48,12 @@ class ProductTest extends TestCase
         $this->assertEquals($expected, $product->toArray());
     }
 
+    public function testCasts()
+    {
+        $product = new Product(['price' => '1.23']);
+        $this->assertInternalType('float', $product->price);
+    }
+
     protected function makeMockedProductWithTaxes($taxes = [])
     {
         $product = m::mock(Product::class)->makePartial();

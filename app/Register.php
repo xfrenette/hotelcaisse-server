@@ -43,6 +43,17 @@ class Register extends Model
     ];
 
     /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+         'opening_cash' => 'float',
+         'closing_cash' => 'float',
+         'post_amount' => 'float',
+    ];
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function device()

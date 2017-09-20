@@ -78,4 +78,16 @@ class RegisterTest extends TestCase
 
         $this->assertEquals($expected, $register->toArray());
     }
+
+    public function testCasts()
+    {
+        $register = new Register();
+        $register->opening_cash = '1.23';
+        $register->closing_cash = '1.23';
+        $register->post_amount = '1.23';
+
+        $this->assertInternalType('float', $register->opening_cash);
+        $this->assertInternalType('float', $register->closing_cash);
+        $this->assertInternalType('float', $register->post_amount);
+    }
 }

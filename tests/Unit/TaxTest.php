@@ -29,4 +29,10 @@ class TaxTest extends TestCase
 
         $this->assertEquals($expected, $tax->toArray());
     }
+
+    public function testCasts()
+    {
+        $tax = new Tax(['amount' => '1.23']);
+        $this->assertInternalType('float', $tax->amount);
+    }
 }

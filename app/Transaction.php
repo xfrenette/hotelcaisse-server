@@ -21,6 +21,15 @@ class Transaction extends Model
     protected $visible = ['uuid', 'amount', 'transactionMode'];
 
     /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'amount' => 'float',
+    ];
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function order()

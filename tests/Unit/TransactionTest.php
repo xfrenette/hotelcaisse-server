@@ -43,4 +43,10 @@ class TransactionTest extends TestCase
 
         $this->assertEquals($expected, $transaction->toArray());
     }
+
+    public function testCasts()
+    {
+        $transaction = new Transaction(['amount' => '1.23']);
+        $this->assertInternalType('float', $transaction->amount);
+    }
 }

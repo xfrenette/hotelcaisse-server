@@ -17,7 +17,7 @@ class CreateCashMovementsTable extends Migration
             $table->increments('id');
             $table->timestamps();
             $table->uuid('uuid')->unique();
-            $table->float('amount', 8, 3);
+            $table->decimal('amount', 8, 3);
             $table->string('note', 255);
             $table->integer('register_id')->unsigned()->nullable();
 
