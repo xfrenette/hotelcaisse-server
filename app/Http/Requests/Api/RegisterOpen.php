@@ -25,6 +25,7 @@ class RegisterOpen extends ApiRequest
     {
         return [
             'uuid' => 'bail|required|string|unique:registers',
+            'number' => 'bail|required|numeric|min:0|not_in:0',
             'employee' => 'bail|required|string',
             'cashAmount' => 'bail|required|numeric|min:0',
             'openedAt' => 'sometimes|required|numeric|min:0|not_in:0',

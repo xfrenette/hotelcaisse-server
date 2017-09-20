@@ -177,6 +177,8 @@ have a current register that is already opened, else an error will be returned a
 
 ### Request `data`
 * `uuid`: (string) Client generated UUID for the new Register (must be unique)
+* `number`: (integer) Client generated number for this register (should be unique for the 
+    business, but not checked for now)
 * `employee`: (string) Name of the employee opening the register
 * `cashAmount`: (float, >= 0) Amount of cash in the register at opening
 * `openedAt`: (optional, timestamp) Timestamp when the register was opened
