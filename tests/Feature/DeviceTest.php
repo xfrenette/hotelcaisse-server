@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\ApiSession;
 use App\DeviceApproval;
+use App\Register;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\InteractsWithAPI;
 use Tests\TestCase;
@@ -58,5 +60,31 @@ class DeviceTest extends TestCase
 
         $this->assertEquals($expected->id, $approval->id);
         $this->assertTrue($expected->check($passcode));
+    }
+
+    public function testNextRegisterNumberWithRegisters()
+    {
+        $device = $this->createDevice();
+
+        $register1 = factory(Register::class)->make();
+        $register1->device()->associate($device);
+        $register1->number = 1;
+        $register1->opened_at = Carbon::yesterday()->subSeconds(2);
+        $register1->save();
+
+        $register2 = factory(Register::class)->make();
+        $register2->device()->associate($device);
+        $register2->number = 2;
+        $register2->opened_at = Carbon::yesterday();
+        $register2->save();
+
+        $this->assertEquals($register2->number + 1, $device->nextRegisterNumber);
+    }
+
+    public function testNextRegisterNumberWithoutRegisters()
+    {
+        $device = $this->createDevice();
+        $device->initial_register_number = 235;
+        $this->assertEquals($device->initial_register_number, $device->nextRegisterNumber);
     }
 }

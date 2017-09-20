@@ -25,6 +25,15 @@ class Device extends Model
     protected $visible = ['currentRegister'];
 
     /**
+     * Default values for attributes
+     *
+     * @var array
+     */
+    protected $attributes = [
+        'initial_register_number' => 1,
+    ];
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function apiSessions()
@@ -38,6 +47,14 @@ class Device extends Model
     public function approvals()
     {
         return $this->hasMany('App\DeviceApproval');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function registers()
+    {
+        return $this->hasMany('App\Register');
     }
 
     /**
@@ -70,6 +87,19 @@ class Device extends Model
         }
 
         return $this->currentRegister->state === Register::STATE_OPENED;
+    }
+
+    /**
+     * Returns the next register number to be used based on the latest open register. If there is no register,
+     * returns the value of initial_register_number
+     *
+     * @return integer
+     */
+    public function getNextRegisterNumberAttribute()
+    {
+        $lastNumber = $this->registers()->orderBy('opened_at', 'desc')->value('number');
+
+        return is_null($lastNumber) ? $this->initial_register_number : $lastNumber + 1;
     }
 
     /**
