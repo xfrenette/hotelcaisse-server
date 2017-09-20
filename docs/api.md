@@ -135,6 +135,7 @@ Only in the response, contains the full data of the Device instance (only presen
 requested or if the server judges it applicable, by comparing the `dataVersion` of the request). 
 Contains the following attributes:
 
+* `nextRegisterNumber` (number) Register number to use for the next one that the client opens
 * `currentRegister` (object|null) If the device has a current register, contains the Register 
     instance (see next lines). Else, is null (which means the device has no current register).
 * `currentRegister.uuid` (string) UUID that was assigned when the Register was created by a client
