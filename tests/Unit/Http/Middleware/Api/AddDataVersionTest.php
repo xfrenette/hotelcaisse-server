@@ -71,6 +71,19 @@ class AddDataVersionTest extends TestCase
         $this->assertNull($res->getDataVersion());
     }
 
+    public function testWorksIfAuthDuringTheRequest()
+    {
+        $request = $this->makeRequest();
+        $res = $this->middleware->handle($request, function () {
+            $business = \Mockery::mock(Business::class)->makePartial();
+            $business->shouldReceive('getVersionAttribute')->andReturn('1');
+            $apiAuth = $this->mockApiAuth();
+            $apiAuth->shouldReceive('getBusiness')->andReturn($business);
+            return new ApiResponse();
+        });
+        $this->assertNotNull($res->getDataVersion());
+    }
+
     public function testSetDataVersionOnApiResponse()
     {
         $version = 'test-version';

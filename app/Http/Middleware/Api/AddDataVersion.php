@@ -17,6 +17,8 @@ class AddDataVersion
      */
     public function handle($request, Closure $next)
     {
+        // We might not be authenticated before calling `$next`, but we might be after. This is why we do the auth
+        // check after calling `$next`.
         $response = $next($request);
 
         if ($response instanceof ApiResponse && ApiAuth::check()) {
