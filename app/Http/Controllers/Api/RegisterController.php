@@ -29,6 +29,7 @@ class RegisterController extends ApiController
 
         $register = new Register([
             'uuid' => $request->json('data.uuid'),
+            'number' => $request->json('data.number'),
         ]);
         $register->device()->associate($device);
         $register->open($request->json('data.employee'), $request->json('data.cashAmount'));

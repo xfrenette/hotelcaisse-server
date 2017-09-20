@@ -21,6 +21,7 @@ class RegisterControllerTest extends TestCase
     const OPEN_DATA = [
         'data' => [
             'uuid' => 'test-uuid',
+            'number' => 123,
             'employee' => 'Test Employee',
             'cashAmount' => 12.34,
             'openedAt' => 1503410614, // 08/22/2017 @ 2:03pm (UTC)

@@ -17,6 +17,7 @@ class CreateRegistersTable extends Migration
             $table->increments('id');
             $table->timestamps();
             $table->uuid('uuid');
+            $table->integer('number');
             $table->smallInteger('state', false, false)->nullable();
             $table->string('employee', 100)->nullable();
             $table->timestamp('opened_at')->nullable();

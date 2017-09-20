@@ -19,10 +19,13 @@ class SampleRegistersSeeder extends Seeder
             return;
         }
 
+
         $faker = Factory::create();
         $device = Device::first();
 
-        $closedRegister = new Register(['uuid' => $faker->uuid()]);
+        $number = $faker->randomNumber();
+
+        $closedRegister = new Register(['uuid' => $faker->uuid(), 'number' => $number]);
         $closedRegister->device()->associate($device);
         $closedRegister->open('Test employee', 100.00);
         $closedRegister->close(365.89, 'POST-ref', 425.68);
@@ -31,7 +34,7 @@ class SampleRegistersSeeder extends Seeder
 
         // ---
 
-        $openRegister = new Register(['uuid' => $faker->uuid()]);
+        $openRegister = new Register(['uuid' => $faker->uuid(), 'number' => $number + 1]);
         $openRegister->device()->associate($device);
         $openRegister->open('Test employee', 102.35);
         $openRegister->save();

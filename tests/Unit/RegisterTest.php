@@ -61,6 +61,7 @@ class RegisterTest extends TestCase
 
         $expected = [
             'uuid' => 'test-uuid',
+            'number' => 123,
             'state' => Register::STATE_OPENED,
             'cashMovements' => $cashMovements->toArray(),
             'employee' => 'Test Employee',

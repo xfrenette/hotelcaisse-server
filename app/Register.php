@@ -21,14 +21,14 @@ class Register extends Model
      *
      * @var array
      */
-    protected $fillable = ['uuid'];
+    protected $fillable = ['uuid', 'number'];
 
     /**
      * The attributes that should be visible in serialization.
      *
      * @var array
      */
-    protected $visible = ['uuid', 'cashMovements', 'state', 'employee', 'opening_cash'];
+    protected $visible = ['uuid', 'number', 'cashMovements', 'state', 'employee', 'opening_cash'];
 
     /**
      * The attributes that should be mutated to dates.

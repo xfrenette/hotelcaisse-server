@@ -98,6 +98,7 @@ $factory->defineAs(App\DeviceApproval::class, 'withDevice', function () {
 $factory->define(App\Register::class, function (\Faker\Generator $faker) {
     return [
         'uuid' => $faker->uuid(),
+        'number' => $faker->randomNumber(),
     ];
 });
 
