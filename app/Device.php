@@ -15,7 +15,7 @@ class Device extends Model
      *
      * @var array
      */
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'initial_register_number'];
 
     /**
      * The attributes that should be visible in serialization.

@@ -17,6 +17,12 @@
                 <label for="field-name">{{ __('devices.add.fields.name') }}</label>
                 <input id="field-name" class="form-control" name="name" value="{{ old('name') }}">
             </div>
+            <div class="form-group">
+                <label for="field-initialNumber">
+                    {{ __('devices.add.fields.initialRegisterNumber') }}
+                </label>
+                <input id="field-name" class="form-control" name="initial_register_number" value="{{ old('initial_register_number') }}">
+            </div>
             <button class="btn btn-primary">{{ __('actions.save') }}</button>
             <a href="{{ route('devices.list') }}" class="btn btn-default">{{ __('actions.cancel') }}</a>
         {!! Form::close() !!}

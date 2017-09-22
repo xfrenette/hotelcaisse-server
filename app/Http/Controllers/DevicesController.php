@@ -37,6 +37,7 @@ class DevicesController extends Controller
     {
         $this->validate($request, [
             'name' => 'required|string',
+            'initial_register_number' => 'required|numeric|min:0',
         ]);
 
         $device = new Device($request->input());

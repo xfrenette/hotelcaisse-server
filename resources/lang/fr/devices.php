@@ -16,6 +16,7 @@ return [
         'title' => 'Enregistrer un nouvel appareil',
         'fields' => [
             'name' => 'Nom de l\'appareil',
+            'initialRegisterNumber' => 'Numéro de caisse initial',
         ],
     ],
     'code' => [
