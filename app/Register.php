@@ -78,6 +78,67 @@ class Register extends Model
     }
 
     /**
+     * Total of transactions with amount >= 0
+     *
+     * @return float
+     */
+    public function getPaymentsTotalAttribute()
+    {
+        return $this->transactions()
+            ->where('amount', '>=', 0)
+            ->sum('amount');
+    }
+
+    /**
+     * Absolute (positive) total of transactions with amount < 0
+     *
+     * @return float
+     */
+    public function getRefundsTotalAttribute()
+    {
+        $total = $this->transactions()
+            ->where('amount', '<', 0)
+            ->sum('amount');
+
+        return $total * -1;
+    }
+
+    /**
+     * Total of transactions with 'cash' type
+     *
+     * @return float
+     */
+    public function getCashTransactionsTotalAttribute()
+    {
+        return $this->transactions()
+            ->join('transaction_modes', 'transactions.transaction_mode_id', '=', 'transaction_modes.id')
+            ->where('transaction_modes.type', TransactionMode::TYPE_CASH)
+            ->sum('amount');
+    }
+
+    /**
+     * Total of transactions
+     *
+     * @return float
+     */
+    public function getTransactionsTotalAttribute()
+    {
+        return $this->transactions()
+            ->sum('amount');
+    }
+
+    /**
+     * Total of cash movements
+     *
+     * @return float
+     */
+    public function getCashMovementsTotalAttribute()
+    {
+        return $this->cashMovements()
+            ->sum('amount');
+    }
+
+    /**
      * Opens the register and sets the related attributes.
      *
      * @param string $employee
