@@ -2,8 +2,9 @@
 
 namespace App\Providers;
 
-use Laravel\Spark\Spark;
+use Laravel\Cashier\Cashier;
 use Laravel\Spark\Providers\AppServiceProvider as ServiceProvider;
+use Laravel\Spark\Spark;
 
 class SparkServiceProvider extends ServiceProvider
 {
@@ -50,17 +51,10 @@ class SparkServiceProvider extends ServiceProvider
      */
     public function booted()
     {
-        Spark::useStripe()->noCardUpFront()->teamTrialDays(10);
+        Cashier::useCurrency('cad', '$');
+        Spark::useStripe();
 
-        Spark::freeTeamPlan()
-            ->features([
-                'First', 'Second', 'Third'
-            ]);
-
-        Spark::teamPlan('Basic', 'provider-id-1')
-            ->price(10)
-            ->features([
-                'First', 'Second', 'Third'
-            ]);
+        Spark::teamPlan('Hébergement données TPV', 'hirdl-pos-hosting')
+            ->price(15);
     }
 }

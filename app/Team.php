@@ -56,4 +56,12 @@ class Team extends SparkTeam
         // TODO: for now, always return true
         return true;
     }
+
+    /**
+     * Tax percentage
+     * @return float
+     */
+    public function taxPercentage() {
+        return 14.975;
+    }
 }
