@@ -50,4 +50,15 @@ class User extends SparkUser
         'trial_ends_at' => 'datetime',
         'uses_two_factor_auth' => 'boolean',
     ];
+
+    /**
+     * Return the timezone this user wishes to see dates.
+     *
+     * @return string
+     */
+    public function getTimezoneAttribute()
+    {
+        // For now, hardcoded
+        return 'America/Montreal';
+    }
 }
