@@ -18,25 +18,33 @@
             </thead>
             <tbody>
                 @foreach($registers as $register)
+                    <?php
+                    $opened = $register->state === \App\Register::STATE_OPENED;
+                    $closed = !$opened;
+                    $openedAt = $register->opened_at->timezone(Auth::user()->timezone);
+                    $closedAt = $opened
+                        ? null
+                        : $register->closed_at->timezone(Auth::user()->timezone);
+                    ?>
                     <tr onclick="document.location = '{{ route('registers.view', ['register' => $register]) }}'">
                         <td>{{ $register->number }}</td>
                         <td>{{ $register->employee }}</td>
                         <td>
-                            @if($register->state === \App\Register::STATE_OPENED)
+                            @if($opened)
                                 {{ __('registers.states.opened') }}
                             @else
                                 {{ __('registers.states.closed') }}
                             @endif
                         </td>
-                        <td>{{ $register->opened_at->toDateTimeString() }}</td>
+                        <td>{{ $openedAt->toDateTimeString() }}</td>
                         <td>{{ money_format('%(i', $register->opening_cash) }}</td>
                         <td>
-                            @if($register->closed_at)
-                                {{ $register->closed_at->toDateTimeString() }}
+                            @if($closed)
+                                {{ $closedAt->toDateTimeString() }}
                             @endif
                         </td>
                         <td>
-                            @if($register->closing_cash)
+                            @if($closed)
                                 {{ money_format('%(i', $register->closing_cash) }}
                             @endif
                         </td>
