@@ -15,6 +15,13 @@ class Register extends Model
      * State when opened
      */
     const STATE_OPENED = 1;
+    /**
+     * Pre calc values' keys
+     */
+    const PRE_CALC_PAYMENTS_TOTAL = 'register.totals.payments';
+    const PRE_CALC_REFUNDS_TOTAL = 'register.totals.refunds';
+    const PRE_CALC_CASH_TX_TOTAL = 'register.totals.cashTransactions';
+    const PRE_CALC_CASH_MV_TOTAL = 'register.totals.cashMovements';
 
     /**
      * The attributes that are mass assignable.
