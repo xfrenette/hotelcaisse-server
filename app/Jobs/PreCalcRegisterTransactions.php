@@ -20,6 +20,14 @@ class PreCalcRegisterTransactions implements ShouldQueue
     protected $register;
 
     /**
+     * @return \App\Register
+     */
+    public function getRegister()
+    {
+        return $this->register;
+    }
+
+    /**
      * Create a new job instance.
      *
      * @return void

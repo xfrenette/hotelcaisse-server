@@ -10,6 +10,7 @@ use App\Exceptions\CrossBusinessAccessException;
 use App\Http\Controllers\Api\OrdersController;
 use App\Item;
 use App\ItemProduct;
+use App\Jobs\PreCalcRegisterTransactions;
 use App\Order;
 use App\Room;
 use App\RoomSelection;
@@ -18,6 +19,7 @@ use Carbon\Carbon;
 use Faker\Factory;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Validation\ValidationException;
 use Mockery as m;
 use Tests\InteractsWithAPI;
@@ -218,6 +220,21 @@ class OrdersControllerTest extends TestCase
         $response->assertJson([
             'status' => 'ok'
         ]);
+    }
+
+    public function testNewPushesPreCalcRegisterTransactionsJob()
+    {
+        Queue::fake();
+
+        $device = $this->createDeviceWithOpenedRegister();
+        $this->logDevice($device);
+
+        $data = $this->generateNewData();
+        $this->queryAPI('api.orders.new', $data);
+
+        Queue::assertPushed(PreCalcRegisterTransactions::class, function ($job) use ($device) {
+            return $job->getRegister()->id === $device->currentRegister->id;
+        });
     }
 
     public function testNewWorksWithMissingOptionalAttributes()
@@ -821,6 +838,21 @@ class OrdersControllerTest extends TestCase
         $response->assertJson([
             'status' => 'ok'
         ]);
+    }
+
+    public function testEditPushesPreCalcRegisterTransactionsJob()
+    {
+        Queue::fake();
+
+        $device = Team::first()->devices()->first();
+        $this->logDevice($device);
+
+        $data = $this->generateEditData();
+        $this->queryAPI('api.orders.edit', $data, $device->team);
+
+        Queue::assertPushed(PreCalcRegisterTransactions::class, function ($job) use ($device) {
+            return $job->getRegister()->id === $device->currentRegister->id;
+        });
     }
 
     public function testEditWorksWithMissingOptionalAttributes()
