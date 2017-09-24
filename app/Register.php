@@ -2,11 +2,14 @@
 
 namespace App;
 
+use App\Support\Traits\HasCalculatedValues;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Register extends Model
 {
+    use HasCalculatedValues;
+
     /**
      * State when closed
      */
