@@ -9,8 +9,7 @@ trait HasCalculatedValues
      */
     public function calculatedValues()
     {
-        return $this->hasMany('App\CalculatedValue')->where([
-            'instance_id' => $this->getKey(),
+        return $this->hasMany('App\CalculatedValue', 'instance_id')->where([
             'class' => get_class($this),
         ]);
     }
