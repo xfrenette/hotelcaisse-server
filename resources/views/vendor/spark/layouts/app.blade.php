@@ -19,6 +19,9 @@
     <!-- Scripts -->
     @yield('scripts', '')
 
+    <!-- Styles -->
+    @yield('styles', '')
+
     <!-- Global Spark Object -->
     <script>
         window.Spark = <?php echo json_encode(array_merge(

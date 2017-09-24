@@ -3,7 +3,8 @@
 return [
     'list' => [
         'title' => 'Caisses',
-        'empty' => 'Aucune caisse n\'a encore été créée sur vos appareils.'
+        'empty' => 'Aucune caisse n\'a encore été créée sur vos appareils.',
+        'naDefinition' => 'Sera disponible seulement quand la caisse sera fermée',
     ],
     'view' => [
         'title' => 'Caisse #:number',
@@ -20,6 +21,38 @@ return [
             'title' => 'Autres mouvements d\'argent',
             'empty' => 'Aucune mouvement d\'argent',
         ],
+        'columns' => [
+            'opening' => [
+                'title' => 'Ouverture',
+                'number' => 'No',
+                'date' => 'Date/heure',
+                'employee' => 'Employé(e)',
+                'openingCash' => 'Fond<br>déclaré',
+            ],
+            'transactions' => [
+                'title' => 'Transactions',
+                'payments' => 'Paiements',
+                'refunds' => 'Rembours.',
+                'total' => 'Total',
+            ],
+            'cash' => [
+                'title' => 'Argent net dans la caisse',
+                'transactionsTotal' => 'Source:<br>transactions',
+                'cashMovements' => 'Source:<br>autre',
+                'expectedTtotal' => 'Total<br>attendu',
+                'declaredTotal' => 'Total<br>déclaré',
+            ],
+            'POST' => [
+                'title' => 'Lot du TPV',
+                'ref' => 'No. lot',
+                'expectedTotal' => 'Total<br>attendu',
+                'declaredTotal' => 'Total<br>déclaré',
+            ],
+            'closing' => [
+                'title' => 'Fermeture',
+                'date' => 'Date/heure',
+            ],
+        ],
     ],
     'fields' => [
         'state' => 'État',
@@ -34,6 +67,7 @@ return [
         'POSTAmount' => 'Montant du lot',
         'paymentsTotal' => 'Paiements',
         'refundsTotal' => 'Remboursements',
+        'transactionsTotal' => 'Total transactions',
         'cashMovementsTotal' => 'Autres mouvements d\'argent',
         'netTotal' => 'Total net',
         'declaredTotal' => 'Total déclaré',

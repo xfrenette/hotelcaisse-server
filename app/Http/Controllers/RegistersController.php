@@ -16,8 +16,15 @@ class RegistersController extends Controller
      */
     public function list(Request $request)
     {
-        $registers = $request->user()->currentTeam->registers()->orderBy('opened_at', 'desc')->get();
-        return view('registers.list', ['registers' => $registers]);
+        $registers = $request->user()->currentTeam
+            ->registers()
+            ->with('calculatedValues')
+            ->orderBy('opened_at', 'desc')
+            ->get();
+        return view('registers.list', [
+            'registers' => $registers,
+            'cashFloat' => 100,
+        ]);
     }
 
     public function view(Request $request, Register $register)
