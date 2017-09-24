@@ -2,8 +2,9 @@
 
 @section('content')
     <?php
+    $closed = $register->state === \App\Register::STATE_CLOSED;
     $openedAt = $register->opened_at->timezone(Auth::user()->timezone);
-    $closedAt = $register->closed_at->timezone(Auth::user()->timezone);
+    $closedAt = $closed ? $register->closed_at->timezone(Auth::user()->timezone) : null;
     ?>
     <div class="container">
         <h1>
@@ -19,14 +20,14 @@
                             <dd>{{ $register->number }}</dd>
                             <dt>{{ __('registers.fields.state') }}</dt>
                             <dd>
-                                @if($register->state === \App\Register::STATE_CLOSED)
+                                @if($closed)
                                     {{ __('registers.states.closed') }}
                                 @else
                                     {{ __('registers.states.opened') }}
                                 @endif
                             </dd>
 
-                            @if($register->state === \App\Register::STATE_CLOSED)
+                            @if($closed)
                                 <dt>{{ __('registers.fields.paymentsTotal') }}</dt>
                                 <dd>{{ money_format('%(i', $paymentsTotal) }}</dd>
                                 <dt>{{ __('registers.fields.refundsTotal') }}</dt>
@@ -63,7 +64,7 @@
                 </div>
             </div>
             <div class="col-md-4">
-                @if($register->state === \App\Register::STATE_CLOSED)
+                @if($closed)
                     <div class="panel panel-default">
                         <div class="panel-heading">{{ __('registers.view.meta.closing') }}</div>
                         <div class="panel-body">
