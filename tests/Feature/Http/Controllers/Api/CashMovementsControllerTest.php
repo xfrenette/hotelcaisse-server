@@ -6,10 +6,12 @@ use App\Api\Http\ApiResponse;
 use App\Business;
 use App\CashMovement;
 use App\Http\Controllers\Api\CashMovementsController;
+use App\Jobs\PreCalcRegisterCashMovements;
 use App\Register;
 use Faker\Factory;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
+use Illuminate\Support\Facades\Queue;
 use Tests\InteractsWithAPI;
 use Tests\TestCase;
 
@@ -82,6 +84,20 @@ class CashMovementsControllerTest extends TestCase
         $this->assertEquals($data['data']['note'], $cashMovement->note);
         $this->assertEquals($data['data']['amount'], $cashMovement->amount);
         $this->assertEquals($data['data']['createdAt'], $cashMovement->created_at->getTimestamp());
+    }
+
+    public function testAddQueuesPreCalcRegisterCashMovements()
+    {
+        Queue::fake();
+
+        $data = self::generateAddData();
+        $device = $this->createDeviceWithOpenedRegister();
+        $this->logDevice($device);
+        $this->queryAPI('api.cashMovements.add', $data);
+
+        Queue::assertPushed(PreCalcRegisterCashMovements::class, function ($job) use ($device) {
+            return $job->getRegister()->id === $device->currentRegister->id;
+        });
     }
 
     public function testAddBumpsBusinessVersionWithModifications()
@@ -177,8 +193,10 @@ class CashMovementsControllerTest extends TestCase
         $this->assertEquals(0, $query->count());
     }
 
-    public function testDeleteBumpsVersionWithModifications()
+    public function testDeleteBumpsVersionWithModificationsAndQueuesJob()
     {
+        Queue::fake();
+
         $uuid = Factory::create()->uuid();
         $device = $this->createDeviceWithOpenedRegister();
         $this->logDevice($device);
@@ -201,5 +219,9 @@ class CashMovementsControllerTest extends TestCase
             [Business::MODIFICATION_REGISTER],
             $business->getVersionModifications($newVersion)
         );
+
+        Queue::assertPushed(PreCalcRegisterCashMovements::class, function ($job) use ($device) {
+            return $job->getRegister()->id === $device->currentRegister->id;
+        });
     }
 }

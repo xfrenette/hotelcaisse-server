@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Api\Http\ApiResponse;
 use App\Business;
 use App\CashMovement;
+use App\Jobs\PreCalcRegisterCashMovements;
 use App\Support\Facades\ApiAuth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -42,6 +43,9 @@ class CashMovementsController extends ApiController
         // Bump the version of the Business
         $business->bumpVersion([Business::MODIFICATION_REGISTER]);
 
+        // Push a job to recalculate the register's cash movements total
+        dispatch(new PreCalcRegisterCashMovements($device->currentRegister));
+
         return new ApiResponse();
     }
 
@@ -59,11 +63,10 @@ class CashMovementsController extends ApiController
 
         $apiResponse = new ApiResponse();
         $business = ApiAuth::getBusiness();
+        $register = ApiAuth::getDevice()->currentRegister;
 
         // Try to find the CashMovement in the current Register
-        $cashMovements = ApiAuth::getDevice()
-            ->currentRegister
-            ->cashMovements()
+        $cashMovements = $register->cashMovements()
             ->where('uuid', $request->json('data.uuid'));
 
         // If no CashMovement found, return an error
@@ -80,6 +83,9 @@ class CashMovementsController extends ApiController
 
         // Bump the business version
         $business->bumpVersion([Business::MODIFICATION_REGISTER]);
+
+        // Push a job to recalculate the register's cash movements total
+        dispatch(new PreCalcRegisterCashMovements($register));
 
         return $apiResponse;
     }
