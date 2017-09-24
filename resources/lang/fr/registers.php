@@ -24,6 +24,7 @@ return [
     'fields' => [
         'state' => 'État',
         'number' => 'Numéro de caisse',
+        'numberShort' => 'No.',
         'openedAt' => 'Ouverte le',
         'closedAt' => 'Fermée le',
         'employee' => 'Employé(e)',

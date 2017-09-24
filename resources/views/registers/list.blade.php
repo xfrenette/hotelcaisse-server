@@ -7,6 +7,7 @@
             <table class="table">
             <thead>
                 <tr>
+                    <th>{{ __('registers.fields.numberShort') }}</th>
                     <th>{{ __('registers.fields.employee') }}</th>
                     <th>{{ __('registers.fields.state') }}</th>
                     <th>{{ __('registers.fields.openedAt') }}</th>
@@ -18,6 +19,7 @@
             <tbody>
                 @foreach($registers as $register)
                     <tr onclick="document.location = '{{ route('registers.view', ['register' => $register]) }}'">
+                        <td>{{ $register->number }}</td>
                         <td>{{ $register->employee }}</td>
                         <td>
                             @if($register->state === \App\Register::STATE_OPENED)
