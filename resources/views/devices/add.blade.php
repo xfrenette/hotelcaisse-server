@@ -21,7 +21,12 @@
                 <label for="field-initialNumber">
                     {{ __('devices.add.fields.initialRegisterNumber') }}
                 </label>
-                <input id="field-name" class="form-control" name="initial_register_number" value="{{ old('initial_register_number') }}">
+                <input
+                    id="field-name"
+                    class="form-control"
+                    name="initial_register_number"
+                    value="{{ old('initial_register_number', '1') }}"
+                >
             </div>
             <button class="btn btn-primary">{{ __('actions.save') }}</button>
             <a href="{{ route('devices.list') }}" class="btn btn-default">{{ __('actions.cancel') }}</a>
