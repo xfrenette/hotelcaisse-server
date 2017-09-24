@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Register;
-use App\Repositories\PreCalcCache;
+use App\Repositories\CalculatedValueRepository;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -42,7 +42,7 @@ class PreCalcRegisterCashMovements implements ShouldQueue
      *
      * @return void
      */
-    public function handle(PreCalcCache $cache)
+    public function handle(CalculatedValueRepository $cache)
     {
         $cache->set($this->register, Register::PRE_CALC_CASH_MV_TOTAL, $this->register->cashMovementsTotal);
     }

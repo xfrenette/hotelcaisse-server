@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePreCalcCacheTable extends Migration
+class CreateCalculatedValuesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,13 @@ class CreatePreCalcCacheTable extends Migration
      */
     public function up()
     {
-        Schema::create('pre_calc_cache', function (Blueprint $table) {
+        Schema::create('calculated_values', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('entity_id')->unsigned();
+            $table->integer('instance_id')->unsigned();
+            $table->string('class', 200);
             $table->string('key', 200);
             $table->decimal('value');
+            $table->timestamps();
         });
     }
 
@@ -28,6 +30,6 @@ class CreatePreCalcCacheTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('pre_calc_cache');
+        Schema::dropIfExists('calculated_values');
     }
 }

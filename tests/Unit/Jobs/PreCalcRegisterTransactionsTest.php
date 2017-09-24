@@ -4,7 +4,7 @@ namespace Tests\Feature\Jobs;
 
 use App\Jobs\PreCalcRegisterTransactions;
 use App\Register;
-use App\Repositories\PreCalcCache;
+use App\Repositories\CalculatedValueRepository;
 use Mockery as m;
 use Tests\TestCase;
 
@@ -22,7 +22,7 @@ class PreCalcRegisterTransactionsTest extends TestCase
         $totalRefunds = 456.78;
         $totalCashTransactions = 86.85;
 
-        $repo = m::mock(PreCalcCache::class);
+        $repo = m::mock(CalculatedValueRepository::class);
         $register = m::mock(Register::class)->makePartial();
         $register->id = 4;
         $register->shouldReceive('getPaymentsTotalAttribute')->andReturn($totalPayments);
