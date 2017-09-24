@@ -755,9 +755,12 @@ class OrdersControllerTest extends TestCase
 
         $product = $order->items[1]->product;
         $taxes = $product->taxes;
+        $testId = array_get($data, 'data.items.1.product.taxes.1.taxId');
+        $testTax = $taxes->first(function ($tax) use ($testId) {
+            return $tax['taxId'] === $testId;
+        });
         $this->assertEquals(count(array_get($data, 'data.items.1.product.taxes')), $taxes->count());
-        $this->assertEquals(array_get($data, 'data.items.1.product.taxes.1.taxId'), $taxes[1]['taxId']);
-        $this->assertEquals(array_get($data, 'data.items.1.product.taxes.1.amount'), $taxes[1]['amount']);
+        $this->assertEquals(array_get($data, 'data.items.1.product.taxes.1.amount'), $testTax['amount']);
     }
 
     public function testCreateOrderCreatesRoomSelections()
