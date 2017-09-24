@@ -64,6 +64,7 @@ return [
     |
     */
 
+    // Everything will be in UTC, only when displayed we use a user specific timezone
     'timezone' => 'UTC',
 
     /*

@@ -6,7 +6,7 @@ return [
         'empty' => 'Aucune caisse n\'a encore été créée sur vos appareils.'
     ],
     'view' => [
-        'title' => 'Caisse du :date',
+        'title' => 'Caisse #:number',
         'meta' => [
             'general' => 'Informations générales',
             'opening' => 'Information sur l\'ouverture',
@@ -23,6 +23,7 @@ return [
     ],
     'fields' => [
         'state' => 'État',
+        'number' => 'Numéro de caisse',
         'openedAt' => 'Ouverte le',
         'closedAt' => 'Fermée le',
         'employee' => 'Employé(e)',

@@ -44,6 +44,7 @@ class RegistersController extends Controller
         }, 0);
         $declaredTotal = $register->closing_cash - $register->opening_cash + $register->post_amount;
         $netTotal = $transactionsTotal + $cashMovementsTotal;
+        $cashTotal += $cashMovementsTotal;
         $vars = [
             'register' => $register,
             'cashTotal' => $cashTotal,

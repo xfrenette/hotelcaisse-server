@@ -1,9 +1,13 @@
 @extends('spark::layouts.app')
 
 @section('content')
+    <?php
+    $openedAt = $register->opened_at->timezone(Auth::user()->timezone);
+    $closedAt = $register->closed_at->timezone(Auth::user()->timezone);
+    ?>
     <div class="container">
         <h1>
-            {{ __('registers.view.title', ['date' => $register->opened_at->toDateTimeString()])}}
+            {{ __('registers.view.title', ['number' => $register->number])}}
         </h1>
         <div class="row">
             <div class="col-md-4">
@@ -11,6 +15,8 @@
                     <div class="panel-heading">{{ __('registers.view.meta.general') }}</div>
                     <div class="panel-body">
                         <dl>
+                            <dt>{{ __('registers.fields.number') }}</dt>
+                            <dd>{{ $register->number }}</dd>
                             <dt>{{ __('registers.fields.state') }}</dt>
                             <dd>
                                 @if($register->state === \App\Register::STATE_CLOSED)
@@ -47,7 +53,7 @@
                     <div class="panel-body">
                         <dl>
                             <dt>{{ __('registers.fields.openedAt') }}</dt>
-                            <dd>{{ $register->opened_at->toDateTimeString() }}</dd>
+                            <dd>{{ $openedAt->toDateTimeString() }}</dd>
                             <dt>{{ __('registers.fields.employee') }}</dt>
                             <dd>{{ $register->employee }}</dd>
                             <dt>{{ __('registers.fields.openingCash') }}</dt>
@@ -63,7 +69,7 @@
                         <div class="panel-body">
                             <dl>
                                 <dt>{{ __('registers.fields.closedAt') }}</dt>
-                                <dd>{{ $register->closed_at->toDateTimeString() }}</dd>
+                                <dd>{{ $closedAt->toDateTimeString() }}</dd>
                                 <dt>{{ __('registers.fields.closingCash') }}</dt>
                                 <dd>{{ money_format('%(i', $register->closing_cash) }}</dd>
                                 <dt>{{ __('registers.fields.POSTRef') }}</dt>
@@ -103,8 +109,11 @@
                     </thead>
                     <tbody>
                     @foreach($register->transactions as $transaction)
+                        <?php
+                        $createdAt = $transaction->created_at->timezone(Auth::user()->timezone);
+                        ?>
                         <tr>
-                            <td>{{ $transaction->created_at->toDateTimeString() }}</td>
+                            <td>{{ $createdAt->toDateTimeString() }}</td>
                             <td>
                                 @if($transaction->amount < 0)
                                     {{ __('transactions.types.refund') }}
@@ -146,8 +155,11 @@
                     </thead>
                     <tbody>
                     @foreach($register->cashMovements as $cashMovement)
+                        <?php
+                        $createdAt = $cashMovement->created_at->timezone(Auth::user()->timezone);
+                        ?>
                         <tr>
-                            <td>{{ $cashMovement->created_at->toDateTimeString() }}</td>
+                            <td>{{ $createdAt->toDateTimeString() }}</td>
                             <td>
                                 @if($cashMovement->amount < 0)
                                     {{ __('cashMovements.types.out') }}
