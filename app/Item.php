@@ -46,6 +46,31 @@ class Item extends Model
     }
 
     /**
+     * Return the product price multiplied by the quantity
+     *
+     * @return float
+     */
+    public function getSubTotalAttribute()
+    {
+        return floatval(bcmul($this->quantity, $this->product->price));
+    }
+
+    /**
+     * Returns a Collection of array with `taxId` `name` (Tax name) and `amount` keys (amount is a the unit amount
+     * multiplied by the quantity)
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getTaxesAttribute()
+    {
+        $productTaxes = $this->product->taxes;
+        return $productTaxes->map(function ($tax) {
+            $tax['amount'] = floatval(bcmul($tax['amount'], $this->quantity));
+            return $tax;
+        });
+    }
+
+    /**
      * Add `createdAt` timestamp
      * @return array
      */
