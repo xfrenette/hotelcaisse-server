@@ -17,6 +17,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->enhanceTeamCreation();
+        $this->setUpBCMath();
     }
 
     /**
@@ -35,5 +36,13 @@ class AppServiceProvider extends ServiceProvider
     protected function enhanceTeamCreation()
     {
         Spark::swap(BaseTeamRepository::class.'@create', TeamRepository::class.'@create');
+    }
+
+    /**
+     * Default configuration for BCMath
+     */
+    protected function setUpBCMath()
+    {
+        bcscale(4);
     }
 }

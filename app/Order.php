@@ -2,11 +2,14 @@
 
 namespace App;
 
+use App\Support\Traits\HasCalculatedValues;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 class Order extends Model
 {
+    use HasCalculatedValues;
+
     const PRE_CALC_SUB_TOTAL = 'order.subTotal';
     const PRE_CALC_TAX = 'order.tax';
     const PRE_CALC_CREDITS = 'order.credits';

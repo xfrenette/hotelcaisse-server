@@ -30,4 +30,8 @@ Route
         // Registers
         Route::get('/registers', 'RegistersController@list')->name('registers.list');
         Route::get('/registers/{register}', 'RegistersController@view')->name('registers.view');
+
+        // Orders
+        Route::get('/orders', 'OrdersController@list')->name('orders.list');
+        Route::get('/orders/{order}/recalculate', 'OrdersController@recalculate')->name('orders.order.recalculate');
     });
