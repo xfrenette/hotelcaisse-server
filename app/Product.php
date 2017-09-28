@@ -85,7 +85,7 @@ class Product extends Model
             // decimals
             // $appliedAmount = round($appliedAmount, 7);
 
-            // We temporarily round product price to 2 decimals until a better config is defined
+            // We temporarily round tax amount to 2 decimals until a better config is defined
             $appliedAmount = round($appliedAmount, 2);
             // End temporarily
 
