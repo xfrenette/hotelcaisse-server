@@ -9,6 +9,7 @@ use App\Customer;
 use App\Exceptions\CrossBusinessAccessException;
 use App\Item;
 use App\ItemProduct;
+use App\Jobs\PreCalcOrderValues;
 use App\Jobs\PreCalcRegisterTransactions;
 use App\Order;
 use App\Register;
@@ -37,13 +38,14 @@ class OrdersController extends ApiController
 
         $device = ApiAuth::getDevice();
         $business = ApiAuth::getBusiness();
-        $this->createOrder($data, $business, $device->currentRegister);
+        $order = $this->createOrder($data, $business, $device->currentRegister);
 
         // Bump the version of Business
         $business->bumpVersion([Business::MODIFICATION_ORDERS]);
 
-        // Pushes a job to recalculate the register's transactions totals
+        // Pushes a jobs to recalculate the register's and the order's values
         dispatch(new PreCalcRegisterTransactions($device->currentRegister));
+        dispatch(new PreCalcOrderValues($order));
 
         return new ApiResponse();
     }
@@ -66,8 +68,9 @@ class OrdersController extends ApiController
         $order = $business->orders()->where('uuid', array_get($data, 'uuid'))->firstOrFail();
         $this->updateOrder($order, $data, $device->currentRegister);
 
-        // Pushes a job to recalculate the register's transactions totals
+        // Pushes jobs to recalculate the register's and the order's values
         dispatch(new PreCalcRegisterTransactions($device->currentRegister));
+        dispatch(new PreCalcOrderValues($order));
 
         return new ApiResponse();
     }

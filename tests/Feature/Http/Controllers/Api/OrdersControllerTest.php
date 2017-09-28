@@ -10,6 +10,7 @@ use App\Exceptions\CrossBusinessAccessException;
 use App\Http\Controllers\Api\OrdersController;
 use App\Item;
 use App\ItemProduct;
+use App\Jobs\PreCalcOrderValues;
 use App\Jobs\PreCalcRegisterTransactions;
 use App\Order;
 use App\Room;
@@ -222,7 +223,7 @@ class OrdersControllerTest extends TestCase
         ]);
     }
 
-    public function testNewPushesPreCalcRegisterTransactionsJob()
+    public function testNewPushesJobs()
     {
         Queue::fake();
 
@@ -234,6 +235,10 @@ class OrdersControllerTest extends TestCase
 
         Queue::assertPushed(PreCalcRegisterTransactions::class, function ($job) use ($device) {
             return $job->getRegister()->id === $device->currentRegister->id;
+        });
+
+        Queue::assertPushed(PreCalcOrderValues::class, function ($job) use($data) {
+            return $job->getOrder()->uuid === $data['data']['uuid'];
         });
     }
 
@@ -843,7 +848,7 @@ class OrdersControllerTest extends TestCase
         ]);
     }
 
-    public function testEditPushesPreCalcRegisterTransactionsJob()
+    public function testEditPushesJobs()
     {
         Queue::fake();
 
@@ -855,6 +860,10 @@ class OrdersControllerTest extends TestCase
 
         Queue::assertPushed(PreCalcRegisterTransactions::class, function ($job) use ($device) {
             return $job->getRegister()->id === $device->currentRegister->id;
+        });
+
+        Queue::assertPushed(PreCalcOrderValues::class, function ($job) use ($data) {
+            return $job->getOrder()->uuid === $data['data']['uuid'];
         });
     }
 
