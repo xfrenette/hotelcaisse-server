@@ -3,9 +3,15 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 class Order extends Model
 {
+    const PRE_CALC_SUB_TOTAL = 'order.subTotal';
+    const PRE_CALC_TAX = 'order.tax';
+    const PRE_CALC_CREDITS = 'order.credits';
+    const PRE_CALC_TRANSACTIONS = 'order.transactions';
+
     /**
      * All relation names, used when loading all the relations
      */
@@ -71,6 +77,116 @@ class Order extends Model
     public function roomSelections()
     {
         return $this->hasMany('App\RoomSelection');
+    }
+
+    /**
+     * Returns the total of all items' subtotal (before taxes)
+     *
+     * @return float
+     */
+    public function getSubTotalAttribute()
+    {
+        $this->load('items.product');
+
+        // We use bcmath, so we work with string numbers
+        $strRes = $this->items->reduce(function ($subTotal, $item) {
+            return bcadd($subTotal, $item->subTotal);
+        }, "0");
+
+        return floatval($strRes);
+    }
+
+    /**
+     * Returns a Collection of the total for each tax. Each element is:
+     * 'taxId' : (integer) id of the Tax instance
+     * 'name' : (string) name of the tax
+     * 'amount' : (float) total for this tax
+     *
+     * @return Collection
+     */
+    public function getTaxesAttribute()
+    {
+        $this->load('items.product');
+        $taxes = new Collection();
+
+        $this->items->each(function ($item) use (&$taxes) {
+            $item->taxes->each(function ($tax) use (&$taxes) {
+                $id = $tax['taxId'];
+
+                if ($taxes->has($id)) {
+                    $currentTax = $taxes[$id];
+                    $amount = bcadd($currentTax['amount'], $tax['amount']);
+                    array_set($currentTax, 'amount', floatval($amount));
+                    $taxes[$id] = $currentTax;
+                } else {
+                    $taxes[$id] = $tax;
+                }
+            });
+        });
+
+        return $taxes->values();
+    }
+
+    /**
+     * Return the total of all the credits
+     *
+     * @return float
+     */
+    public function getCreditsTotalAttribute()
+    {
+        $total = $this->credits->reduce(function ($prevTotal, $credit) {
+            return bcadd($prevTotal, $credit->amount);
+        }, '0');
+
+        return floatval($total);
+    }
+
+    /**
+     * Returns the sum of all the taxes
+     *
+     * @return float
+     */
+    public function getTaxesTotalAttribute()
+    {
+        $total = $this->taxes->reduce(function ($prevTotal, $tax) {
+            return bcadd($prevTotal, $tax['amount']);
+        }, '0');
+        return floatval($total);
+    }
+
+    /**
+     * Returns the sum of all the transactions
+     *
+     * @return float
+     */
+    public function getTransactionsTotalAttribute()
+    {
+        $total = $this->transactions->reduce(function ($prevTotal, $transaction) {
+            return bcadd($prevTotal, $transaction->amount);
+        }, '0');
+
+        return floatval($total);
+    }
+
+    /**
+     * Returns the sum of the sub total and all the taxes
+     *
+     * @return float
+     */
+    public function getTotalAttribute()
+    {
+        return floatval(bcadd($this->subTotal, $this->taxesTotal));
+    }
+
+    /**
+     * Returns the difference between the total and all the transactions (what is left to pay). A positive value
+     * means we must collect the amount, a negative means we must reimburse the amount.
+     *
+     * @return float
+     */
+    public function getBalanceAttribute()
+    {
+        return floatval(bcsub($this->total, $this->transactionsTotal));
     }
 
     /**

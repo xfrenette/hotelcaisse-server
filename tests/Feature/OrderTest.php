@@ -62,4 +62,52 @@ class OrderTest extends TestCase
         $this->assertTrue($order->transactions->first()->relationLoaded('transactionMode'));
         $this->assertTrue($order->roomSelections->first()->relationLoaded('room'));
     }
+
+    public function testValuesAttribute()
+    {
+        // Requires test data
+        $order = Order::with('items.product')->first();
+        $subTotal = 0;
+        $taxes = [];
+        $taxesTotal = 0;
+
+        $order->items->each(function($item) use(&$subTotal, &$taxes, &$taxesTotal) {
+            $subTotal += round($item->product->price * $item->quantity, 2);
+            $item->taxes->each(function($tax) use (&$taxes, &$taxesTotal) {
+                if (array_key_exists($tax['taxId'], $taxes)) {
+                    $currentAmount = $taxes[$tax['taxId']]['amount'];
+                    $taxes[$tax['taxId']]['amount'] = floatval(bcadd($currentAmount, $tax['amount']));
+                } else {
+                    $taxes[$tax['taxId']] = $tax;
+                }
+                $taxesTotal = round($taxesTotal + $tax['amount'], 4);
+            });
+        });
+
+        $creditsTotal = $order->credits->reduce(function ($total, $credit) {
+            return round($total + $credit->amount, 2);
+        });
+
+        $totalPayments = $order->transactions->reduce(function ($total, $transaction) {
+            return $total + $transaction->amount;
+        }, 0);
+
+        $balance = $subTotal + $taxesTotal - $totalPayments;
+
+        $this->assertEquals($subTotal, $order->subTotal);
+        $this->assertEquals(array_values($taxes), $order->taxes->toArray());
+        $this->assertEquals($creditsTotal, $order->creditsTotal);
+        $this->assertInternalType('float', $order->creditsTotal);
+        $this->assertEquals($balance, $order->balance);
+    }
+
+    public function testValuesAttributeEmpty()
+    {
+        $order = new Order();
+
+        $this->assertEquals(0, $order->subTotal);
+        $this->assertEquals(0, $order->taxes->count());
+        $this->assertEquals(0, $order->creditsTotal);
+        $this->assertEquals(0, $order->balance);
+    }
 }
