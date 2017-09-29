@@ -7,6 +7,7 @@ use App\Order;
 use App\Tax;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class OrdersController extends Controller
 {
@@ -17,17 +18,20 @@ class OrdersController extends Controller
     public function list()
     {
         $orders = Order
-            ::with('customer', 'calculatedValues')
+            ::with('calculatedValues')
             ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($order) {
-                return $this->extractOrderVariables($order);
-            });
+            ->get();
 
-        $taxes = $this->getOrdersTaxes($orders);
+        $customerNames = $this->getOrderCustomerNames($orders);
+
+        $ordersData = $orders->map(function ($order) use ($customerNames) {
+            return $this->extractOrderVariables($order, $customerNames);
+        });
+
+        $taxes = $this->getOrdersTaxes($ordersData);
 
         return view('orders.list', [
-            'orders' => $orders,
+            'orders' => $ordersData,
             'taxes' => $taxes,
         ]);
     }
@@ -47,10 +51,11 @@ class OrdersController extends Controller
     /**
      * From an Order instance, returns an array of different values needed for the orders.list route
      * @param \App\Order $order
+     * @param Collection $customerNames
      *
      * @return array
      */
-    protected function extractOrderVariables(Order $order)
+    protected function extractOrderVariables(Order $order, $customerNames)
     {
         $subTotal = $order->getCalculatedValue(\App\Order::PRE_CALC_SUB_TOTAL);
         $creditsTotal = $order->getCalculatedValue(\App\Order::PRE_CALC_CREDITS);
@@ -75,13 +80,31 @@ class OrdersController extends Controller
 
         return [
             'createdAt' => $order->created_at->timezone(Auth::user()->timezone),
-            'customerName' => 'TODO',
+            'customerName' => $customerNames->has($order->id) ? $customerNames[$order->id]->customer_name : null,
             'subTotal' => $subTotal,
             'taxes' => $taxes,
             'creditsTotal' => $creditsTotal,
             'total' => $total,
             'balance' => $balance,
         ];
+    }
+
+    protected function getOrderCustomerNames($orders)
+    {
+        $business = Auth::user()->currentTeam->business;
+        $customerNameField = $business->customerFields()
+            ->where('role', 'customer.name')
+            ->first();
+
+        $ft = 'field_values';
+        return DB::table($ft)
+            ->select('orders.id as order_id', "$ft.value as customer_name")
+            ->join('customers', 'customers.id', '=', "$ft.instance_id")
+            ->join('orders', 'orders.customer_id', '=', 'customers.id')
+            ->whereIn('orders.id', $orders->pluck('id'))
+            ->where("$ft.field_id", $customerNameField->id)
+            ->get()
+            ->keyBy('order_id');
     }
 
     /**
