@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Field;
 use App\Jobs\PreCalcOrderValues;
 use App\Order;
 use App\Tax;
@@ -34,6 +35,90 @@ class OrdersController extends Controller
             'orders' => $ordersData,
             'taxes' => $taxes,
         ]);
+    }
+
+    /**
+     * Controller method for the orders.order.view
+     * @return \Illuminate\Http\Response
+     */
+    public function view(Order $order)
+    {
+        $order->load([
+            'roomSelections.room',
+            'transactions.transactionMode',
+            'transactions.register',
+        ]);
+
+        $firstRoomSelection = $order->roomSelections->first();
+        $checkInDate = $firstRoomSelection ? $firstRoomSelection->start_date->timezone(Auth::user()->timezone) : null;
+        $checkOutDate = $firstRoomSelection ? $firstRoomSelection->end_date->timezone(Auth::user()->timezone) : null;
+
+        $roomSelections = $order->roomSelections->map(function ($roomSelection) {
+            return [
+                'room' => $roomSelection->room->name,
+                'fields' => $this->getFields($roomSelection),
+            ];
+        });
+
+        return view('orders.view', [
+            'order' => $order,
+            'transactions' => $order->transactions->map(function ($transaction) {
+                return [
+                    'type' => $transaction->amount > 0 ? 'payment' : 'refund',
+                    'mode' => $transaction->transactionMode->name,
+                    'amount' => $transaction->amount,
+                    'createdAt' => $transaction->created_at->timezone(Auth::user()->timezone),
+                    'registerId' => $transaction->register->id,
+                    'registerNumber' => $transaction->register->number,
+                ];
+            }),
+            'customerFields' => $this->getFields($order->customer),
+            'createdAt' => $order->created_at->timezone(Auth::user()->timezone),
+            'subTotal' => $order->subTotal,
+            'taxes' => $order->taxes,
+            'creditsTotal' => $order->creditsTotal,
+            'transactionsTotal' => $order->transactionsTotal,
+            'total' => $order->total,
+            'balance' => $order->balance,
+            'checkIn' => $checkInDate,
+            'checkOut' => $checkOutDate,
+            'roomSelections' => $roomSelections,
+        ]);
+    }
+
+    /**
+     * Returns a collection of arrays with keys `label` and `value`
+     *
+     * @param \Illuminate\Database\Eloquent\Model $model
+     * @return Collection
+     */
+    protected function getFields($model)
+    {
+        $values = $model->fieldValues;
+        $ids = $values->pluck('fieldId');
+        $fields = Field::whereIn('id', $ids)
+            ->get()
+            ->keyBy('id');
+
+        return $values->map(function ($value) use ($fields) {
+            $field = $fields[$value['fieldId']];
+            $type = $field->type;
+            $value = $value['value'];
+
+            switch ($type) {
+                case 'YesNoField':
+                    $value = __($value ? 'actions.yes' : 'actions.no');
+                    break;
+                case 'SelectField':
+                    $value = $field->values[$value];
+                    break;
+            }
+
+            return [
+                'label' => $field->label,
+                'value' => $value,
+            ];
+        });
     }
 
     /**
@@ -79,6 +164,7 @@ class OrdersController extends Controller
         $balance = bcsub($total, $transactionsTotal);
 
         return [
+            'id' => $order->id,
             'createdAt' => $order->created_at->timezone(Auth::user()->timezone),
             'customerName' => $customerNames->has($order->id) ? $customerNames[$order->id]->customer_name : null,
             'subTotal' => $subTotal,

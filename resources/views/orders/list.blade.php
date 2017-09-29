@@ -23,7 +23,10 @@
                 </thead>
                 <tbody>
                     @foreach($orders as $order)
-                        <tr>
+                        <tr
+                            style="cursor: pointer;"
+                            onclick="document.location = '{{route('orders.order.view', ['order' => $order['id']])}}'"
+                        >
                             <td>
                                 {{ $order['createdAt']->formatLocalized(config('formats.dateFullCompact')) }}
                             </td>

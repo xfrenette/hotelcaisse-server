@@ -71,6 +71,29 @@ class Item extends Model
     }
 
     /**
+     * Returns the sum of all taxes
+     * @return float
+     */
+    public function getTaxesTotalAttribute()
+    {
+        $total = $this->taxes->reduce(function ($total, $tax) {
+            return bcadd($total, $tax['amount']);
+        }, '0');
+
+        return floatval($total);
+    }
+
+    /**
+     * Returns the total (sub total + taxes total)
+     *
+     * @return float
+     */
+    public function getTotalAttribute()
+    {
+        return floatval(bcadd($this->subTotal, $this->taxesTotal));
+    }
+
+    /**
      * Add `createdAt` timestamp
      * @return array
      */

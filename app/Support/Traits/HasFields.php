@@ -87,7 +87,7 @@ trait HasFields
     }
 
     /**
-     * Return a Collection of all the field values where each entry is an array with a `field` key (Field id) and a
+     * Return a Collection of all the field values where each entry is an array with a `fieldId` key (Field id) and a
      * `value` key. Values for numeric fields are converted to number
      *
      * @return \Illuminate\Support\Collection

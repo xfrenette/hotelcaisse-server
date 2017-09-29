@@ -95,10 +95,8 @@ $notAvailable .= '"><span style="text-muted">-N/A-</span><span style="text-prima
                     $expectedPOSTAmount = $transactionsTotal - $cashTransactionsTotal;
                     ?>
                     <tr
-                            style="cursor: pointer;"
-                            onclick="document.location = '{{
-                            route('registers.view', ['register' => $register])
-                        }}'"
+                        style="cursor: pointer;"
+                        onclick="document.location = '{{ route('registers.register.view', ['register' => $register]) }}'"
                     >
                         <td>{{ $register->number }}</td>
                         <td>

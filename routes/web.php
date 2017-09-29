@@ -29,9 +29,10 @@ Route
 
         // Registers
         Route::get('/registers', 'RegistersController@list')->name('registers.list');
-        Route::get('/registers/{register}', 'RegistersController@view')->name('registers.view');
+        Route::get('/registers/{register}', 'RegistersController@view')->name('registers.register.view');
 
         // Orders
         Route::get('/orders', 'OrdersController@list')->name('orders.list');
+        Route::get('/orders/{order}', 'OrdersController@view')->name('orders.order.view');
         Route::get('/orders/{order}/recalculate', 'OrdersController@recalculate')->name('orders.order.recalculate');
     });
