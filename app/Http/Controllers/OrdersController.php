@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\Auth;
 
 class OrdersController extends Controller
 {
+    /**
+     * Controller method for the orders.list route
+     * @return \Illuminate\Http\Response
+     */
     public function list()
     {
         $orders = Order
@@ -28,6 +32,24 @@ class OrdersController extends Controller
         ]);
     }
 
+    /**
+     * Controller method for the orders.order.recalculate route
+     * @param \App\Order $order
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function recalculate(Order $order)
+    {
+        dispatch(new PreCalcOrderValues($order));
+        return redirect(route('orders.list'));
+    }
+
+    /**
+     * From an Order instance, returns an array of different values needed for the orders.list route
+     * @param \App\Order $order
+     *
+     * @return array
+     */
     protected function extractOrderVariables(Order $order)
     {
         $subTotal = $order->getCalculatedValue(\App\Order::PRE_CALC_SUB_TOTAL);
@@ -62,6 +84,12 @@ class OrdersController extends Controller
         ];
     }
 
+    /**
+     * From the array returned by `extractOrderVariables`, returns a Collection of all the Tax objects
+     * @param array $orders
+     *
+     * @return Collection
+     */
     protected function getOrdersTaxes($orders)
     {
         $taxesId = [];
@@ -77,11 +105,5 @@ class OrdersController extends Controller
         }
 
         return new Collection([]);
-    }
-
-    public function recalculate(Order $order)
-    {
-        dispatch(new PreCalcOrderValues($order));
-        return redirect(route('orders.list'));
     }
 }
