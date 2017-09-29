@@ -8,6 +8,7 @@ return [
         'amount' => 'Montant',
         'transactionMode' => 'Mode',
         'register' => 'Caisse',
+        'order' => 'Fiche associée',
     ],
     'types' => [
         'refund' => 'Remboursement',

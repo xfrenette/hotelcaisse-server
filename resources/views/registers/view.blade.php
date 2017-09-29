@@ -106,6 +106,7 @@
                         <th>{{ __('transactions.fields.type') }}</th>
                         <th>{{ __('transactions.fields.mode') }}</th>
                         <th>{{ __('transactions.fields.amount') }}</th>
+                        <th></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -124,6 +125,10 @@
                             </td>
                             <td>{{ $transaction->transactionMode->name }}</td>
                             <td>{{ money_format('%(i', $transaction->amount) }}</td>
+                            <td>
+                                <a href="{{ route('orders.order.view', ['order' =>
+                                $transaction->order_id]) }}">{{ __('transactions.fields.order')
+                                }}</a></td>
                         </tr>
                     @endforeach
                     </tbody>
@@ -131,6 +136,7 @@
                     <tr>
                         <th colspan="3" class="text-right">{{ __('transactions.list.total') }}</th>
                         <th>{{ money_format('%(i', $transactionsTotal) }}</th>
+                        <th></th>
                     </tr>
                     </tfoot>
                 </table>
