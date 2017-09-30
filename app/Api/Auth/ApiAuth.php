@@ -29,7 +29,7 @@ class ApiAuth
     public $apiSession = null;
 
     /**
-     * If an ApiSession is loaded, returns it Business, else return null.
+     * If an ApiSession is loaded, returns its Business, else return null.
      *
      * @return Business|null
      */
@@ -45,7 +45,7 @@ class ApiAuth
     }
 
     /**
-     * If an ApiSession is loaded, returns it Device, else return null.
+     * If an ApiSession is loaded, returns its Device, else return null.
      *
      * @return \App\Device|null
      */
@@ -56,6 +56,20 @@ class ApiAuth
         }
 
         return $this->apiSession->device;
+    }
+
+    /**
+     * If an ApiSession is loaded, returns its Device's Team, else return null.
+     *
+     * @return \App\Team|null
+     */
+    public function getTeam()
+    {
+        if (is_null($this->apiSession)) {
+            return null;
+        }
+
+        return $this->apiSession->device->team;
     }
 
     /**

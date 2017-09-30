@@ -144,6 +144,16 @@ class ApiAuthTest extends TestCase
         $this->assertNull($this->apiAuth->getDevice());
     }
 
+    public function testGetTeam()
+    {
+        $this->loadValidSession();
+        $device = $this->apiSession->device;
+        $this->assertEquals($device->team->id, $this->apiAuth->getTeam()->id);
+
+        $this->apiAuth->logout();
+        $this->assertNull($this->apiAuth->getTeam());
+    }
+
     public function testGetToken()
     {
         $this->loadValidSession();
