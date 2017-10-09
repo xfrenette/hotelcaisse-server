@@ -13,12 +13,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Simple 'heartbeat' route, returns the params
-Route::get('test', function() {
-    return [
-        'test' => true,
-    ];
-});
+// Simple 'heartbeat' route
+Route::get('test', 'TestController@handle');
 
 Route::prefix('{team}')
     ->middleware('api:request')
