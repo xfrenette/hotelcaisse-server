@@ -167,6 +167,7 @@ $notAvailable .= '"><span style="text-muted">-N/A-</span><span style="text-prima
                 @endforeach
                 </tbody>
             </table>
+            <p>{!! __('registers.list.naMessage', ['na' => $notAvailable]) !!}</p>
         @else
             <p>{{ __('registers.list.empty') }}</p>
         @endif

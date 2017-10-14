@@ -5,6 +5,7 @@ return [
         'title' => 'Caisses',
         'empty' => 'Aucune caisse n\'a encore été créée sur vos appareils.',
         'naDefinition' => 'Sera disponible seulement quand la caisse sera fermée',
+        'naMessage' => ':na : information non-disponible tant que la caisse est ouverte.',
     ],
     'view' => [
         'title' => 'Caisse #:number',
