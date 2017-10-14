@@ -9,6 +9,12 @@ use Illuminate\Http\Request;
 class RegistersController extends Controller
 {
     /**
+     * Number of items per page in the paginated list screen
+     * @type integer
+     */
+    const LIST_NB_PER_PAGE = 20;
+
+    /**
      * Controller method for /registers
      *
      * @param \Illuminate\Http\Request $request
@@ -20,7 +26,7 @@ class RegistersController extends Controller
             ->registers()
             ->with('calculatedValues')
             ->orderBy('opened_at', 'desc')
-            ->get();
+            ->simplePaginate(self::LIST_NB_PER_PAGE);
         return view('registers.list', [
             'registers' => $registers,
             'cashFloat' => 100,

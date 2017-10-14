@@ -13,6 +13,12 @@ use Illuminate\Support\Facades\DB;
 class OrdersController extends Controller
 {
     /**
+     * Number of items per page in the paginated list screen
+     * @type integer
+     */
+    const LIST_NB_PER_PAGE = 20;
+
+    /**
      * Controller method for the orders.list route
      * @return \Illuminate\Http\Response
      */
@@ -21,7 +27,7 @@ class OrdersController extends Controller
         $orders = Order
             ::with('calculatedValues')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->simplePaginate(self::LIST_NB_PER_PAGE);
 
         $customerNames = $this->getOrderCustomerNames($orders);
 
@@ -34,6 +40,7 @@ class OrdersController extends Controller
         return view('orders.list', [
             'orders' => $ordersData,
             'taxes' => $taxes,
+            'paginator' => $orders,
         ]);
     }
 

@@ -49,6 +49,7 @@
                     @endforeach
                 </tbody>
             </table>
+            {{ $paginator->links() }}
         @endif
     </div>
 @endsection
