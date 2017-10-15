@@ -346,9 +346,11 @@ None returned
 `POST /orders`
 ---
 
-Returns the list of Orders for the current Business. The Orders are returned in reverse order, sorted by creation date,
-so the last Orders are returned first. A `quantity` must be provided. If a `from` (an Order UUID) is supplied, the list
-are the Orders following (by creation date) the `from`.
+Returns the list of Orders for the current Business. The Orders are returned in reverse order,
+sorted by end_date of one of their room selections (for now, all the room selections of an Order
+have the same end date) so the Orders where the guest leaves the latest are returned first. A
+`quantity` must be provided. If a `from` (an Order UUID) is supplied, the list are the Orders
+after `from`.
 
 ### Request `data`
 * `quantity`: (number) Number of Order to return (it has a maximum defined by the server).

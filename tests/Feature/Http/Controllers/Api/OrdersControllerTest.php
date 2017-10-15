@@ -1488,31 +1488,57 @@ class OrdersControllerTest extends TestCase
     {
         $baseDate = Carbon::yesterday();
 
-        $orders = [
-            ['uuid' => 'test-1', 'created_at' => $baseDate->copy()->subHours(9)],
-            ['uuid' => 'test-2', 'created_at' => $baseDate->copy()->subHours(8)],
-            ['uuid' => 'test-3', 'created_at' => $baseDate->copy()->subHours(7)],
-            // 'test-5' inserted before 'test-4', but with later created_at
-            ['uuid' => 'test-5', 'created_at' => $baseDate->copy()->subHours(5)],
-            ['uuid' => 'test-4', 'created_at' => $baseDate->copy()->subHours(6)],
-            ['uuid' => 'other-business', 'created_at' => $baseDate->copy()->subHours(4)],
+        // order important
+        // When sorted, the expected order is: 2, 1, 6, 5, 4, 3 (7 is in another team)
+        $checkoutDates = [
+            'test-1' => $baseDate->copy()->addDay(3),
+            // Created after, but checkout later
+            'test-2' => $baseDate->copy()->addDay(4),
+            'test-3' => $baseDate->copy()->addDay(1),
+            'test-4' => $baseDate->copy()->addDay(2),
+            'test-5' => $baseDate->copy()->addDay(2),
+            // Multiple checkout dates (the system currently only supports same date for all room selections)
+            'test-6' => [
+                $baseDate->copy()->addDay(2),
+                $baseDate->copy()->addDay(2)
+            ],
+            // For other team
+            'test-7' => $baseDate->copy()->addDay(2),
         ];
 
         $customer = \factory(Customer::class, 'withBusiness')->create();
         $business = $customer->business;
+        $room = Room::first();
 
         $otherOrder = null;
 
-        foreach ($orders as $index => $orderData) {
-            $order = new Order($orderData);
-            $order->created_at = $orderData['created_at'];
+        $index = 0;
+        foreach ($checkoutDates as $uuid => $dates) {
+            $order = new Order(['uuid' => $uuid]);
             $order->business()->associate($business);
             $order->customer()->associate($customer);
             $order->save();
 
-            if ($index === count($orders) - 1) {
+            // Add room selection(s)
+            if (!is_array($dates)) {
+                $dates = [$dates];
+            }
+
+            foreach ($dates as $date) {
+                $roomSelection = new RoomSelection();
+                $roomSelection->uuid = 'rs_' . $uuid;
+                $roomSelection->start_date = $baseDate;
+                $roomSelection->end_date = $date;
+                $roomSelection->room()->associate($room);
+                $roomSelection->order()->associate($order);
+                $roomSelection->save();
+            }
+
+            if ($index === count($checkoutDates) - 1) {
                 $otherOrder = $order;
             }
+
+            $index += 1;
         }
 
         // Move last Order to another team
@@ -1524,13 +1550,13 @@ class OrdersControllerTest extends TestCase
         // No $from specified
         $res = $this->controller->getOrders($business, 2);
         $uuids = $res->pluck('uuid')->toArray();
-        $this->assertEquals(['test-5', 'test-4'], $uuids);
+        $this->assertEquals(['test-2', 'test-1'], $uuids);
 
         // With $from specified
-        $from = Order::where('uuid', 'test-2')->first();
+        $from = Order::where('uuid', 'test-6')->first();
         $res = $this->controller->getOrders($business, 2, $from);
         $uuids = $res->pluck('uuid')->toArray();
-        $this->assertEquals(['test-4', 'test-3'], $uuids);
+        $this->assertEquals(['test-5', 'test-4'], $uuids);
 
         // With $quantity larger than available
         $res = $this->controller->getOrders($business, 10, $from);
@@ -1538,7 +1564,7 @@ class OrdersControllerTest extends TestCase
         $this->assertEquals(['test-5', 'test-4', 'test-3'], $uuids);
 
         // Ask the last one of the team
-        $from = Order::where('uuid', 'test-5')->first();
+        $from = Order::where('uuid', 'test-3')->first();
         $res = $this->controller->getOrders($business, 5, $from);
         $this->assertEmpty($res);
 

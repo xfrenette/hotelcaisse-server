@@ -104,8 +104,10 @@ class OrdersController extends ApiController
     }
 
     /**
-     * Gets the latest $quantity Orders of the $business. If $from is passed, Order are following $from. In the
+     * Gets the latest $quantity Orders of the $business. If $from is passed, Orders are following $from. In the
      * returning Collection, the most recent Order is first. All relations of each Order are also loaded.
+     *
+     * The Orders are sorted by their checkout date of room selection (descending)
      *
      * @param \App\Business $business
      * @param integer $quantity
@@ -123,19 +125,65 @@ class OrdersController extends ApiController
             }
         }
 
-        $query = $business->orders()->with(Order::RELATIONS)->take($quantity);
+        $ot = with(new Order())->getTable();
+        $rst = with(new RoomSelection())->getTable();
 
-        if (is_null($from)) {
-            $query->orderBy('created_at', 'DESC');
+        // First, we create a query getting the id of the orders sorted by room_selection.end_date DESC
+        $ids_query = DB::table($ot)
+            ->select("$rst.end_date", "$ot.id as id", "$ot.uuid as uuid")
+            ->distinct()
+            ->join($rst, "$ot.id", '=', "$rst.order_id")
+            ->orderBy("$rst.end_date", 'DESC')
+            ->orderBy("$ot.id", 'DESC')
+            ->where("$ot.business_id", $business->id);
+
+        if(!is_null($from)) {
+            // If a $from is specified, we get 2 result sets:
+            // - one containing all rows with the same end_date as $from
+            // - one containing $quantity rows where the end_date is before (<) the end_date of $from
+            // we merge the 2 sets and, after finding where $from is, we keep only the ids following $quantity
+            $end_date = $from->roomSelections->first()->end_date;
+            $same_end_date_ids = with(clone $ids_query)
+                ->where("$rst.end_date", $end_date)
+                ->pluck('id');
+            $before_end_date_ids = with(clone $ids_query)
+                ->where("$rst.end_date", '<', $end_date)
+                ->take($quantity)
+                ->pluck('id');
+            $all_ids = $same_end_date_ids->merge($before_end_date_ids);
+            $selected = 0;
+            $found = false;
+            // We keep only the $quantity ids after $from
+            $ids = $all_ids->filter(function ($id) use ($from, $quantity, &$found, &$selected) {
+                if ($found) {
+                    if ($selected < $quantity) {
+                        $selected += 1;
+                        return true;
+                    }
+                } else {
+                    if ($id === $from->id) {
+                        $found = true;
+                    }
+                }
+
+                return false;
+            });
         } else {
-            $query->from($from)->orderBy('created_at', 'ASC');
+            // We take the ids of the first $quantity rows
+            $ids = $ids_query->take($quantity)->pluck('id');
         }
 
-        $results = $query->get();
-
-        if (!is_null($from)) {
-            return $results->reverse();
+        if ($ids->isEmpty()) {
+            return $ids;
         }
+
+        // Get the Orders
+        $results = $business->orders()
+            ->with(Order::RELATIONS)
+            ->whereIn('id', $ids)
+            // We want the elements in the same order as in $ids
+            ->orderBy(DB::raw("FIELD(id, {$ids->implode(', ')})"))
+            ->get();
 
         return $results;
     }
