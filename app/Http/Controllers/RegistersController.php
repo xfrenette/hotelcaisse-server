@@ -13,6 +13,7 @@ class RegistersController extends Controller
      * @type integer
      */
     const LIST_NB_PER_PAGE = 20;
+    const CASH_FLOAT = 100;
 
     /**
      * Controller method for /registers
@@ -29,7 +30,7 @@ class RegistersController extends Controller
             ->simplePaginate(self::LIST_NB_PER_PAGE);
         return view('registers.list', [
             'registers' => $registers,
-            'cashFloat' => 100,
+            'cashFloat' => self::CASH_FLOAT,
         ]);
     }
 
@@ -38,6 +39,7 @@ class RegistersController extends Controller
         $cashTotal = 0;
         $paymentsTotal = 0;
         $refundsTotal = 0;
+        $openingCashError = $register->opening_cash - self::CASH_FLOAT;
         $register->transactions->each(
             function ($transaction) use (&$cashTotal, &$paymentsTotal, &$refundsTotal) {
                 if ($transaction->transactionMode->type === TransactionMode::TYPE_CASH) {
@@ -57,7 +59,7 @@ class RegistersController extends Controller
         }, 0);
         $declaredTotal = $register->closing_cash - $register->opening_cash + $register->post_amount;
         $netTotal = $transactionsTotal + $cashMovementsTotal;
-        $cashTotal += $cashMovementsTotal;
+        $cashTotal += $cashMovementsTotal + $openingCashError;
         $vars = [
             'register' => $register,
             'cashTotal' => $cashTotal,

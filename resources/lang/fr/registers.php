@@ -6,22 +6,6 @@ return [
         'empty' => 'Aucune caisse n\'a encore été créée sur vos appareils.',
         'naDefinition' => 'Sera disponible seulement quand la caisse sera fermée',
         'naMessage' => ':na : information non-disponible tant que la caisse est ouverte.',
-    ],
-    'view' => [
-        'title' => 'Caisse #:number',
-        'meta' => [
-            'general' => 'Informations générales',
-            'opening' => 'Information sur l\'ouverture',
-            'closing' => 'Information sur la fermeture',
-        ],
-        'transactions' => [
-            'title' => 'Liste des transactions',
-            'empty' => 'Aucune transaction',
-        ],
-        'cashMovements' => [
-            'title' => 'Autres mouvements d\'argent',
-            'empty' => 'Aucune mouvement d\'argent',
-        ],
         'columns' => [
             'opening' => [
                 'title' => 'Ouverture',
@@ -40,6 +24,7 @@ return [
                 'title' => 'Argent net dans la caisse',
                 'transactionsTotal' => 'Source:<br>transactions',
                 'cashMovements' => 'Source:<br>autre',
+                'floatError' => 'Erreur de<br>fond ouv.',
                 'expectedTtotal' => 'Total<br>attendu',
                 'declaredTotal' => 'Total<br>déclaré',
             ],
@@ -53,6 +38,22 @@ return [
                 'title' => 'Fermeture',
                 'date' => 'Date/heure',
             ],
+        ],
+    ],
+    'view' => [
+        'title' => 'Caisse #:number',
+        'meta' => [
+            'general' => 'Informations générales',
+            'opening' => 'Information sur l\'ouverture',
+            'closing' => 'Information sur la fermeture',
+        ],
+        'transactions' => [
+            'title' => 'Liste des transactions',
+            'empty' => 'Aucune transaction',
+        ],
+        'cashMovements' => [
+            'title' => 'Autres mouvements d\'argent',
+            'empty' => 'Aucune mouvement d\'argent',
         ],
     ],
     'fields' => [

@@ -50,14 +50,14 @@ $notAvailable .= '"><span style="text-muted">-N/A-</span><span style="text-prima
             <table class="table table-hover">
                 <thead>
                 <tr>
-                    @foreach(__('registers.view.columns') as $column)
+                    @foreach(__('registers.list.columns') as $column)
                         <th class="tableGroupHead tableGroup" colspan={{ count($column) - 1 }}>
                             {!! $column['title'] !!}
                         </th>
                     @endforeach
                 </tr>
                 <tr>
-                    @foreach(__('registers.view.columns') as $columnGroup)
+                    @foreach(__('registers.list.columns') as $columnGroup)
                         @foreach($columnGroup as $column)
                             @if(!$loop->first)
                                 <th class={{ $loop->last ? 'tableGroup' : '' }}>
@@ -90,7 +90,8 @@ $notAvailable .= '"><span style="text-muted">-N/A-</span><span style="text-prima
                     $cashMovementsTotal = $register->getCalculatedValue(
                         \App\Register::PRE_CALC_CASH_MV_TOTAL
                     );
-                    $cashExpected = $cashTransactionsTotal + $cashMovementsTotal;
+                    $openingCashError = $register->opening_cash - $cashFloat;
+                    $cashExpected = $cashTransactionsTotal + $cashMovementsTotal + $openingCashError;
                     $cashDeclared = $opened ? null : $register->closing_cash;
                     $expectedPOSTAmount = $transactionsTotal - $cashTransactionsTotal;
                     ?>
@@ -108,7 +109,7 @@ $notAvailable .= '"><span style="text-muted">-N/A-</span><span style="text-prima
                         <td>
                             {{ money_format('%(i', $register->opening_cash) }}
                             <br>
-                            {!! amountError($register->opening_cash - $cashFloat) !!}
+                            {!! amountError($openingCashError) !!}
                             <br>
                         </td>
                         <td>
@@ -125,6 +126,9 @@ $notAvailable .= '"><span style="text-muted">-N/A-</span><span style="text-prima
                         </td>
                         <td>
                             {{ money_format('%(i', $cashMovementsTotal) }}
+                        </td>
+                        <td>
+                            {{ money_format('%(i', $openingCashError) }}
                         </td>
                         <td>
                             {{ money_format('%(i', $cashExpected) }}
