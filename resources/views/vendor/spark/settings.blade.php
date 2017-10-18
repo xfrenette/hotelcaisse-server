@@ -30,6 +30,8 @@
                                 </li>
 
                                 <!-- Teams Link -->
+                                <?php
+                                /*
                                 @if (Spark::usesTeams())
                                     <li role="presentation">
                                         <a href="#{{str_plural(Spark::teamString())}}" aria-controls="teams" role="tab" data-toggle="tab">
@@ -37,6 +39,8 @@
                                         </a>
                                     </li>
                                 @endif
+                                */
+                                ?>
 
                                 <!-- Security Link -->
                                 <li role="presentation">

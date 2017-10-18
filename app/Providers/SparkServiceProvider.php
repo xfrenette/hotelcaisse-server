@@ -53,6 +53,8 @@ class SparkServiceProvider extends ServiceProvider
     {
         Cashier::useCurrency('cad', '$');
         Spark::useStripe();
+        Spark::noAdditionalTeams();
+        Spark::hideTeamSwitcher();
 
         Spark::teamPlan('Hébergement données TPV', 'hirdl-pos-hosting')
             ->price(15);
