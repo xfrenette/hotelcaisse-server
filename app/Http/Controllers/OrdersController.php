@@ -31,15 +31,22 @@ class OrdersController extends Controller
             ->simplePaginate(self::LIST_NB_PER_PAGE);
 
         $customerFieldValues = $this->getCustomersFieldValues($orders);
+        $roomSelectionsNumericFieldValues = $this->getRoomSelectionsNumericFieldValues($orders);
 
-        $ordersData = $orders->map(function ($order) use ($customerFieldValues) {
-            return $this->extractOrderVariables($order, $customerFieldValues);
+        $ordersData = $orders->map(function ($order) use ($customerFieldValues, $roomSelectionsNumericFieldValues) {
+            return $this->extractOrderVariables($order, $customerFieldValues, $roomSelectionsNumericFieldValues);
+        });
+
+        $roomSelectionFields = $business->roomSelectionFields;
+        $roomSelectionNumericFields = $roomSelectionFields->filter(function ($field) {
+            return $field->type === 'NumberField';
         });
 
         return view('orders.list', [
             'orders' => $ordersData,
             'paginator' => $orders,
             'customerFields' => $business->customerFields,
+            'roomSelectionsNumericFields' => $roomSelectionNumericFields,
         ]);
     }
 
@@ -146,11 +153,10 @@ class OrdersController extends Controller
      *
      * @return array
      */
-    protected function extractOrderVariables(Order $order, $customerFieldValues)
+    protected function extractOrderVariables(Order $order, $customerFieldValues, $roomSelectionsNumericFieldValues)
     {
         $subTotal = $order->getCalculatedValue(\App\Order::PRE_CALC_SUB_TOTAL);
         $creditsTotal = $order->getCalculatedValue(\App\Order::PRE_CALC_CREDITS);
-        $transactionsTotal = $order->getCalculatedValue(\App\Order::PRE_CALC_TRANSACTIONS);
         $taxes = [];
         $taxesTotal = 0;
 
@@ -167,12 +173,11 @@ class OrdersController extends Controller
             $creditsTotal
         );
 
-        $balance = bcsub($total, $transactionsTotal);
-
         return [
             'id' => $order->id,
             'createdAt' => $order->created_at->timezone(Auth::user()->timezone),
             'customerFieldValues' => $customerFieldValues->get($order->id, new Collection()),
+            'roomSelectionsNumericFieldValues' => $roomSelectionsNumericFieldValues->get($order->id, new Collection()),
             'total' => $total,
         ];
     }
@@ -205,22 +210,32 @@ class OrdersController extends Controller
         return $fields;
     }
 
-    protected function getOrderCustomerNames($orders)
+    protected function getRoomSelectionsNumericFieldValues($orders)
     {
-        $business = Auth::user()->currentTeam->business;
-        $customerNameField = $business->customerFields()
-            ->where('role', 'customer.name')
-            ->first();
-
         $ft = 'field_values';
-        return DB::table($ft)
-            ->select('orders.id as order_id', "$ft.value as customer_name")
-            ->join('customers', 'customers.id', '=', "$ft.instance_id")
-            ->join('orders', 'orders.customer_id', '=', 'customers.id')
+        $valuesQuery = DB::table($ft)
+            ->select('orders.id as order_id', "$ft.field_id as field_id", "$ft.value as value")
+            ->join('room_selections', 'room_selections.id', '=', "$ft.instance_id")
+            ->join('orders', 'orders.id', '=', 'room_selections.order_id')
+            ->join('fields', 'fields.id', '=', "$ft.field_id")
             ->whereIn('orders.id', $orders->pluck('id'))
-            ->where("$ft.field_id", $customerNameField->id)
+            ->where('fields.type', 'NumberField');
+
+        $rawFields = DB::table(DB::raw("({$valuesQuery->toSql()}) as sub"))
+            ->select('order_id', 'field_id', DB::raw("SUM(value) as value"))
+            ->mergeBindings($valuesQuery)
+            ->groupBy(['field_id', 'order_id'])
             ->get()
-            ->keyBy('order_id');
+            ->groupBy('order_id');
+
+        $fields = new Collection();
+        $rawFields->each(function ($data, $orderId) use (&$fields) {
+            $fields[$orderId] = $data->mapWithKeys(function ($item) {
+                return [$item->field_id => $item->value];
+            });
+        });
+
+        return $fields;
     }
 
     /**

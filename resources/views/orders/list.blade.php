@@ -15,6 +15,9 @@
                     @foreach($customerFields as $field)
                     <th>{{ $field->label }}</th>
                     @endforeach
+                    @foreach($roomSelectionsNumericFields as $field)
+                    <th>{{ $field->label }}</th>
+                    @endforeach
                 </tr>
                 </thead>
                 <tbody>
@@ -38,6 +41,13 @@
                                 <td>
                                 @if($order['customerFieldValues']->has($field->id))
                                     {{ $order['customerFieldValues'][$field->id] }}
+                                @endif
+                                </td>
+                            @endforeach
+                            @foreach($roomSelectionsNumericFields as $field)
+                                <td>
+                                @if($order['roomSelectionsNumericFieldValues']->has($field->id))
+                                    {{ $order['roomSelectionsNumericFieldValues'][$field->id] }}
                                 @endif
                                 </td>
                             @endforeach
