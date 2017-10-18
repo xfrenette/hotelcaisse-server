@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Register;
 use App\TransactionMode;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class RegistersController extends Controller
@@ -23,14 +24,53 @@ class RegistersController extends Controller
      */
     public function list(Request $request)
     {
-        $registers = $request->user()->currentTeam
+        $dateFormat = __('filters.phpDateFormat');
+        $timezone = $request->user()->timezone;
+        $startDate = $request->query('startDate');
+        $endDate = $request->query('endDate');
+
+        if ($startDate) {
+            try {
+                $startDate = Carbon::createFromFormat($dateFormat, $startDate, $timezone);
+                $startDate->setTime(0, 0, 0, 0);
+            } catch (\InvalidArgumentException $e) {
+                $startDate = false;
+            }
+        }
+
+        if ($endDate) {
+            try {
+                $endDate = Carbon::createFromFormat($dateFormat, $endDate, $timezone);
+                $endDate->setTime(23, 59, 59, 999);
+            } catch (\InvalidArgumentException $e) {
+                $endDate = false;
+            }
+        }
+
+        $query = $request->user()->currentTeam
             ->registers()
             ->with('calculatedValues')
-            ->orderBy('opened_at', 'desc')
-            ->simplePaginate(self::LIST_NB_PER_PAGE);
+            ->orderBy('opened_at', 'desc');
+
+        if ($startDate) {
+            $utcStartDate = $startDate->copy()->setTimezone('UTC');
+            $query->where('opened_at', '>=', $utcStartDate);
+        }
+
+        if ($endDate) {
+            $utcEndDate = $endDate->copy()->setTimezone('UTC');
+            $query->where('opened_at', '<=', $utcEndDate);
+        }
+
+        $registers = $query->simplePaginate(self::LIST_NB_PER_PAGE)
+            // Add parameters for paginator links
+            ->appends($_GET);
+
         return view('registers.list', [
             'registers' => $registers,
             'cashFloat' => self::CASH_FLOAT,
+            'startDate' => $startDate ? $startDate->format($dateFormat) : '',
+            'endDate' => $endDate ? $endDate->format($dateFormat) : '',
         ]);
     }
 

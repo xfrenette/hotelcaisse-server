@@ -23,7 +23,24 @@ $notAvailable .= __('registers.list.naDefinition');
 $notAvailable .= '"><span style="text-muted">-N/A-</span><span style="text-primary">*</span></em>';
 ?>
 
+@section('scripts')
+    <script type="text/javascript" src="/bower_components/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="/bower_components/moment/min/moment.min.js"></script>
+    <script type="text/javascript" src="/bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>
+    <script>
+		$(function () {
+			$('[data-role=datepicker]').datetimepicker({
+                format: '{{ __('filters.dateFormat') }}',
+				showClear: true,
+				showClose: true,
+				allowInputToggle: true,
+            });
+		});
+    </script>
+@endsection
+
 @section('styles')
+    <link rel="stylesheet" href="/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css" />
     <style>
         .table > thead > tr > .tableGroupHead {
             border-bottom: 0;
@@ -40,141 +57,195 @@ $notAvailable .= '"><span style="text-muted">-N/A-</span><span style="text-prima
         .tableGroup:last-child {
             border-right: 0;
         }
+        .panel-overflow {
+            overflow: visible;
+        }
     </style>
 @endsection
 
 @section('content')
     <div class="container">
         <h1>{{ __('registers.list.title') }}</h1>
+        <div class="panel panel-default panel-overflow">
+            <div class="panel-heading">
+                <h3 class="panel-title">{{ __('filters.title') }}</h3>
+            </div>
+            <div class="panel-body">
+                <form class="form" method="GET" action="{{ Request::url() }}">
+                    <input type="hidden" name="page" value="{{ $registers->currentPage() }}">
+                    <div><label>{{ __('registers.list.filters.openingDate') }}</label></div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <div class='input-group date' data-role="datepicker">
+                                    <input
+                                            type='text'
+                                            name="startDate"
+                                            class="form-control"
+                                            value="{{ $startDate }}"
+                                            placeholder="{{ __('filters.startDate') }}"
+                                    />
+                                    <span class="input-group-addon">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <div class='input-group date' data-role="datepicker">
+                                    <input
+                                            type='text'
+                                            value="{{ $endDate }}"
+                                            name="endDate"
+                                            class="form-control"
+                                            placeholder="{{ __('filters.endDate') }}"
+                                    />
+                                    <span class="input-group-addon">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p>
+                        <button type="submit" class="btn btn-primary">
+                            {{ __('filters.actions.apply') }}
+                        </button>
+                    </p>
+                </form>
+            </div>
+        </div>
+        <hr>
         @if(count($registers))
-            <table class="table table-hover">
-                <thead>
-                <tr>
-                    @foreach(__('registers.list.columns') as $column)
-                        <th class="tableGroupHead tableGroup" colspan={{ count($column) - 1 }}>
-                            {!! $column['title'] !!}
-                        </th>
-                    @endforeach
-                </tr>
-                <tr>
-                    @foreach(__('registers.list.columns') as $columnGroup)
-                        @foreach($columnGroup as $column)
-                            @if(!$loop->first)
-                                <th class={{ $loop->last ? 'tableGroup' : '' }}>
-                                    {!! $column !!}
-                                </th>
-                            @endif
-                        @endforeach
-                    @endforeach
-                </tr>
-                </thead>
-                <tbody>
-                @foreach($registers as $register)
-                    <?php
-                    $opened = $register->state === \App\Register::STATE_OPENED;
-                    $closed = !$opened;
-                    $openedAt = $register->opened_at->timezone(Auth::user()->timezone);
-                    $closedAt = $opened
-                        ? null
-                        : $register->closed_at->timezone(Auth::user()->timezone);
-                    $paymentsTotal = $register->getCalculatedValue(
-                        \App\Register::PRE_CALC_PAYMENTS_TOTAL
-                    );
-                    $refundsTotal = -1 * $register->getCalculatedValue(
-                        \App\Register::PRE_CALC_REFUNDS_TOTAL
-                    );
-                    $transactionsTotal = $paymentsTotal + $refundsTotal;
-                    $cashTransactionsTotal = $register->getCalculatedValue(
-                        \App\Register::PRE_CALC_CASH_TX_TOTAL
-                    );
-                    $cashMovementsTotal = $register->getCalculatedValue(
-                        \App\Register::PRE_CALC_CASH_MV_TOTAL
-                    );
-                    $openingCashError = $register->opening_cash - $cashFloat;
-                    $cashExpected = $cashTransactionsTotal + $cashMovementsTotal + $openingCashError;
-                    $cashDeclared = $opened ? null : $register->closing_cash;
-                    $expectedPOSTAmount = $transactionsTotal - $cashTransactionsTotal;
-                    ?>
-                    <tr
-                        style="cursor: pointer;"
-                        onclick="document.location = '{{ route('registers.register.view', ['register' => $register]) }}'"
-                    >
-                        <td>{{ $register->number }}</td>
-                        <td>
-                            {{ $openedAt->formatLocalized(config('formats.dateShort')) }}
-                            <br>
-                            {{ $openedAt->formatLocalized(config('formats.time')) }}
-                        </td>
-                        <td>{{ $register->employee }}</td>
-                        <td>
-                            {{ money_format('%(i', $register->opening_cash) }}
-                            <br>
-                            {!! amountError($openingCashError) !!}
-                            <br>
-                        </td>
-                        <td>
-                            {{ money_format('%(i', $paymentsTotal) }}
-                        </td>
-                        <td>
-                            {{ money_format('%(i', $refundsTotal) }}
-                        </td>
-                        <td>
-                            {{ money_format('%(i', $transactionsTotal) }}
-                        </td>
-                        <td>
-                            {{ money_format('%(i', $cashTransactionsTotal) }}
-                        </td>
-                        <td>
-                            {{ money_format('%(i', $cashMovementsTotal) }}
-                        </td>
-                        <td>
-                            {{ money_format('%(i', $openingCashError) }}
-                        </td>
-                        <td>
-                            {{ money_format('%(i', $cashExpected) }}
-                        </td>
-                        <td>
-                            @if ($closed)
-                                {{ money_format('%(i', $cashDeclared) }}
-                                <br>
-                                {!! amountError($cashDeclared - $cashExpected) !!}
-                            @else
-                                {!! $notAvailable !!}
-                            @endif
-                        </td>
-                        <td>
-                            @if($opened)
-                                {!! $notAvailable !!}
-                            @else
-                                {{ $register->post_ref }}
-                            @endif
-                        <td>{{ money_format('%(i', $expectedPOSTAmount) }}</td>
-                        <td>
-                            @if($opened)
-                                {!! $notAvailable !!}
-                            @else
-                                {{ money_format('%(i', $register->post_amount) }}
-                                <br>
-                                {!! amountError($register->post_amount - $expectedPOSTAmount) !!}
-                            @endif
-                        </td>
-                        <td>
-                            @if($opened)
-                                {!! $notAvailable !!}
-                            @else
-                                {{ $closedAt->formatLocalized(config('formats.dateShort')) }}
-                                <br>
-                                {{ $closedAt->formatLocalized(config('formats.time')) }}
-                            @endif
-                        </td>
-                    </tr>
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                @foreach(__('registers.list.columns') as $column)
+                    <th class="tableGroupHead tableGroup" colspan={{ count($column) - 1 }}>
+                        {!! $column['title'] !!}
+                    </th>
                 @endforeach
-                </tbody>
-            </table>
-            <p>{!! __('registers.list.naMessage', ['na' => $notAvailable]) !!}</p>
-            {{ $registers->links() }}
+            </tr>
+            <tr>
+                @foreach(__('registers.list.columns') as $columnGroup)
+                    @foreach($columnGroup as $column)
+                        @if(!$loop->first)
+                            <th class={{ $loop->last ? 'tableGroup' : '' }}>
+                                {!! $column !!}
+                            </th>
+                        @endif
+                    @endforeach
+                @endforeach
+            </tr>
+            </thead>
+            <tbody>
+            @foreach($registers as $register)
+                <?php
+                $opened = $register->state === \App\Register::STATE_OPENED;
+                $closed = !$opened;
+                $openedAt = $register->opened_at->timezone(Auth::user()->timezone);
+                $closedAt = $opened
+                    ? null
+                    : $register->closed_at->timezone(Auth::user()->timezone);
+                $paymentsTotal = $register->getCalculatedValue(
+                    \App\Register::PRE_CALC_PAYMENTS_TOTAL
+                );
+                $refundsTotal = -1 * $register->getCalculatedValue(
+                    \App\Register::PRE_CALC_REFUNDS_TOTAL
+                );
+                $transactionsTotal = $paymentsTotal + $refundsTotal;
+                $cashTransactionsTotal = $register->getCalculatedValue(
+                    \App\Register::PRE_CALC_CASH_TX_TOTAL
+                );
+                $cashMovementsTotal = $register->getCalculatedValue(
+                    \App\Register::PRE_CALC_CASH_MV_TOTAL
+                );
+                $openingCashError = $register->opening_cash - $cashFloat;
+                $cashExpected = $cashTransactionsTotal + $cashMovementsTotal + $openingCashError;
+                $cashDeclared = $opened ? null : $register->closing_cash;
+                $expectedPOSTAmount = $transactionsTotal - $cashTransactionsTotal;
+                ?>
+                <tr
+                    style="cursor: pointer;"
+                    onclick="document.location = '{{ route('registers.register.view', ['register' => $register]) }}'"
+                >
+                    <td>{{ $register->number }}</td>
+                    <td>
+                        {{ $openedAt->formatLocalized(config('formats.dateShort')) }}
+                        <br>
+                        {{ $openedAt->formatLocalized(config('formats.time')) }}
+                    </td>
+                    <td>{{ $register->employee }}</td>
+                    <td>
+                        {{ money_format('%(i', $register->opening_cash) }}
+                        <br>
+                        {!! amountError($openingCashError) !!}
+                        <br>
+                    </td>
+                    <td>
+                        {{ money_format('%(i', $paymentsTotal) }}
+                    </td>
+                    <td>
+                        {{ money_format('%(i', $refundsTotal) }}
+                    </td>
+                    <td>
+                        {{ money_format('%(i', $transactionsTotal) }}
+                    </td>
+                    <td>
+                        {{ money_format('%(i', $cashTransactionsTotal) }}
+                    </td>
+                    <td>
+                        {{ money_format('%(i', $cashMovementsTotal) }}
+                    </td>
+                    <td>
+                        {{ money_format('%(i', $openingCashError) }}
+                    </td>
+                    <td>
+                        {{ money_format('%(i', $cashExpected) }}
+                    </td>
+                    <td>
+                        @if ($closed)
+                            {{ money_format('%(i', $cashDeclared) }}
+                            <br>
+                            {!! amountError($cashDeclared - $cashExpected) !!}
+                        @else
+                            {!! $notAvailable !!}
+                        @endif
+                    </td>
+                    <td>
+                        @if($opened)
+                            {!! $notAvailable !!}
+                        @else
+                            {{ $register->post_ref }}
+                        @endif
+                    <td>{{ money_format('%(i', $expectedPOSTAmount) }}</td>
+                    <td>
+                        @if($opened)
+                            {!! $notAvailable !!}
+                        @else
+                            {{ money_format('%(i', $register->post_amount) }}
+                            <br>
+                            {!! amountError($register->post_amount - $expectedPOSTAmount) !!}
+                        @endif
+                    </td>
+                    <td>
+                        @if($opened)
+                            {!! $notAvailable !!}
+                        @else
+                            {{ $closedAt->formatLocalized(config('formats.dateShort')) }}
+                            <br>
+                            {{ $closedAt->formatLocalized(config('formats.time')) }}
+                        @endif
+                    </td>
+                </tr>
+            @endforeach
+            </tbody>
+        </table>
+        <p>{!! __('registers.list.naMessage', ['na' => $notAvailable]) !!}</p>
+        {{ $registers->links() }}
         @else
-            <p>{{ __('registers.list.empty') }}</p>
+        <p>{{ __('registers.list.empty') }}</p>
         @endif
     </div>
 @endsection

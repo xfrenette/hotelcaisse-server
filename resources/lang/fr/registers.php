@@ -3,9 +3,12 @@
 return [
     'list' => [
         'title' => 'Caisses',
-        'empty' => 'Aucune caisse n\'a encore été créée sur vos appareils.',
+        'empty' => 'Aucune caisse ne correspond.',
         'naDefinition' => 'Sera disponible seulement quand la caisse sera fermée',
         'naMessage' => ':na : information non-disponible tant que la caisse est ouverte.',
+        'filters' => [
+            'openingDate' => 'Date d\'ouverture',
+        ],
         'columns' => [
             'opening' => [
                 'title' => 'Ouverture',
