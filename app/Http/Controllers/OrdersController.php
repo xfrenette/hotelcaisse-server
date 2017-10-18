@@ -24,23 +24,22 @@ class OrdersController extends Controller
      */
     public function list()
     {
+        $business = Auth::user()->currentTeam->business;
         $orders = Order
             ::with('calculatedValues')
             ->orderBy('created_at', 'desc')
             ->simplePaginate(self::LIST_NB_PER_PAGE);
 
-        $customerNames = $this->getOrderCustomerNames($orders);
+        $customerFieldValues = $this->getCustomersFieldValues($orders);
 
-        $ordersData = $orders->map(function ($order) use ($customerNames) {
-            return $this->extractOrderVariables($order, $customerNames);
+        $ordersData = $orders->map(function ($order) use ($customerFieldValues) {
+            return $this->extractOrderVariables($order, $customerFieldValues);
         });
-
-        $taxes = $this->getOrdersTaxes($ordersData);
 
         return view('orders.list', [
             'orders' => $ordersData,
-            'taxes' => $taxes,
             'paginator' => $orders,
+            'customerFields' => $business->customerFields,
         ]);
     }
 
@@ -147,7 +146,7 @@ class OrdersController extends Controller
      *
      * @return array
      */
-    protected function extractOrderVariables(Order $order, $customerNames)
+    protected function extractOrderVariables(Order $order, $customerFieldValues)
     {
         $subTotal = $order->getCalculatedValue(\App\Order::PRE_CALC_SUB_TOTAL);
         $creditsTotal = $order->getCalculatedValue(\App\Order::PRE_CALC_CREDITS);
@@ -173,13 +172,37 @@ class OrdersController extends Controller
         return [
             'id' => $order->id,
             'createdAt' => $order->created_at->timezone(Auth::user()->timezone),
-            'customerName' => $customerNames->has($order->id) ? $customerNames[$order->id]->customer_name : null,
-            'subTotal' => $subTotal,
-            'taxes' => $taxes,
-            'creditsTotal' => $creditsTotal,
+            'customerFieldValues' => $customerFieldValues->get($order->id, new Collection()),
             'total' => $total,
-            'balance' => $balance,
         ];
+    }
+
+    protected function getCustomersFieldValues($orders)
+    {
+        $ft = 'field_values';
+        $rawFields = DB::table($ft)
+            ->select('orders.id as order_id', "fields.type as type", "$ft.field_id as field_id", "$ft.value as value")
+            ->join('customers', 'customers.id', '=', "$ft.instance_id")
+            ->join('orders', 'orders.customer_id', '=', 'customers.id')
+            ->join('fields', 'fields.id', '=', "$ft.field_id")
+            ->whereIn('orders.id', $orders->pluck('id'))
+            ->get()
+            ->groupBy('order_id');
+
+        $fields = new Collection();
+        $rawFields->each(function ($data, $orderId) use (&$fields) {
+            $fields[$orderId] = $data->mapWithKeys(function ($item) {
+                $value = $item->value;
+
+                if ($item->type === 'YesNoField') {
+                    $value = __('actions.' . ($value == '1' ? 'yes' : 'no'));
+                }
+
+                return [$item->field_id => $value];
+            });
+        });
+
+        return $fields;
     }
 
     protected function getOrderCustomerNames($orders)

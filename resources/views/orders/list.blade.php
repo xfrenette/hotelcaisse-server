@@ -9,16 +9,12 @@
             <table class="table table-striped table-hover table-responsive">
                 <thead>
                 <tr>
+                    <th></th>
                     <th>Date</th>
-                    <th>Heure</th>
-                    <th>Client</th>
-                    <th>Sous-total</th>
-                    @foreach($taxes as $tax)
-                    <th>{{ $tax['name'] }}</th>
-                    @endforeach
-                    <th>Crédits</th>
                     <th>Total</th>
-                    <th>À percevoir (à remb.)</th>
+                    @foreach($customerFields as $field)
+                    <th>{{ $field->label }}</th>
+                    @endforeach
                 </tr>
                 </thead>
                 <tbody>
@@ -28,23 +24,23 @@
                             onclick="document.location = '{{route('orders.order.view', ['order' => $order['id']])}}'"
                         >
                             <td>
-                                {{ $order['createdAt']->formatLocalized(config('formats.dateFullCompact')) }}
+                                <a href="{{ route('orders.order.view', ['order' => $order['id']]) }}">
+                                    #&nbsp;{{ $order['id'] }}
+                                </a>
                             </td>
                             <td>
+                                {{ $order['createdAt']->formatLocalized(config('formats.dateFullCompact')) }}
+                                <br>
                                 {{ $order['createdAt']->formatLocalized(config('formats.time')) }}
                             </td>
-                            <td>{{ $order['customerName'] }}</td>
-                            <td>{{ money_format('%(i', $order['subTotal']) }}</td>
-                            @foreach($taxes as $tax)
+                            <td>{{ money_format('%(i', $order['total']) }}</td>
+                            @foreach($customerFields as $field)
                                 <td>
-                                    @if(array_key_exists($tax['id'], $order['taxes']))
-                                        {{ money_format('%(i', $order['taxes'][$tax['id']]) }}
-                                    @endif
+                                @if($order['customerFieldValues']->has($field->id))
+                                    {{ $order['customerFieldValues'][$field->id] }}
+                                @endif
                                 </td>
                             @endforeach
-                            <td>{{ money_format('%(i', $order['creditsTotal']) }}</td>
-                            <td>{{ money_format('%(i', $order['total']) }}</td>
-                            <td>{{ money_format('%(i', $order['balance']) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
