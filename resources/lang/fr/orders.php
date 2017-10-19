@@ -6,7 +6,7 @@ return [
         'empty' => 'Aucune fiche n\'a encore été créée.',
     ],
     'view' => [
-        'title' => 'Fiche',
+        'title' => 'Fiche #:number',
         'items' => [
             'title' => 'Items',
             'empty' => 'Aucun item dans cette fiche',

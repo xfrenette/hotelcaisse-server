@@ -5,7 +5,7 @@
     ?>
     <div class="container">
         <h1>
-            {{ __('orders.view.title')}}
+            {{ __('orders.view.title', ['number' => $order->id])}}
         </h1>
         <div class="row">
             <div class="col-sm-8">
