@@ -5,5 +5,6 @@ return [
         'devices' => 'Appareils',
         'registers' => 'Caisses',
         'orders' => 'Fiches',
+        'products' => 'Produits',
     ],
 ];

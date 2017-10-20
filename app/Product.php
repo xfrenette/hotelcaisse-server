@@ -63,6 +63,15 @@ class Product extends Model
         return $this->hasMany('App\Product', 'parent_id');
     }
 
+    public function getFullNameAttribute()
+    {
+        if ($this->parent) {
+            return $this->parent->name . ' (' . $this->name . ')';
+        }
+
+        return $this->name;
+    }
+
     /**
      * Returns a Collection of all the taxes amount applied to the product. For each, an array containing the tax name
      * and the amount for a single product. Taxes redefined with a zero (0) amount are skipped.

@@ -8,3 +8,6 @@
 <li>
     <a href="{{ route('orders.list') }}">{{ __('nav.user_left.orders') }}</a>
 </li>
+<li>
+    <a href="{{ route('products.list') }}">{{ __('nav.user_left.products') }}</a>
+</li>

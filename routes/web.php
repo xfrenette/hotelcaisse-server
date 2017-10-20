@@ -35,4 +35,7 @@ Route
         Route::get('/orders', 'OrdersController@list')->name('orders.list');
         Route::get('/orders/{order}', 'OrdersController@view')->name('orders.order.view');
         Route::get('/orders/{order}/recalculate', 'OrdersController@recalculate')->name('orders.order.recalculate');
+
+        // Products
+        Route::get('/products', 'ProductsController@list')->name('products.list');
     });
