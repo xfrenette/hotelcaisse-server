@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Traits\UsesFilters;
 use App\Register;
 use App\TransactionMode;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class RegistersController extends Controller
 {
+    use UsesFilters;
+
     /**
      * Number of items per page in the paginated list screen
      * @type integer
@@ -19,48 +22,12 @@ class RegistersController extends Controller
     /**
      * Controller method for /registers
      *
-     * @param \Illuminate\Http\Request $request
+     * @param $request Request
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function list(Request $request)
     {
-        $dateFormat = __('filters.phpDateFormat');
-        $timezone = $request->user()->timezone;
-        $startDate = $request->query('startDate');
-        $endDate = $request->query('endDate');
-
-        if ($startDate) {
-            try {
-                $startDate = Carbon::createFromFormat($dateFormat, $startDate, $timezone);
-                $startDate->setTime(0, 0, 0, 0);
-            } catch (\InvalidArgumentException $e) {
-                $startDate = false;
-            }
-        }
-
-        if ($endDate) {
-            try {
-                $endDate = Carbon::createFromFormat($dateFormat, $endDate, $timezone);
-                $endDate->setTime(23, 59, 59, 999);
-            } catch (\InvalidArgumentException $e) {
-                $endDate = false;
-            }
-        }
-
-        $query = $request->user()->currentTeam
-            ->registers()
-            ->with('calculatedValues')
-            ->orderBy('opened_at', 'desc');
-
-        if ($startDate) {
-            $utcStartDate = $startDate->copy()->setTimezone('UTC');
-            $query->where('opened_at', '>=', $utcStartDate);
-        }
-
-        if ($endDate) {
-            $utcEndDate = $endDate->copy()->setTimezone('UTC');
-            $query->where('opened_at', '<=', $utcEndDate);
-        }
+        $query = $this->buildListQuery($request);
 
         $registers = $query->simplePaginate(self::LIST_NB_PER_PAGE)
             // Add parameters for paginator links
@@ -69,8 +36,8 @@ class RegistersController extends Controller
         return view('registers.list', [
             'registers' => $registers,
             'cashFloat' => self::CASH_FLOAT,
-            'startDate' => $startDate ? $startDate->format($dateFormat) : '',
-            'endDate' => $endDate ? $endDate->format($dateFormat) : '',
+            'startDate' => $this->getFormattedStartDate(),
+            'endDate' => $this->getFormattedEndDate(),
         ]);
     }
 
@@ -113,5 +80,29 @@ class RegistersController extends Controller
             'cashError' => $register->closing_cash - $cashTotal,
         ];
         return view('registers.view', $vars);
+    }
+
+    /**
+     * @param $request Request
+     * @return \Illuminate\Database\Query\Builder
+     */
+    protected function buildListQuery(Request $request)
+    {
+        $query = Auth::user()->currentTeam
+            ->registers()
+            ->with('calculatedValues')
+            ->orderBy('opened_at', 'desc');
+
+        return $this->filterQuery($query, $request);
+    }
+
+    protected function filterWithStartDate($query, $startDate)
+    {
+        return $query->where('opened_at', '>=', $startDate);
+    }
+
+    protected function filterWithEndDate($query, $endDate)
+    {
+        return $query->where('opened_at', '<=', $endDate);
     }
 }
