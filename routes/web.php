@@ -29,6 +29,7 @@ Route
 
         // Registers
         Route::get('/registers', 'RegistersController@list')->name('registers.list');
+        Route::get('/registers/export', 'RegistersController@export')->name('registers.export');
         Route::get('/registers/{register}', 'RegistersController@view')->name('registers.register.view');
 
         // Orders

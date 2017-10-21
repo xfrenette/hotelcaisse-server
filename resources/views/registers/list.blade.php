@@ -65,7 +65,14 @@ $notAvailable .= '"><span style="text-muted">-N/A-</span><span style="text-prima
 
 @section('content')
     <div class="container">
-        <h1>{{ __('registers.list.title') }}</h1>
+        <div class="row">
+            <div class="col-sm-8">
+                <h1>{{ __('registers.list.title') }}</h1>
+            </div>
+            <div class="col-sm-4 text-right">
+                <a class="btn btn-primary" href="{{ $exportURL }}">Télécharger cette liste</a>
+            </div>
+        </div>
         <div class="panel panel-default panel-overflow">
             <div class="panel-heading">
                 <h3 class="panel-title">{{ __('filters.title') }}</h3>
