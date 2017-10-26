@@ -2,7 +2,14 @@
 
 @section('content')
     <div class="container">
-        <h1>{{ __('products.list.title') }}</h1>
+        <div class="row">
+            <div class="col-sm-8">
+                <h1>{{ __('products.list.title') }}</h1>
+            </div>
+            <div class="col-sm-4 text-right">
+                <a class="btn btn-primary" href="{{ $exportURL }}">Télécharger cette liste</a>
+            </div>
+        </div>
         @include('partials.filters', [
             'filters' => [
                 [

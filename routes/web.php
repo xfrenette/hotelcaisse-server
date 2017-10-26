@@ -40,4 +40,5 @@ Route
 
         // Products
         Route::get('/products', 'ProductsController@list')->name('products.list');
+        Route::get('/products/export', 'ProductsController@export')->name('products.export');
     });

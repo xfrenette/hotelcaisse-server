@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Traits\Exports;
 use App\Http\Controllers\Traits\UsesFilters;
 use App\Product;
 use App\Tax;
@@ -13,11 +14,72 @@ use Illuminate\Support\Facades\DB;
 class ProductsController extends Controller
 {
     use UsesFilters;
+    use Exports;
 
     public function list(Request $request)
     {
         $viewData = $this->getListViewData($request);
+        $viewData['exportURL'] = route('products.export', $_GET);
         return view('products.list', $viewData);
+    }
+
+    public function export(Request $request)
+    {
+        $viewData = $this->getListViewData($request);
+        $data = [];
+
+        // Titles
+        $titles = [
+            'Nom produit',
+            'Qté vendue',
+            'Sous-total',
+        ];
+        foreach($viewData['taxes'] as $tax) {
+            $titles[] = $tax->name;
+        }
+        $titles[] = 'Total';
+
+        $data[] = $titles;
+
+        // Rows
+        foreach ($viewData['item_products'] as $item_product) {
+            $total = $item_product->total_amount;
+
+            $row = [
+                $viewData['products'][$item_product->product_id]->fullName,
+                $item_product->total_quantity,
+                round($item_product->total_amount, 2),
+            ];
+
+            foreach($viewData['taxes'] as $tax) {
+                $amount = $viewData['product_taxes']
+                    ->get($item_product->product_id, collect())
+                    ->get($tax->id, 0);
+                $total = bcadd($total, $amount);
+                $row[] = round($amount, 2);
+            }
+
+            $row[] = round($total, 2);
+
+            $data[] = $row;
+        }
+
+        // Special items
+        $special_item_rows = [
+            'Produits spéciaux',
+            $viewData['special_items']->total_quantity,
+            round($viewData['special_items']->total_amount, 2),
+        ];
+
+        foreach($viewData['taxes'] as $tax) {
+            $special_item_rows[] = 0;
+        }
+
+        $special_item_rows[] = round($viewData['special_items']->total_amount, 2);
+
+        $data[] = $special_item_rows;
+
+        return $this->downloadableCSV($data, 'produits');
     }
 
     public function getListViewData(Request $request)
