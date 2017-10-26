@@ -65,19 +65,21 @@ class ProductsController extends Controller
         }
 
         // Special items
-        $special_item_rows = [
-            'Produits spéciaux',
-            $viewData['special_items']->total_quantity,
-            round($viewData['special_items']->total_amount, 2),
-        ];
+        if ($viewData['special_items']) {
+            $special_item_rows = [
+                'Produits spéciaux',
+                $viewData['special_items']->total_quantity,
+                round($viewData['special_items']->total_amount, 2),
+            ];
 
-        foreach($viewData['taxes'] as $tax) {
-            $special_item_rows[] = 0;
+            foreach($viewData['taxes'] as $tax) {
+                $special_item_rows[] = 0;
+            }
+
+            $special_item_rows[] = round($viewData['special_items']->total_amount, 2);
+
+            $data[] = $special_item_rows;
         }
-
-        $special_item_rows[] = round($viewData['special_items']->total_amount, 2);
-
-        $data[] = $special_item_rows;
 
         return $this->downloadableCSV($data, 'produits');
     }
