@@ -13,7 +13,7 @@
         @include('partials.filters', [
             'filters' => [
                 [
-                    'label' => __('orders.list.filters.creationDate'),
+                    'label' => __('products.list.filters.saleDate'),
                     'type' => 'dateRange'
                 ],
             ],
