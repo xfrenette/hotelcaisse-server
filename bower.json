@@ -1,0 +1,22 @@
+{
+  "name": "HIRDLPOS server",
+  "description": "",
+  "main": "",
+  "authors": [
+    "Xavier Frenette <xavier@xavierfrenette.com>"
+  ],
+  "license": "Copyright",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "public/bower_components/",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "eonasdan-bootstrap-datetimepicker": "^4.17.47"
+  }
+}
