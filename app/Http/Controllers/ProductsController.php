@@ -121,7 +121,7 @@ class ProductsController extends Controller
             ->keyBy('id');
 
         // Get taxes total for each product
-        $product_taxes = DB::table('applied_taxes')
+        $product_taxes_query = DB::table('applied_taxes')
             ->select(
                 'applied_taxes.tax_id as tax_id',
                 DB::raw('SUM(applied_taxes.amount * items.quantity) as total'),
@@ -132,8 +132,9 @@ class ProductsController extends Controller
             ->where('applied_taxes.type', 'ItemProduct')
             ->whereIn('item_products.product_id', $item_products->pluck('product_id'))
             ->groupBy('applied_taxes.tax_id')
-            ->groupBy('item_products.product_id')
-            ->get();
+            ->groupBy('item_products.product_id');
+
+        $product_taxes = $this->filterQuery($product_taxes_query, $request)->get();
 
         $taxes = Tax::whereIn('id', $product_taxes->pluck('tax_id'))->get();
 
