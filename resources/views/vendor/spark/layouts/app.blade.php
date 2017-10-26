@@ -16,11 +16,8 @@
     <link href="/css/sweetalert.css" rel="stylesheet">
     <link href="{{ mix('css/app.css') }}" rel="stylesheet">
 
-    <!-- Scripts -->
-    @yield('scripts', '')
-
     <!-- Styles -->
-    @yield('styles', '')
+    @stack('styles')
 
     <!-- Global Spark Object -->
     <script>
@@ -52,5 +49,7 @@
     <!-- JavaScript -->
     <script src="{{ mix('js/app.js') }}"></script>
     <script src="/js/sweetalert.min.js"></script>
+    <!-- Scripts -->
+    @stack('scripts')
 </body>
 </html>

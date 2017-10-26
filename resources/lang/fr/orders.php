@@ -3,7 +3,10 @@
 return [
     'list' => [
         'title' => 'Fiches',
-        'empty' => 'Aucune fiche n\'a encore été créée.',
+        'empty' => 'Aucune fiche ne correspond',
+        'filters' => [
+            'creationDate' => 'Date de création',
+        ],
     ],
     'view' => [
         'title' => 'Fiche #:number',

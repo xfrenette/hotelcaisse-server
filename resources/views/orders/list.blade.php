@@ -2,7 +2,22 @@
 
 @section('content')
     <div class="container">
-        <h1>{{ __('orders.list.title') }}</h1>
+        <div class="row">
+            <div class="col-sm-8">
+                <h1>{{ __('orders.list.title') }}</h1>
+            </div>
+            <div class="col-sm-4 text-right">
+            </div>
+        </div>
+        @include('partials.filters', [
+            'filters' => [
+                [
+                    'label' => __('orders.list.filters.creationDate'),
+                    'type' => 'dateRange'
+                ],
+            ],
+        ])
+        <hr>
         @if(!$orders->count())
             <p>{{ __('orders.list.empty') }}</p>
         @else

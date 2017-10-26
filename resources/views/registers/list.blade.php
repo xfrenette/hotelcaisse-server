@@ -23,24 +23,7 @@ $notAvailable .= __('registers.list.naDefinition');
 $notAvailable .= '"><span style="text-muted">-N/A-</span><span style="text-primary">*</span></em>';
 ?>
 
-@section('scripts')
-    <script type="text/javascript" src="/bower_components/jquery/dist/jquery.min.js"></script>
-    <script type="text/javascript" src="/bower_components/moment/min/moment.min.js"></script>
-    <script type="text/javascript" src="/bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>
-    <script>
-		$(function () {
-			$('[data-role=datepicker]').datetimepicker({
-                format: '{{ __('filters.dateFormat') }}',
-				showClear: true,
-				showClose: true,
-				allowInputToggle: true,
-            });
-		});
-    </script>
-@endsection
-
-@section('styles')
-    <link rel="stylesheet" href="/bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css" />
+@push('styles')
     <style>
         .table > thead > tr > .tableGroupHead {
             border-bottom: 0;
@@ -53,15 +36,11 @@ $notAvailable .= '"><span style="text-muted">-N/A-</span><span style="text-prima
         .tableGroup {
             border-right: 2px solid #ddd;
         }
-
         .tableGroup:last-child {
             border-right: 0;
         }
-        .panel-overflow {
-            overflow: visible;
-        }
     </style>
-@endsection
+@endpush
 
 @section('content')
     <div class="container">
@@ -73,56 +52,14 @@ $notAvailable .= '"><span style="text-muted">-N/A-</span><span style="text-prima
                 <a class="btn btn-primary" href="{{ $exportURL }}">Télécharger cette liste</a>
             </div>
         </div>
-        <div class="panel panel-default panel-overflow">
-            <div class="panel-heading">
-                <h3 class="panel-title">{{ __('filters.title') }}</h3>
-            </div>
-            <div class="panel-body">
-                <form class="form" method="GET" action="{{ Request::url() }}">
-                    <input type="hidden" name="page" value="{{ $registers->currentPage() }}">
-                    <div><label>{{ __('registers.list.filters.openingDate') }}</label></div>
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <div class='input-group date' data-role="datepicker">
-                                    <input
-                                            type='text'
-                                            name="startDate"
-                                            class="form-control"
-                                            value="{{ $startDate }}"
-                                            placeholder="{{ __('filters.startDate') }}"
-                                    />
-                                    <span class="input-group-addon">
-                                        <span class="glyphicon glyphicon-calendar"></span>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <div class='input-group date' data-role="datepicker">
-                                    <input
-                                            type='text'
-                                            value="{{ $endDate }}"
-                                            name="endDate"
-                                            class="form-control"
-                                            placeholder="{{ __('filters.endDate') }}"
-                                    />
-                                    <span class="input-group-addon">
-                                        <span class="glyphicon glyphicon-calendar"></span>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <p>
-                        <button type="submit" class="btn btn-primary">
-                            {{ __('filters.actions.apply') }}
-                        </button>
-                    </p>
-                </form>
-            </div>
-        </div>
+        @include('partials.filters', [
+            'filters' => [
+                [
+                    'label' => __('registers.list.filters.openingDate'),
+                    'type' => 'dateRange',
+                ],
+            ],
+        ])
         <hr>
         @if(count($registers))
         <table class="table table-hover">

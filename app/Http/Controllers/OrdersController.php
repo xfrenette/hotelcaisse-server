@@ -3,15 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Field;
+use App\Http\Controllers\Traits\UsesFilters;
 use App\Jobs\PreCalcOrderValues;
 use App\Order;
 use App\Tax;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class OrdersController extends Controller
 {
+    use UsesFilters;
+
     /**
      * Number of items per page in the paginated list screen
      * @type integer
@@ -20,15 +24,13 @@ class OrdersController extends Controller
 
     /**
      * Controller method for the orders.list route
+     * @param $request Request
      * @return \Illuminate\Http\Response
      */
-    public function list()
+    public function list(Request $request)
     {
-        $business = Auth::user()->currentTeam->business;
-        $orders = Order
-            ::with('calculatedValues')
-            ->orderBy('created_at', 'desc')
-            ->simplePaginate(self::LIST_NB_PER_PAGE);
+        $query = $this->buildListQuery($request);
+        $orders = $query->simplePaginate(self::LIST_NB_PER_PAGE);
 
         $customerFieldValues = $this->getCustomersFieldValues($orders);
         $roomSelectionsNumericFieldValues = $this->getRoomSelectionsNumericFieldValues($orders);
@@ -37,6 +39,7 @@ class OrdersController extends Controller
             return $this->extractOrderVariables($order, $customerFieldValues, $roomSelectionsNumericFieldValues);
         });
 
+        $business = Auth::user()->currentTeam->business;
         $roomSelectionFields = $business->roomSelectionFields;
         $roomSelectionNumericFields = $roomSelectionFields->filter(function ($field) {
             return $field->type === 'NumberField';
@@ -47,6 +50,8 @@ class OrdersController extends Controller
             'paginator' => $orders,
             'customerFields' => $business->customerFields,
             'roomSelectionsNumericFields' => $roomSelectionNumericFields,
+            'startDate' => $this->getFormattedStartDate(),
+            'endDate' => $this->getFormattedEndDate(),
         ]);
     }
 
@@ -97,6 +102,30 @@ class OrdersController extends Controller
             'checkOut' => $checkOutDate,
             'roomSelections' => $roomSelections,
         ]);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Database\Query\Builder
+     */
+    protected function buildListQuery(Request $request)
+    {
+        $business = Auth::user()->currentTeam->business;
+        $query = $business->orders()
+            ->with('calculatedValues')
+            ->orderBy('created_at', 'desc');
+
+        return $this->filterQuery($query, $request);
+    }
+
+    protected function filterWithStartDate($query, $startDate)
+    {
+        return $query->where('created_at', '>=', $startDate);
+    }
+
+    protected function filterWithEndDate($query, $endDate)
+    {
+        return $query->where('created_at', '<=', $endDate);
     }
 
     /**
