@@ -78,6 +78,7 @@ class RegistersController extends Controller
                 }
             }
         }
+        $titles[] = 'URL détails';
         $data[] = $titles;
 
         // Rows
@@ -188,6 +189,7 @@ class RegistersController extends Controller
             $expectedPOSTAmount,
             $closed ? $register->post_amount : '',
             $closed ? $closedAt->toDateTimeString() : '',
+            route('registers.register.view', $register->id),
         ];
     }
 
