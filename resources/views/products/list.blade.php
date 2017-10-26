@@ -3,6 +3,15 @@
 @section('content')
     <div class="container">
         <h1>{{ __('products.list.title') }}</h1>
+        @include('partials.filters', [
+            'filters' => [
+                [
+                    'label' => __('orders.list.filters.creationDate'),
+                    'type' => 'dateRange'
+                ],
+            ],
+        ])
+        <hr>
         <table class="table">
             <thead>
             <tr>
@@ -34,8 +43,9 @@
                     <td>{{ money_format('%(i', $total) }}</td>
                 </tr>
             @endforeach
+            @if($special_items)
             <tr>
-                <td><em>Items spéciaux</em> <a href="#">(Voir le détail)</a></td>
+                <td><em>Produits spéciaux</em></td>
                 <td>{{ $special_items->total_quantity }}</td>
                 <td>{{ money_format('%(i', $special_items->total_amount) }}</td>
                 @foreach($taxes as $tax)
@@ -43,6 +53,7 @@
                 @endforeach
                 <td>{{ money_format('%(i', $special_items->total_amount) }}</td>
             </tr>
+            @endif
             </tbody>
         </table>
     </div>
