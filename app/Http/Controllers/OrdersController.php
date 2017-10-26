@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Field;
+use App\Http\Controllers\Traits\Exports;
 use App\Http\Controllers\Traits\UsesFilters;
 use App\Jobs\PreCalcOrderValues;
 use App\Order;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 class OrdersController extends Controller
 {
     use UsesFilters;
+    use Exports;
 
     /**
      * Number of items per page in the paginated list screen
@@ -31,28 +33,60 @@ class OrdersController extends Controller
     {
         $query = $this->buildListQuery($request);
         $orders = $query->simplePaginate(self::LIST_NB_PER_PAGE);
+        $viewData = $this->getListViewData($orders);
+        $viewData['paginator'] = $orders;
+        $viewData['exportURL'] = route('orders.export', $_GET);
 
-        $customerFieldValues = $this->getCustomersFieldValues($orders);
-        $roomSelectionsNumericFieldValues = $this->getRoomSelectionsNumericFieldValues($orders);
+        return view('orders.list', $viewData);
+    }
 
-        $ordersData = $orders->map(function ($order) use ($customerFieldValues, $roomSelectionsNumericFieldValues) {
-            return $this->extractOrderVariables($order, $customerFieldValues, $roomSelectionsNumericFieldValues);
-        });
+    public function export(Request $request)
+    {
+        $query = $this->buildListQuery($request);
+        $orders = $query->get();
+        $viewData = $this->getListViewData($orders);
 
-        $business = Auth::user()->currentTeam->business;
-        $roomSelectionFields = $business->roomSelectionFields;
-        $roomSelectionNumericFields = $roomSelectionFields->filter(function ($field) {
-            return $field->type === 'NumberField';
-        });
+        $titles = ['No.', 'Date', 'Total'];
+        foreach ($viewData['customerFields'] as $field) {
+            $titles[] = $field->label;
+        }
+        foreach ($viewData['roomSelectionsNumericFields'] as $field) {
+            $titles[] = $field->label;
+        }
+        $titles[] = 'URL détails';
 
-        return view('orders.list', [
-            'orders' => $ordersData,
-            'paginator' => $orders,
-            'customerFields' => $business->customerFields,
-            'roomSelectionsNumericFields' => $roomSelectionNumericFields,
-            'startDate' => $this->getFormattedStartDate(),
-            'endDate' => $this->getFormattedEndDate(),
-        ]);
+        $data = [$titles];
+
+        foreach ($viewData['orders'] as $order) {
+            $row = [
+                $order['id'],
+                $order['createdAt']->toDateTimeString(),
+                $order['total'],
+            ];
+
+            foreach ($viewData['customerFields'] as $field) {
+                if ($order['customerFieldValues']->has($field->id)) {
+                    $row[] = $order['customerFieldValues'][$field->id];
+                } else {
+                    $row[] = '';
+                }
+            }
+
+            foreach ($viewData['roomSelectionsNumericFields'] as $field) {
+                if ($order['roomSelectionsNumericFieldValues']->has($field->id)) {
+                    $row[] = $order['roomSelectionsNumericFieldValues'][$field->id];
+                } else {
+                    $row[] = '';
+                }
+            }
+
+            $row[] = route('orders.order.view', ['order' => $order['id']]);
+
+            $data[] = $row;
+        }
+
+
+        return $this->downloadableCSV($data, 'fiches');
     }
 
     /**
@@ -126,6 +160,30 @@ class OrdersController extends Controller
     protected function filterWithEndDate($query, $endDate)
     {
         return $query->where('created_at', '<=', $endDate);
+    }
+
+    protected function getListViewData($orders)
+    {
+        $customerFieldValues = $this->getCustomersFieldValues($orders);
+        $roomSelectionsNumericFieldValues = $this->getRoomSelectionsNumericFieldValues($orders);
+
+        $ordersData = $orders->map(function ($order) use ($customerFieldValues, $roomSelectionsNumericFieldValues) {
+            return $this->extractOrderVariables($order, $customerFieldValues, $roomSelectionsNumericFieldValues);
+        });
+
+        $business = Auth::user()->currentTeam->business;
+        $roomSelectionFields = $business->roomSelectionFields;
+        $roomSelectionNumericFields = $roomSelectionFields->filter(function ($field) {
+            return $field->type === 'NumberField';
+        });
+
+        return [
+            'orders' => $ordersData,
+            'customerFields' => $business->customerFields,
+            'roomSelectionsNumericFields' => $roomSelectionNumericFields,
+            'startDate' => $this->getFormattedStartDate(),
+            'endDate' => $this->getFormattedEndDate(),
+        ];
     }
 
     /**

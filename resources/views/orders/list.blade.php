@@ -7,6 +7,7 @@
                 <h1>{{ __('orders.list.title') }}</h1>
             </div>
             <div class="col-sm-4 text-right">
+                <a class="btn btn-primary" href="{{ $exportURL }}">Télécharger cette liste</a>
             </div>
         </div>
         @include('partials.filters', [
