@@ -32,7 +32,8 @@ class OrdersController extends Controller
     public function list(Request $request)
     {
         $query = $this->buildListQuery($request);
-        $orders = $query->simplePaginate(self::LIST_NB_PER_PAGE);
+        $orders = $query->simplePaginate(self::LIST_NB_PER_PAGE)
+            ->appends($_GET);
         $viewData = $this->getListViewData($orders);
         $viewData['paginator'] = $orders;
         $viewData['exportURL'] = route('orders.export', $_GET);
