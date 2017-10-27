@@ -1,5 +1,14 @@
 @extends('spark::layouts.app')
 
+@push('styles')
+    <style>
+        .table td:not(:first-child),
+        .table th:not(:first-child) {
+            min-width: 110px;
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="container">
         <div class="row">
