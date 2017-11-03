@@ -26,7 +26,7 @@ class HIRDLFieldsSeeder extends Seeder
                 'required' => true,
             ],
             [
-                'label' => 'Adresse',
+                'label' => 'Code postal (Canada seul.)',
                 'type' => 'TextField',
                 'required' => false,
             ],
