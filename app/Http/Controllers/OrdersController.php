@@ -153,6 +153,11 @@ class OrdersController extends Controller
         return $this->filterQuery($query, $request);
     }
 
+    protected function getFilters()
+    {
+        return ['startDate', 'endDate', 'number', 'name'];
+    }
+
     protected function filterWithStartDate($query, $startDate)
     {
         return $query->where('created_at', '>=', $startDate);
@@ -161,6 +166,11 @@ class OrdersController extends Controller
     protected function filterWithEndDate($query, $endDate)
     {
         return $query->where('created_at', '<=', $endDate);
+    }
+
+    protected function filterWithNumber($query, $number)
+    {
+        return $query->where('id', $number);
     }
 
     protected function getListViewData($orders)

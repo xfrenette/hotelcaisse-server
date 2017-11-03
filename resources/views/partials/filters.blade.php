@@ -67,6 +67,19 @@
                         </div>
                     </div>
                 </div>
+                @elseif($filter['type'] === 'text')
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <input
+                                    type='text'
+                                    name="{{ $filter['name'] }}"
+                                    class="form-control"
+                                    value="{{ request()->query($filter['name']) }}"
+                                />
+                            </div>
+                        </div>
+                    </div>
                 @endif
             @endforeach
             <p>

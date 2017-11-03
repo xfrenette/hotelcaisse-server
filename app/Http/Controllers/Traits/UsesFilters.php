@@ -19,6 +19,31 @@ trait UsesFilters
      */
     protected function filterQuery($query, Request $request)
     {
+        $query = $this->filterByDates($query, $request);
+
+        foreach ($this->getFilters() as $filter) {
+            if ($filter === 'startDate' || $filter === 'endDate') {
+                continue;
+            }
+
+            $param = $request->query($filter);
+            $functionName = 'filterWith' . studly_case($filter);
+
+            if ($param && method_exists($this, $functionName)) {
+                $query = $this->$functionName($query, $param);
+            }
+        }
+
+        return $query;
+    }
+
+    protected function getFilters()
+    {
+        return [];
+    }
+
+    private function filterByDates($query, Request $request)
+    {
         $dateFormat = $this->getDateFilterFormat();
         $timezone = Auth::user()->timezone;
         $startDate = $request->query('startDate');

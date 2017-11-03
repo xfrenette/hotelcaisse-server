@@ -25,6 +25,11 @@
                     'label' => __('orders.list.filters.creationDate'),
                     'type' => 'dateRange'
                 ],
+                [
+                    'label' => 'Numéro de fiche',
+                    'type' => 'text',
+                    'name' => 'number',
+                ],
             ],
         ])
         <hr>
