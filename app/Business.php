@@ -97,6 +97,15 @@ class Business extends Model
     }
 
     /**
+     * Return all the items sold of this Business
+     *
+     */
+    public function items()
+    {
+        return $this->hasManyThrough('App\Item', 'App\Order');
+    }
+
+    /**
      * All the customer Fields
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */

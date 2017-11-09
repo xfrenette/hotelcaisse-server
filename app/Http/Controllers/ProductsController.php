@@ -20,6 +20,7 @@ class ProductsController extends Controller
     {
         $viewData = $this->getListViewData($request);
         $viewData['exportURL'] = route('products.export', $_GET);
+        $viewData['customProductsListURL'] = route('customProducts.list', $_GET);
         return view('products.list', $viewData);
     }
 
@@ -103,8 +104,8 @@ class ProductsController extends Controller
 
         $special_items_query = DB::table('item_products')
             ->select(
-                DB::raw('SUM(price) as total_amount'),
-                DB::raw('COUNT(*) as total_quantity')
+                DB::raw('SUM(item_products.price * items.quantity) as total_amount'),
+                DB::raw('SUM(items.quantity) as total_quantity')
             )
             ->join('items', 'items.item_product_id', '=', 'item_products.id')
             ->join('orders', 'orders.id', '=', 'items.order_id')

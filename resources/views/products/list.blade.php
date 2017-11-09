@@ -19,6 +19,9 @@
             ],
         ])
         <hr>
+        @if(!$item_products->count())
+            <p>{{ __('products.list.empty') }}</p>
+        @else
         <table class="table">
             <thead>
             <tr>
@@ -52,8 +55,9 @@
             @endforeach
             @if($special_items)
             <tr>
-                <td><em>Produits spéciaux</em></td>
-                <td>{{ $special_items->total_quantity }}</td>
+                <td><em>Produits spéciaux</em> <a href="{{ $customProductsListURL }}">(Voir la
+                        liste)</a></td>
+                <td>{{ intval($special_items->total_quantity) }}</td>
                 <td>{{ money_format('%(i', $special_items->total_amount) }}</td>
                 @foreach($taxes as $tax)
                     <td>{{ money_format('%(i', 0) }}</td>
@@ -63,5 +67,6 @@
             @endif
             </tbody>
         </table>
+        @endif
     </div>
 @endsection
