@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Traits\Exports;
 use App\Http\Controllers\Traits\UsesFilters;
+use App\Jobs\PreCalcRegisterCashMovements;
+use App\Jobs\PreCalcRegisterTransactions;
 use App\Register;
 use App\TransactionMode;
 use Illuminate\Http\Request;
@@ -133,6 +135,19 @@ class RegistersController extends Controller
             'cashError' => $register->closing_cash - $cashTotal,
         ];
         return view('registers.view', $vars);
+    }
+
+    /**
+     * Controller method for the registers.register.recalculate route
+     * @param \App\Register $register
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function recalculate(Register $register)
+    {
+        dispatch(new PreCalcRegisterTransactions($register));
+        dispatch(new PreCalcRegisterCashMovements($register));
+        return redirect(route('registers.list'));
     }
 
     /**
