@@ -92,9 +92,11 @@ class OrderTest extends TestCase
             return $total + $transaction->amount;
         }, 0);
 
-        $balance = $subTotal + $taxesTotal - $totalPayments;
+        $total = $subTotal - $creditsTotal + $taxesTotal;
+        $balance = $total - $totalPayments;
 
         $this->assertEquals($subTotal, $order->subTotal);
+        $this->assertEquals($total, $order->total);
         $this->assertEquals(array_values($taxes), $order->taxes->toArray());
         $this->assertEquals($creditsTotal, $order->creditsTotal);
         $this->assertInternalType('float', $order->creditsTotal);

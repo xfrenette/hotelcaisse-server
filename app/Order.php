@@ -172,13 +172,16 @@ class Order extends Model
     }
 
     /**
-     * Returns the sum of the sub total and all the taxes
+     * Returns the sum of the sub total and all the taxes minus the credits
      *
      * @return float
      */
     public function getTotalAttribute()
     {
-        return floatval(bcadd($this->subTotal, $this->taxesTotal));
+        return floatval(bcadd(
+            bcsub($this->subTotal, $this->creditsTotal),
+            $this->taxesTotal
+        ));
     }
 
     /**
