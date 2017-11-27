@@ -27,7 +27,7 @@ class SampleRegistersSeeder extends Seeder
 
         $closedRegister = new Register(['uuid' => $faker->uuid(), 'number' => $number]);
         $closedRegister->device()->associate($device);
-        $closedRegister->open('Test employee', 100.00);
+        $closedRegister->open('Test employee', 98.75);
         $closedRegister->close(365.89, 'POST-ref', 425.68);
         $closedRegister->save();
         $this->addRandomCashMovements($closedRegister, $faker);

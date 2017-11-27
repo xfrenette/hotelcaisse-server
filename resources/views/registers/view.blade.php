@@ -1,3 +1,27 @@
+@php
+function amountError($amount) {
+    if (!$amount) {
+        return '';
+    }
+
+    $formatted = money_format('%i', $amount);
+
+    if ($amount > 0) {
+        $formatted = '+' . $formatted;
+    }
+
+    $html = '<small class="text-danger">(Erreur: ';
+    $html .= $formatted;
+    $html .= ')</small>';
+    return $html;
+}
+
+$notAvailable = '<em title="';
+$notAvailable .= __('registers.list.naDefinition');
+$notAvailable .= '"><span style="text-muted">N/A: la caisse est ouverte</span></em>';
+
+@endphp
+
 @extends('spark::layouts.app')
 
 @section('content')
@@ -36,13 +60,6 @@
                                 <dd>{{ money_format('%(i', $cashMovementsTotal) }}</dd>
                                 <dt>{{ __('registers.fields.netTotal') }}</dt>
                                 <dd>{{ money_format('%(i', $netTotal) }}</dd>
-                            </dl>
-                            <hr>
-                            <dl>
-                                <dt>{{ __('registers.fields.declaredTotal') }}</dt>
-                                <dd>{{ money_format('%(i', $declaredTotal) }}</dd>
-                                <dt>{{ __('registers.fields.registerError') }}</dt>
-                                <dd>{{ money_format('%(i', $registerError) }}</dd>
                             @endif
                         </dl>
                     </div>
@@ -57,37 +74,71 @@
                             <dd>{{ $openedAt->toDateTimeString() }}</dd>
                             <dt>{{ __('registers.fields.employee') }}</dt>
                             <dd>{{ $register->employee }}</dd>
-                            <dt>{{ __('registers.fields.openingCash') }}</dt>
-                            <dd>{{ money_format('%(i', $register->opening_cash) }}</dd>
                         </dl>
                     </div>
                 </div>
+                @if($closed)
+                <div class="panel panel-default">
+                    <div class="panel-heading">{{ __('registers.view.meta.closing') }}</div>
+                    <div class="panel-body">
+                        <dl>
+                            <dt>{{ __('registers.fields.closedAt') }}</dt>
+                            <dd>{{ $closedAt->toDateTimeString() }}</dd>
+                        </dl>
+                    </div>
+                </div>
+                @endif
             </div>
             <div class="col-md-4">
-                @if($closed)
-                    <div class="panel panel-default">
-                        <div class="panel-heading">{{ __('registers.view.meta.closing') }}</div>
-                        <div class="panel-body">
-                            <dl>
-                                <dt>{{ __('registers.fields.closedAt') }}</dt>
-                                <dd>{{ $closedAt->toDateTimeString() }}</dd>
-                                <dt>{{ __('registers.fields.closingCash') }}</dt>
-                                <dd>{{ money_format('%(i', $register->closing_cash) }}</dd>
-                                <dt>{{ __('registers.fields.POSTRef') }}</dt>
-                                <dd>{{ $register->post_ref }}</dd>
-                                <dt>{{ __('registers.fields.POSTAmount') }}</dt>
-                                <dd>{{ money_format('%(i', $register->post_amount) }}</dd>
-                            </dl>
-                            <hr>
-                            <dl>
-                                <dt>{{ __('registers.fields.expectedClosingCash') }}</dt>
-                                <dd>{{ money_format('%(i', $cashTotal) }}</dd>
-                                <dt>{{ __('registers.fields.cashError') }}</dt>
-                                <dd>{{ money_format('%(i', $cashError) }}</dd>
-                            </dl>
-                        </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">{{ __('registers.view.meta.cashDetails') }}</div>
+                    <div class="panel-body">
+                        <dl>
+                            <dt>{{ __('registers.fields.openingCash') }}</dt>
+                            <dd>
+                                {{ money_format('%(i', $register->opening_cash) }}
+                                {!! amountError($register->opening_cash - $cashFloat)  !!}
+                            </dd>
+                            <dt>{{ __('registers.fields.expectedClosingCash') }}</dt>
+                            <dd>{{ money_format('%(i', $cashTotal) }}</dd>
+                            <dt>{{ __('registers.fields.closingCash') }}</dt>
+                            <dd>
+                                @if($closed)
+                                {{ money_format('%(i', $register->closing_cash) }}
+                                {!! amountError($register->closing_cash - $cashTotal)  !!}
+                                @else
+                                    {!! $notAvailable !!}
+                                @endif
+                            </dd>
+                        </dl>
                     </div>
-                @endif
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">{{ __('registers.view.meta.postDetails') }}</div>
+                    <div class="panel-body">
+                        <dl>
+                            <dt>{{ __('registers.fields.POSTRef') }}</dt>
+                            <dd>
+                                @if($closed)
+                                {{ $register->post_ref }}
+                                @else
+                                {!! $notAvailable !!}
+                                @endif
+                            </dd>
+                            <dt>{{ __('registers.fields.expectedPOSTAmount') }}</dt>
+                            <dd>{{ money_format('%(i', $postTotal) }}</dd>
+                            <dt>{{ __('registers.fields.declaredPOSTAmount') }}</dt>
+                            <dd>
+                                @if($closed)
+                                {{ money_format('%(i', $register->post_amount) }}
+                                {!! amountError($register->post_amount - $postTotal) !!}
+                                @else
+                                {!! $notAvailable !!}
+                                @endif
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="panel panel-default">

@@ -49,6 +49,8 @@ return [
             'general' => 'Informations générales',
             'opening' => 'Information sur l\'ouverture',
             'closing' => 'Information sur la fermeture',
+            'cashDetails' => 'Détails argent liquide',
+            'postDetails' => 'Détails TPV',
         ],
         'transactions' => [
             'title' => 'Liste des transactions',
@@ -70,6 +72,8 @@ return [
         'closingCash' => 'Argent déclarée à la fermeture',
         'POSTRef' => 'Numéro de lot',
         'POSTAmount' => 'Montant du lot',
+        'expectedPOSTAmount' => 'Montant du lot attendu',
+        'declaredPOSTAmount' => 'Montant du lot déclaré',
         'paymentsTotal' => 'Paiements',
         'refundsTotal' => 'Remboursements',
         'transactionsTotal' => 'Total transactions',

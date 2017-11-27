@@ -92,13 +92,16 @@ class RegistersController extends Controller
     public function view(Request $request, Register $register)
     {
         $cashTotal = 0;
+        $postTotal = 0;
         $paymentsTotal = 0;
         $refundsTotal = 0;
         $openingCashError = $register->opening_cash - self::CASH_FLOAT;
         $register->transactions->each(
-            function ($transaction) use (&$cashTotal, &$paymentsTotal, &$refundsTotal) {
+            function ($transaction) use (&$postTotal, &$cashTotal, &$paymentsTotal, &$refundsTotal) {
                 if ($transaction->transactionMode->type === TransactionMode::TYPE_CASH) {
                     $cashTotal += $transaction->amount;
+                } else {
+                    $postTotal += $transaction->amount;
                 }
 
                 if ($transaction->amount > 0) {
@@ -112,12 +115,14 @@ class RegistersController extends Controller
         $cashMovementsTotal = $register->cashMovements->reduce(function ($total, $cashMovement) {
             return $total + $cashMovement->amount;
         }, 0);
-        $declaredTotal = $register->closing_cash - $register->opening_cash + $register->post_amount;
+        $declaredTotal = $register->closing_cash + $register->post_amount;
         $netTotal = $transactionsTotal + $cashMovementsTotal;
         $cashTotal += $cashMovementsTotal + $openingCashError;
         $vars = [
+            'cashFloat' => self::CASH_FLOAT,
             'register' => $register,
             'cashTotal' => $cashTotal,
+            'postTotal' => $postTotal,
             'paymentsTotal' => $paymentsTotal,
             'refundsTotal' => $refundsTotal,
             'transactionsTotal' => $transactionsTotal,
