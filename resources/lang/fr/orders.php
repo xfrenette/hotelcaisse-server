@@ -32,6 +32,10 @@ return [
             'title' => 'Chambres',
             'empty' => 'Aucune chambre sélectionnée',
         ],
+        'notes' => [
+            'title' => 'Notes de l\'aubergiste',
+            'empty' => 'Aucune note saisie',
+        ],
     ],
     'fields' => [
         'createdAt' => 'Date',

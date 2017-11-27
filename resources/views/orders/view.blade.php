@@ -24,6 +24,18 @@
                 </div>
                 <div class="panel panel-default">
                     <div class="panel-heading">
+                        <h2 class="panel-title">{{ __('orders.view.notes.title') }}</h2>
+                    </div>
+                    <div class="panel-body">
+                        @if($order->note)
+                            <p>{{ $order->note }}</p>
+                        @else
+                            <p><em>{{ __('orders.view.notes.empty') }}</em></p>
+                        @endif
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
                         <h2 class="panel-title">{{ __('orders.view.roomSelections.title') }}</h2>
                     </div>
                     @if($checkIn)
