@@ -56,7 +56,7 @@ return [
         ],
         'cashMovements' => [
             'title' => 'Autres mouvements d\'argent',
-            'empty' => 'Aucune mouvement d\'argent',
+            'empty' => 'Aucun mouvement d\'argent',
         ],
     ],
     'fields' => [
