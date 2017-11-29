@@ -26,12 +26,12 @@ class HIRDLFieldsSeeder extends Seeder
                 'required' => true,
             ],
             [
-                'label' => 'Code postal (Canada seul.)',
+                'label' => 'Code postal (seul. si Canada)',
                 'type' => 'TextField',
                 'required' => false,
             ],
             [
-                'label' => 'Pays',
+                'label' => 'Province / Pays',
                 'type' => 'SelectField',
                 'values' => self::getCountries(),
                 'required' => true,
