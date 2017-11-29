@@ -56,6 +56,11 @@ class SparkServiceProvider extends ServiceProvider
         Spark::noAdditionalTeams();
         Spark::hideTeamSwitcher();
 
+        Spark::useRoles([
+            'admin' => 'Team admin',
+            'member' => 'Team member',
+        ]);
+
         Spark::teamPlan('Hébergement données TPV', 'hirdl-pos-hosting')
             ->price(15);
     }

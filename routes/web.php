@@ -27,23 +27,27 @@ Route
         Route::get('/devices/{device}/code', 'DevicesController@code')->name('devices.device.code');
         Route::get('/devices/{device}/revoke', 'DevicesController@revoke')->name('devices.device.revoke');
 
-        // Registers
-        Route::get('/registers', 'RegistersController@list')->name('registers.list');
-        Route::get('/registers/export', 'RegistersController@export')->name('registers.export');
-        Route::get('/registers/{register}', 'RegistersController@view')->name('registers.register.view');
-        Route::get('/registers/{register}/recalculate', 'RegistersController@recalculate')->name('registers.register.recalculate');
+        Route
+            ::middleware('hasRole:admin')
+            ->group(function() {
+                // Registers
+                Route::get('/registers', 'RegistersController@list')->name('registers.list');
+                Route::get('/registers/export', 'RegistersController@export')->name('registers.export');
+                Route::get('/registers/{register}', 'RegistersController@view')->name('registers.register.view');
+                Route::get('/registers/{register}/recalculate', 'RegistersController@recalculate')->name('registers.register.recalculate');
 
-        // Orders
-        Route::get('/orders', 'OrdersController@list')->name('orders.list');
-        Route::get('/orders/export', 'OrdersController@export')->name('orders.export');
-        Route::get('/orders/{order}', 'OrdersController@view')->name('orders.order.view');
-        Route::get('/orders/{order}/recalculate', 'OrdersController@recalculate')->name('orders.order.recalculate');
+                // Orders
+                Route::get('/orders', 'OrdersController@list')->name('orders.list');
+                Route::get('/orders/export', 'OrdersController@export')->name('orders.export');
+                Route::get('/orders/{order}', 'OrdersController@view')->name('orders.order.view');
+                Route::get('/orders/{order}/recalculate', 'OrdersController@recalculate')->name('orders.order.recalculate');
 
-        // Products
-        Route::get('/products', 'ProductsController@list')->name('products.list');
-        Route::get('/products/export', 'ProductsController@export')->name('products.export');
+                // Products
+                Route::get('/products', 'ProductsController@list')->name('products.list');
+                Route::get('/products/export', 'ProductsController@export')->name('products.export');
 
-        // Custom products
-        Route::get('/customProducts', 'CustomProductsController@list')->name('customProducts.list');
-        Route::get('/customProducts/export', 'CustomProductsController@export')->name('customProducts.export');
+                // Custom products
+                Route::get('/customProducts', 'CustomProductsController@list')->name('customProducts.list');
+                Route::get('/customProducts/export', 'CustomProductsController@export')->name('customProducts.export');
+            });
     });

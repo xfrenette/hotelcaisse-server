@@ -21,6 +21,13 @@ class HIRDLBaseSeeder extends Seeder
         $user->password = \Illuminate\Support\Facades\Hash::make('password');
         $user->save();
 
+        $otherUser = new \App\User([
+            'name' => 'Aubergiste',
+            'email' => 'info@aubergerdl.ca',
+        ]);
+        $otherUser->password = \Illuminate\Support\Facades\Hash::make('password');
+        $otherUser->save();
+
         $team = new \App\Team();
         $team->name = 'Auberge Internationale de Rivière-du-Loup';
         $team->slug = 'hirdl';
@@ -29,5 +36,6 @@ class HIRDLBaseSeeder extends Seeder
         $team->save();
 
         $user->teams()->attach($team, ['role' => 'admin']);
+        $otherUser->teams()->attach($team, ['role' => 'member']);
     }
 }
