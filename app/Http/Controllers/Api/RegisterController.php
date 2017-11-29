@@ -99,9 +99,9 @@ class RegisterController extends ApiController
     {
         $this->validate($request, [
             'uuid' => 'bail|required|string',
-            'cashAmount' => 'bail|required|numeric|min:0',
+            'cashAmount' => 'bail|required|numeric',
             'POSTRef' => 'bail|required|string',
-            'POSTAmount' => 'bail|required|numeric|min:0',
+            'POSTAmount' => 'bail|required|numeric',
             'closedAt' => 'sometimes|required|numeric|min:0|not_in:0',
         ]);
     }

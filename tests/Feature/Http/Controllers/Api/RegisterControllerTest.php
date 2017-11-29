@@ -145,28 +145,36 @@ class RegisterControllerTest extends TestCase
 
     public function testValidateCloseReturnsErrorIfInvalidUUID()
     {
-        $data = $this->generateCloseData();
+        $device = $this->createDeviceWithOpenedRegister();
+        $this->mockApiAuthDevice($device);
+        $data = $this->generateCloseData($device);
         $values = [null, '', ' ', 12];
         $this->assertValidatesRequestData([$this->controller, 'validateClose'], $data, 'data.uuid', $values);
     }
 
     public function testValidateCloseReturnsErrorIfInvalidCashAmount()
     {
-        $data = $this->generateCloseData();
-        $values = [null, '', -5];
+        $device = $this->createDeviceWithOpenedRegister();
+        $this->mockApiAuthDevice($device);
+        $data = $this->generateCloseData($device);
+        $values = [null, ''];
         $this->assertValidatesRequestData([$this->controller, 'validateClose'], $data, 'data.cashAmount', $values);
     }
 
     public function testValidateCloseReturnsErrorIfInvalidPOSTAmount()
     {
-        $data = $this->generateCloseData();
-        $values = [null, '', -5];
+        $device = $this->createDeviceWithOpenedRegister();
+        $this->mockApiAuthDevice($device);
+        $data = $this->generateCloseData($device);
+        $values = [null, ''];
         $this->assertValidatesRequestData([$this->controller, 'validateClose'], $data, 'data.POSTAmount', $values);
     }
 
     public function testValidateCloseReturnsErrorIfInvalidPOSTRef()
     {
-        $data = $this->generateCloseData();
+        $device = $this->createDeviceWithOpenedRegister();
+        $this->mockApiAuthDevice($device);
+        $data = $this->generateCloseData($device);
         $values = [null, '', '  ', 5];
         $this->assertValidatesRequestData([$this->controller, 'validateClose'], $data, 'data.POSTRef', $values);
     }
