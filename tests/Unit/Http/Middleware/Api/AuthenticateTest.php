@@ -103,10 +103,10 @@ class AuthenticateTest extends TestCase
         $this->assertFalse($this->apiAuth->check());
     }
 
-    public function testRegeneratesToken()
+    public function testTouchesSession()
     {
         $this->apiAuth->shouldReceive('loadSession')->andReturn(true);
-        $this->apiAuth->shouldReceive('regenerateToken')->once();
+        $this->apiAuth->shouldReceive('touchSession')->once();
         $request = $this->mockRequest(['token' => 'test'], new Team());
 
         $this->middleware->handle($request, function () {

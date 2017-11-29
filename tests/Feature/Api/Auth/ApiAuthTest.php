@@ -7,6 +7,7 @@ use App\ApiSession;
 use App\Device;
 use App\DeviceApproval;
 use App\Team;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
@@ -310,5 +311,16 @@ class ApiAuthTest extends TestCase
         $this->apiAuth->attemptRegister($passcode, $deviceApproval->device->team);
 
         $this->assertNull($this->apiAuth->findDeviceApproval($passcode, $deviceApproval->device->team));
+    }
+
+    public function testTouchSession()
+    {
+        $this->apiSession->expires_at = Carbon::now();
+        $this->apiSession->save();
+        $this->apiAuth->setApiSession($this->apiSession);
+        $oldExpiration = $this->apiSession->expires_at; // May change a little because of type casting
+        $this->apiAuth->touchSession();
+
+        $this->assertNotEquals($oldExpiration, $this->apiAuth->getApiSession()->expires_at);
     }
 }

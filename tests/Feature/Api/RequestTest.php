@@ -118,14 +118,14 @@ class RequestTest extends TestCase
         $this->assertTrue(ApiAuth::check());
     }
 
-    public function testAuthGeneratesNewToken()
+    public function testAuthDoesNotGenerateNewToken()
     {
         $apiSession = $this->createApiSession();
         $oldToken = $apiSession->token;
 
         $uri = '/api/auth/' . $apiSession->device->team->slug;
         $this->json('POST', $uri, ['token' => $oldToken]);
-        $this->assertNotEquals(ApiAuth::getToken(), $oldToken);
+        $this->assertEquals(ApiAuth::getToken(), $oldToken);
     }
 
     public function testAddsTokenToResponse()

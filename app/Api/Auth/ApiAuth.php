@@ -136,6 +136,14 @@ class ApiAuth
     }
 
     /**
+     * @return \App\ApiSession
+     */
+    public function getApiSession()
+    {
+        return $this->apiSession;
+    }
+
+    /**
      * Returns true if an ApiSession is currently loaded, else false.
      *
      * @return bool
@@ -168,6 +176,18 @@ class ApiAuth
     }
 
     /**
+     * Updates the `expires_at` attribute of the current session to push it further in the future.
+     */
+    public function touchSession()
+    {
+        if ($this->apiSession) {
+            $newExpirationDate = $this->generateSessionExpirationDate();
+            $this->apiSession->expires_at = $newExpirationDate;
+            $this->apiSession->save();
+        }
+    }
+
+    /**
      * Invalidates the current token and regenerates a new one. Does nothing if not already logged in, else keep the
      * user logged in, but with the new token.
      */
@@ -197,7 +217,7 @@ class ApiAuth
     public function makeApiSession(Device $device)
     {
         $newToken = str_random(array_get($this->config, 'token.bytesLength', 32));
-        $expires_at = Carbon::now()->addDays(array_get($this->config, 'token.daysValid', 30));
+        $expires_at = $this->generateSessionExpirationDate();
 
         $apiSession = new ApiSession();
         $apiSession->token = $newToken;
@@ -205,6 +225,16 @@ class ApiAuth
         $apiSession->expires_at = $expires_at;
 
         return $apiSession;
+    }
+
+    /**
+     * Returns a Carbon date for the expiration of a session created/updated now.
+     *
+     * @return Carbon
+     */
+    protected function generateSessionExpirationDate()
+    {
+        return Carbon::now()->addDays(array_get($this->config, 'token.daysValid', 30));
     }
 
     /**
