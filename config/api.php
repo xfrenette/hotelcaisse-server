@@ -7,7 +7,7 @@ return [
     'auth' => [
         'token' => [
             'bytesLength' => 32,
-            'daysValid' => 30,
+            'daysValid' => 180,
         ],
     ],
     'orders' => [
