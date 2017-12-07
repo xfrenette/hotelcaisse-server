@@ -31,6 +31,6 @@ class TeamsSeeder extends Seeder
         $team->owner()->associate($user);
         $team->save();
 
-        $team->users()->attach($team, ['role' => Spark::defaultRole()]);
+        $team->users()->attach($user, ['role' => Spark::defaultRole()]);
     }
 }
