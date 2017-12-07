@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', 'WelcomeController@show');
+Route::get('/documentation', 'HelpPagesController@index');
+Route::get('/documentation/{page}', 'HelpPagesController@page');
 
 Route
     ::middleware('auth')
