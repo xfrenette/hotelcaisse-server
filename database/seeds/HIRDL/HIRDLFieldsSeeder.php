@@ -35,7 +35,7 @@ class HIRDLFieldsSeeder extends Seeder
                 'type' => 'SelectField',
                 'values' => self::getCountries(),
                 'required' => true,
-                'defaultValue' => 'CA',
+                'defaultValue' => 'CA-QC',
             ],
             [
                 'label' => 'Courriel',
@@ -112,13 +112,25 @@ class HIRDLFieldsSeeder extends Seeder
     private static function getCountries()
     {
         return array (
-            'CA' => 'Canada',
+            'CA-QC' => 'Québec',
+            'CA-ON' => 'Ontario',
             'US' => 'États-Unis',
             'FR' => 'France',
             'DE' => 'Allemagne',
             'AU' => 'Australie',
             'GB' => 'Royaume-Uni',
-            'IE' => 'Irlande',
+
+            'CA-AB' => 'Alberta',
+            'CA-BC' => 'Colombie-Britannique',
+            'CA-PE' => 'Île-du-Prince-Édouard',
+            'CA-MB' => 'Manitoba',
+            'CA-NB' => 'Nouveau-Brunswick',
+            'CA-NS' => 'Nouvelle-Écosse',
+            'CA-NU' => 'Nunavut',
+            'CA-SK' => 'Saskatchewan',
+            'CA-NL' => 'Terre-Neuve-et-Labrador',
+            'CA-NT' => 'Territoires du Nord-Ouest',
+            'CA-YT' => 'Yukon',
 
             'AF' => 'Afghanistan',
             'ZA' => 'Afrique du Sud',
@@ -367,6 +379,7 @@ class HIRDLFieldsSeeder extends Seeder
             'YE' => 'Yémen',
             'ZM' => 'Zambie',
             'ZW' => 'Zimbabwe',
+            'CA' => 'Canada',
         );
     }
 }
