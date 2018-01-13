@@ -13,6 +13,31 @@
         .alert {
             font-weight: normal;
         }
+        p.image {
+            text-align: center;
+            border: 1px solid #636b6f;
+            padding: 15px;
+            margin: 30px auto;
+            width: 75%;
+        }
+
+        p.image img {
+            display: inline-block;
+            max-width: 100%;
+            height: auto;
+        }
+        .toc ul {
+            list-style-type: none;
+            font-size: 14px;
+            line-height: 1.2;
+            padding-left: 0;
+        }
+        .toc ul ul {
+            padding-left: 20px;
+        }
+        .toc li {
+            margin-bottom: 10px;
+        }
     </style>
 @endpush
 
