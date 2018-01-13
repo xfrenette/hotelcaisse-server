@@ -53,3 +53,6 @@ Route
                 Route::get('/customProducts/export', 'CustomProductsController@export')->name('customProducts.export');
             });
     });
+
+Route::get('/register', 'Auth\RegisterController@showRegistrationForm')->name('register');
+Route::post('/register', 'Auth\RegisterController@register');
