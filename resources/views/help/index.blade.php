@@ -52,7 +52,7 @@
         qu'elle a été enregistrée. <strong>Donc ne faites pas des
             «&nbsp;tests&nbsp;» croyant qu'ils pourront être annulés ensuite.</strong></p>
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-6 col-sm-7">
             <div class="panel panel-default">
                 <div class="panel-heading">Table des matières</div>
                 <div class="panel-body">
