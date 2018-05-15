@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 class Product extends Model
 {
+    use \Illuminate\Database\Eloquent\SoftDeletes;
+
     protected $productTaxTable = 'product_tax';
 
     /**
@@ -39,6 +41,8 @@ class Product extends Model
         'price' => 'float',
     ];
 
+    protected $dates = ['deleted_at'];
+
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -61,6 +65,14 @@ class Product extends Model
     public function variants()
     {
         return $this->hasMany('App\Product', 'parent_id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function categories()
+    {
+        return $this->belongsToMany('App\ProductCategory');
     }
 
     public function getFullNameAttribute()

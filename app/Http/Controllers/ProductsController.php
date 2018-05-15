@@ -117,6 +117,7 @@ class ProductsController extends Controller
 
         // Get Product instances
         $products = Product::with('parent')
+            ->withTrashed()
             ->whereIn('id', $item_products->pluck('product_id'))
             ->get()
             ->keyBy('id');

@@ -51,6 +51,23 @@ Route
                 // Custom products
                 Route::get('/customProducts', 'CustomProductsController@list')->name('customProducts.list');
                 Route::get('/customProducts/export', 'CustomProductsController@export')->name('customProducts.export');
+
+                // Manage products and categories
+                Route::get('/manage-products', 'ManageProductsController@list')->name('productCategories.list');
+
+                // Manage categories
+                Route::get('/manage-products/categories/delete/{category}', 'ManageProductsController@deleteCategory')->name('productCategories.categories.delete');
+                Route::get('/manage-products/categories/new', 'ManageProductsController@newCategory')->name('productCategories.categories.new');
+                Route::post('/manage-products/categories/new', 'ManageProductsController@createCategory')->name('productCategories.categories.create');
+                Route::get('/manage-products/categories/{category}', 'ManageProductsController@editCategory')->name('productCategories.categories.edit');
+                Route::post('/manage-products/categories/{category}', 'ManageProductsController@updateCategory')->name('productCategories.categories.update');
+
+                // Manage products
+                Route::get('/manage-products/products/delete/{product}', 'ManageProductsController@deleteProduct')->name('productCategories.products.delete');
+                Route::get('/manage-products/products/new/{parent?}', 'ManageProductsController@newProduct')->name('productCategories.products.new');
+                Route::post('/manage-products/products/new/{parent?}', 'ManageProductsController@createProduct')->name('productCategories.products.create');
+                Route::get('/manage-products/products/{product}', 'ManageProductsController@editProduct')->name('productCategories.products.edit');
+                Route::post('/manage-products/products/{product}', 'ManageProductsController@updateProduct')->name('productCategories.products.update');
             });
     });
 
