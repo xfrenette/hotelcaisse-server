@@ -188,6 +188,8 @@ return [
         App\Providers\ApiAuthServiceProvider::class,
         App\Providers\SparkServiceProvider::class,
 
+	    // Backup
+	    Spatie\Backup\BackupServiceProvider::class,
     ],
 
     /*

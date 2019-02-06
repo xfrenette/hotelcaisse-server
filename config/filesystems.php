@@ -55,6 +55,12 @@ return [
             'visibility' => 'public',
         ],
 
+	    // Local destination for backups
+        'local_backup' => [
+            'driver' => 'local',
+            'root' => storage_path('backups'),
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_KEY'),
