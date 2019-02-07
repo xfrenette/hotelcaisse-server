@@ -13,7 +13,10 @@ Live reinstall (from a backup file)
 - `bower install`
 - Run as www-data: `php artisan config:cache`
 - Run as www-data: `php artisan route:cache`
-- `sudo supervisorctl restart laravel-worker:*`
+- Use 'supervisor' to run the laravel queue worker:
+    - https://www.coderomeos.org/laravel-queue-worker-and-supervisor-process-monitor
+    - See below for config file for the task
+    - `sudo supervisorctl restart laravel-worker:*`
 - Add the Laravel scheduler to the www-data crontab (see Laravel documentation)
 
 Sample API request
@@ -56,4 +59,20 @@ deploy_log "php artisan queue:restart..."
 php artisan queue:restart
 deploy_log "Making sure supervisor is running..."
 sudo supervisorctl restart laravel-worker:*
+```
+
+supervisor laraver-worker config file
+===
+Once 'supervisor' is installed, create the following configuration file:
+/etc/supervisor/conf.d/laravel-worker.conf
+```
+[program:laravel-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/html/venteshirdl.com/artisan queue:work database --sleep=3 --tries=3
+autostart=true
+autorestart=true
+user=www-data
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/var/www/html/venteshirdl.com/storage/logs/worker.log
 ```
