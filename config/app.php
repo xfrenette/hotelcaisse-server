@@ -190,6 +190,7 @@ return [
 
 	    // Backup
 	    Spatie\Backup\BackupServiceProvider::class,
+        BC\Laravel\DropboxDriver\ServiceProvider::class,
     ],
 
     /*

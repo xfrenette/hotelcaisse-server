@@ -4,8 +4,62 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d404e64cb7ff1d934c080ee7314b9a7f",
+    "content-hash": "63eea68f077178c9f3c10aa456550e3c",
     "packages": [
+        {
+            "name": "benjamincrozat/laravel-dropbox-driver",
+            "version": "2.0.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/benjamincrozat/laravel-dropbox-driver.git",
+                "reference": "d2da72ee22a3fb1d4720c7c8dac7aaf0fd038d5e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/benjamincrozat/laravel-dropbox-driver/zipball/d2da72ee22a3fb1d4720c7c8dac7aaf0fd038d5e",
+                "reference": "d2da72ee22a3fb1d4720c7c8dac7aaf0fd038d5e",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1",
+                "spatie/flysystem-dropbox": "^1.0"
+            },
+            "require-dev": {
+                "orchestra/testbench": "3.*",
+                "phpunit/phpunit": "5.*|6.*|7.*"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "BC\\Laravel\\DropboxDriver\\ServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "BC\\Laravel\\DropboxDriver\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "WTFPL"
+            ],
+            "authors": [
+                {
+                    "name": "Benjamin Crozat",
+                    "email": "benjamin@croz.at"
+                }
+            ],
+            "description": "Dropbox driver for Laravel.",
+            "homepage": "https://github.com/benjamincrozat/laravel-dropbox-driver",
+            "keywords": [
+                "driver",
+                "dropbox",
+                "laravel"
+            ],
+            "time": "2018-12-10T12:53:41+00:00"
+        },
         {
             "name": "dnoegel/php-xdg-base-dir",
             "version": "0.1",
@@ -1736,6 +1790,114 @@
                 "spatie"
             ],
             "time": "2016-06-14T13:23:01+00:00"
+        },
+        {
+            "name": "spatie/dropbox-api",
+            "version": "1.7.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/spatie/dropbox-api.git",
+                "reference": "efd9223d5e2d44ec56511aba5bb16c161e78e2aa"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/spatie/dropbox-api/zipball/efd9223d5e2d44ec56511aba5bb16c161e78e2aa",
+                "reference": "efd9223d5e2d44ec56511aba5bb16c161e78e2aa",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "^6.2",
+                "php": "^7.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^6.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Spatie\\Dropbox\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Freek Van der Herten",
+                    "email": "freek@spatie.be",
+                    "homepage": "https://spatie.be",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Alex Vanderbist",
+                    "email": "alex.vanderbist@gmail.com",
+                    "homepage": "https://spatie.be",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A minimal implementation of Dropbox API v2",
+            "homepage": "https://github.com/spatie/dropbox-api",
+            "keywords": [
+                "Dropbox-API",
+                "api",
+                "dropbox",
+                "spatie",
+                "v2"
+            ],
+            "time": "2019-02-06T22:05:37+00:00"
+        },
+        {
+            "name": "spatie/flysystem-dropbox",
+            "version": "1.0.6",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/spatie/flysystem-dropbox.git",
+                "reference": "cff7dba925282736fff271fc41781a76fbe40799"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/spatie/flysystem-dropbox/zipball/cff7dba925282736fff271fc41781a76fbe40799",
+                "reference": "cff7dba925282736fff271fc41781a76fbe40799",
+                "shasum": ""
+            },
+            "require": {
+                "league/flysystem": "^1.0",
+                "php": "^7.0",
+                "spatie/dropbox-api": "^1.1.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^6.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Spatie\\FlysystemDropbox\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Alex Vanderbist",
+                    "email": "alex.vanderbist@gmail.com",
+                    "homepage": "https://spatie.be",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Flysystem Adapter for the Dropbox v2 API",
+            "homepage": "https://github.com/spatie/flysystem-dropbox",
+            "keywords": [
+                "Flysystem",
+                "api",
+                "dropbox",
+                "flysystem-dropbox",
+                "spatie",
+                "v2"
+            ],
+            "time": "2017-11-18T21:56:03+00:00"
         },
         {
             "name": "spatie/laravel-backup",
