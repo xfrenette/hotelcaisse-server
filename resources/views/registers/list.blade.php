@@ -58,6 +58,10 @@ $notAvailable .= '"><span style="text-muted">-N/A-</span><span style="text-prima
                     'label' => __('registers.list.filters.openingDate'),
                     'type' => 'dateRange',
                 ],
+                [
+                    'label' => __('registers.list.filters.registerRange'),
+                    'type' => 'registerRange',
+                ],
             ],
         ])
         <hr>

@@ -8,6 +8,7 @@ return [
         'naMessage' => ':na : information non-disponible tant que la caisse est ouverte.',
         'filters' => [
             'openingDate' => 'Date d\'ouverture',
+            'registerRange' => 'Numéros de caisse',
         ],
         'columns' => [
             'opening' => [

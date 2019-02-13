@@ -150,6 +150,11 @@ class RegistersController extends Controller
         return redirect(route('registers.list'));
     }
 
+    protected function getFilters()
+    {
+        return ['startDate', 'endDate', 'startRegisterNumber', 'endRegisterNumber'];
+    }
+
     /**
      * @param $request Request
      * @return \Illuminate\Database\Query\Builder
@@ -217,5 +222,15 @@ class RegistersController extends Controller
     {
         $str = preg_replace('#<br ?/?>#', ' ', $str);
         return strip_tags($str);
+    }
+
+    protected function filterWithStartRegisterNumber($query, $startRegisterNumber)
+    {
+        return $query->where('number', '>=', $startRegisterNumber);
+    }
+
+    protected function filterWithEndRegisterNumber($query, $endRegisterNumber)
+    {
+        return $query->where('number', '<=', $endRegisterNumber);
     }
 }
