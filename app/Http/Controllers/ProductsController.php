@@ -169,6 +169,11 @@ class ProductsController extends Controller
         ];
     }
 
+	protected function getFilters()
+	{
+		return ['startDate', 'endDate', 'startRegisterNumber', 'endRegisterNumber'];
+	}
+
     protected function filterWithStartDate($query, $startDate)
     {
         return $query->where('item_products.created_at', '>=', $startDate);
@@ -177,5 +182,57 @@ class ProductsController extends Controller
     protected function filterWithEndDate($query, $endDate)
     {
         return $query->where('item_products.created_at', '<=', $endDate);
+    }
+
+    /**
+     * From a register number, filters all item_products that were created at or after the opening datetime of this register.
+     *
+     * @param $query
+     * @param $startRegisterNumber
+     *
+     * @return mixed
+     */
+    protected function filterWithStartRegisterNumber($query, $startRegisterNumber)
+    {
+        /**
+         * @var $team \App\Team
+         */
+        $team = Auth::user()->currentTeam;
+        /**
+         * @var $register \App\Register
+         */
+        $register = $team->registers()->where('number', $startRegisterNumber)->first();
+
+        if (!$register) {
+            return $query;
+        }
+
+        return $query->where('item_products.created_at', '>=', $register->opened_at);
+    }
+
+    /**
+     * From a register number, filters all item_products that were created at or before the closing datetime of this register.
+     *
+     * @param $query
+     * @param $startRegisterNumber
+     *
+     * @return mixed
+     */
+    protected function filterWithEndRegisterNumber($query, $endRegisterNumber)
+    {
+        /**
+         * @var $team \App\Team
+         */
+        $team = Auth::user()->currentTeam;
+        /**
+         * @var $register \App\Register
+         */
+        $register = $team->registers()->where('number', $endRegisterNumber)->first();
+
+        if (!$register) {
+            return $query;
+        }
+
+        return $query->where('item_products.created_at', '<=', $register->closed_at);
     }
 }

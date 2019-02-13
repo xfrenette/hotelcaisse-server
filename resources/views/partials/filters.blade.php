@@ -67,6 +67,31 @@
                         </div>
                     </div>
                 </div>
+                @elseif($filter['type'] === 'registerRange')
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <input
+                                    type='number'
+                                    name="startRegisterNumber"
+                                    class="form-control"
+                                    value="{{ request()->query('startRegisterNumber') }}"
+                                    placeholder="{{ __('filters.startRegisterNumber') }}"
+                                />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <input
+                                    type='number'
+                                    name="endRegisterNumber"
+                                    class="form-control"
+                                    value="{{ request()->query('endRegisterNumber') }}"
+                                    placeholder="{{ __('filters.endRegisterNumber') }}"
+                                />
+                            </div>
+                        </div>
+                    </div>
                 @elseif($filter['type'] === 'text')
                     <div class="row">
                         <div class="col-md-3">

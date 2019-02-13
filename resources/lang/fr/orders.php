@@ -30,6 +30,7 @@ return [
         ],
         'roomSelections' => [
             'title' => 'Chambres',
+            'roomNumber' => '# chambre',
             'empty' => 'Aucune chambre sélectionnée',
         ],
         'notes' => [

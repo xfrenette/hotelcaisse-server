@@ -16,6 +16,10 @@
                     'label' => __('customProducts.list.filters.saleDate'),
                     'type' => 'dateRange'
                 ],
+                [
+                    'label' => __('customProducts.list.filters.registerRange'),
+                    'type' => 'registerRange'
+                ],
             ],
         ])
         <hr>
