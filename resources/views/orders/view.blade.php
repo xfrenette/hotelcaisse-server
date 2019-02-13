@@ -54,7 +54,7 @@
                     <table class="table">
                         <thead>
                         <tr>
-                            <th></th>
+                            <th>{{ __('orders.view.roomSelections.roomNumber') }}</th>
                             @foreach($roomSelections[0]['fields'] as $field)
                             <th>{{ $field['label'] }}</th>
                             @endforeach
