@@ -4,9 +4,24 @@ To publish online
 - SSH to the server `ssh dev@venteshirdl.com`
 - From the home directory, run `./deploy.sh` (see end of this README for file content)
 
+Server requirements
+===
+- Tested with PHP 7.1.10
+- MySQL "Ver 14.14 Distrib 5.7.33"
+- Extensions:
+  - bcmath
+  - xml
+  - gd
+  - mbstring
+  - intl
+  - zip
+
 Live reinstall (from a backup file)
 ===
-- Clone the git files and correctly setup folder rights (especially storage/ folder must be writable by web server)
+- Note that the SSH port of the server is 9391
+- Also note that the server works with PHP 7.1.10 and mysql "Ver 14.14 Distrib 5.7.33"
+- Clone the git files and correctly setup folder rights (especially storage/ and bootstrap/cache folders must be writable by web server)
+- Make sure to install all required PHP extensions (bcmath, xml, gd, mbstring, maybe some others...)
 - `composer install`
 - Copy .env.example to .env and update
 - Import the database
@@ -18,6 +33,11 @@ Live reinstall (from a backup file)
     - See below for config file for the task
     - `sudo supervisorctl restart laravel-worker:*`
 - Add the Laravel scheduler to the www-data crontab (see Laravel documentation)
+
+Troubleshooting
+===
+- If you have `SQLSTATE[42000]: Syntax error or access violation: 1231 Variable 'sql_mode' can't be set to the value of 'NO_AUTO_CREATE_USER'`, your MySQL server might be too new compared to the Laravel version used. [See here](https://stackoverflow.com/questions/50068663/laravel-5-5-with-mysql-8-0-11-sql-mode-cant-be-set-to-the-value-of-no-auto)
+- If you want to ignore deprecation warnings on your development server, I fixed it by temporarily adding `error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE);` in the `boot()` method of the AppServiceProvider :( . Don't commit it if you do it!
 
 Sample API request
 ===
