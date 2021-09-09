@@ -12,6 +12,7 @@
         "laravel/spark": "~4.0",
         "laravel/tinker": "~1.0",
         "laravelcollective/html": "^5.4.0",
+        "league/flysystem-aws-s3-v3": "~1.0",
         "spatie/laravel-backup": "^3.0.0"
     },
     "require-dev": {
