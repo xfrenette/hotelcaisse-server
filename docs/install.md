@@ -1,7 +1,7 @@
 To publish online
 ===
 - Pushes any changes on the Git
-- SSH to the server `ssh dev@venteshirdl.com`
+- SSH to the server 
 - From the home directory, run `./deploy.sh` (see end of this README for file content)
 
 Server requirements
@@ -18,8 +18,7 @@ Server requirements
 
 Live reinstall (from a backup file)
 ===
-- Note that the SSH port of the server is 9391
-- Also note that the server works with PHP 7.1.10 and mysql "Ver 14.14 Distrib 5.7.33"
+- Note that the server works with PHP 7.1.10 and mysql "Ver 14.14 Distrib 5.7.33"
 - Clone the git files and correctly setup folder rights (especially storage/ and bootstrap/cache folders must be writable by web server)
 - Make sure to install all required PHP extensions (bcmath, xml, gd, mbstring, maybe some others...)
 - `composer install`
@@ -41,7 +40,7 @@ Troubleshooting
 
 Sample API request
 ===
-POST http://hirdlpos.xfdev/api/1.0/hirdl/deviceData
+POST /api/1.0/hirdl/deviceData
 
 {
 	"token": "eNrAw6JYXlpGeNiLNejbmz7mIVnDwfSq",
@@ -63,7 +62,7 @@ deploy_log() {
 	echo -e "\033[1;33m$1\033[0m"
 }
 
-cd /var/www/html/venteshirdl.com
+cd /var/www/html/
 deploy_log "git pull..."
 git pull
 deploy_log "composer install..."
@@ -88,11 +87,11 @@ Once 'supervisor' is installed, create the following configuration file:
 ```
 [program:laravel-worker]
 process_name=%(program_name)s_%(process_num)02d
-command=php /var/www/html/venteshirdl.com/artisan queue:work database --sleep=3 --tries=3
+command=php /var/www/html/artisan queue:work database --sleep=3 --tries=3
 autostart=true
 autorestart=true
 user=www-data
 numprocs=1
 redirect_stderr=true
-stdout_logfile=/var/www/html/venteshirdl.com/storage/logs/worker.log
+stdout_logfile=/var/www/html/storage/logs/worker.log
 ```
